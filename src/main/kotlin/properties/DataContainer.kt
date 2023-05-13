@@ -20,15 +20,13 @@ class DataContainer {
             if (file.exists()) {
                 data = json.decodeFromString(file.readText())
                 data.images.removeIf { !File(it.path).exists() }
-                checkForNewImageFiles()
-                save()
 
-            } else {
-                data = Data()
-            }
-        } catch (e: Exception) {
-            data = Data()
-        }
+            } else { data = Data() }
+        } catch (e: Exception) { data = Data() }
+
+        checkForNewImageFiles()
+        checkTags()
+        save()
     }
 
     private fun checkForNewImageFiles() {
@@ -37,6 +35,12 @@ class DataContainer {
             data.images.none { it.path == f.path }
         }?.forEach {
             data.images.add(ImageInfo(it.path, it.name))
+        }
+    }
+
+    private fun checkTags() {
+        if (!data.tags.contains("NSFW")) {
+            data.tags.add("NSFW")
         }
     }
 

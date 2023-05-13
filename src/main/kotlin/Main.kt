@@ -33,12 +33,6 @@ fun main() = application {
         isFirstTime = false
 
         File("images").mkdir()
-
-        if (!tags.contains("NSFW")) {
-            Properties.imagesData().tags.add("NSFW")
-            tags.add("NSFW")
-        }
-
         antiSelectedTags.add("NSFW")
         filteredImages = images.filter { image -> antiSelectedTags.none { tag -> image.tags.contains(tag) } }
     }
