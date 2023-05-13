@@ -28,9 +28,9 @@ fun main() = application {
     val selectedTags = remember { mutableStateListOf<String>() }
     val antiSelectedTags = remember { mutableStateListOf<String>() }
 
-    var once by remember { mutableStateOf(true) }
-    if (once) {
-        once = false
+    var isFirstTime by remember { mutableStateOf(true) }
+    if (isFirstTime) {
+        isFirstTime = false
 
         File("images").mkdir()
 
@@ -79,9 +79,7 @@ fun main() = application {
         ) {
             LeftSideMenu(
                 menuItem,
-                onOptionSelected = {
-                    menuItem = it
-                },
+                onOptionSelected = { menuItem = it },
                 modifier = Modifier.fillMaxHeight(),
             )
 
@@ -90,7 +88,7 @@ fun main() = application {
                     menuItem,
                     animationSpec = tween(normalAnimationDuration),
                     modifier = Modifier.fillMaxSize(),
-                ) { mItem ->
+                ) { item ->
 
                     @Composable
                     fun ImageTableView(
@@ -140,7 +138,7 @@ fun main() = application {
                         }
                     }
 
-                    when (mItem) {
+                    when (item) {
                         MenuItem.Images -> {
                             ImageTableView(filter = { image ->
                                 val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
@@ -160,12 +158,12 @@ fun main() = application {
                     }
                 }
 
-                var editing by remember { mutableStateOf(false) }
+                var isEditing by remember { mutableStateOf(false) }
                 ImagePreview(
                     selectedImage,
                     onClose = {
                         selectedImage = null
-                        editing = false
+                        isEditing = false
                     },
                     onNext = { filteredImages.getOrNull(filteredImages.indexOf(selectedImage) + 1)?.let { selectedImage = it } },
                     onPrevious = { filteredImages.getOrNull(filteredImages.indexOf(selectedImage) - 1)?.let { selectedImage = it } },
@@ -173,14 +171,14 @@ fun main() = application {
                         selectedImage?.let { Properties.imagesData().delete(it) }
                         images.remove(selectedImage)
                         selectedImage = null
-                        editing = false
+                        isEditing = false
                     },
-                    onEdit = { editing = true },
+                    onEdit = { isEditing = true },
                     modifier = Modifier.fillMaxSize(),
                 )
 
                 AppearDisappearAnimation(
-                    editing,
+                    isEditing,
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
@@ -196,14 +194,14 @@ fun main() = application {
                             EditImageWindow(
                                 tags = tags,
                                 imageInfo = imgInfo,
-                                onCancel = { editing = false },
+                                onCancel = { isEditing = false },
                                 onFinish = { newImageInfo ->
                                     val index = images.indexOf(images.find { it.path == newImageInfo.path })
                                     images[index] = newImageInfo
                                     Properties.imagesData().images[index] = newImageInfo
                                     Properties.saveData()
                                     selectedImage = newImageInfo
-                                    editing = false
+                                    isEditing = false
                                 },
                                 onNewTag = {
                                     if (it.isNotEmpty() && !selectedTags.contains(it)) {
