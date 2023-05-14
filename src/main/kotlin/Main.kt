@@ -303,16 +303,16 @@ fun main() = application {
                             }
                         },
                         onDone = {
-                            images.forEach {
-                                if (selectedImages.contains(it)) {
-                                    it.tags.addAll(newTags)
-                                    it.tags.removeAll(removeTags)
+                            images.forEach { ii ->
+                                if (selectedImages.contains(ii)) {
+                                    ii.tags.addAll(newTags.filter { !ii.tags.contains(it) })
+                                    ii.tags.removeAll(removeTags)
                                 }
                             }
-                            Properties.imagesData().images.forEach {
-                                if (selectedImages.find { fi -> fi.path == it.path } != null) {
-                                    it.tags.addAll(newTags)
-                                    it.tags.removeAll(removeTags)
+                            Properties.imagesData().images.forEach { ii ->
+                                if (selectedImages.find { fi -> fi.path == ii.path } != null) {
+                                    ii.tags.addAll(newTags.filter { !ii.tags.contains(it) })
+                                    ii.tags.removeAll(removeTags)
                                 }
                             }
                             Properties.saveData()
