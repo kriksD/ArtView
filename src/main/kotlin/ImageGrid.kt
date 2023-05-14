@@ -1,8 +1,6 @@
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,38 +28,55 @@ fun ImageGrid(
 ) {
     var imagesPerRow by remember { mutableStateOf(8) }
     val splitImages = imageData.chunked(imagesPerRow)
+    val scrollState = rememberScrollState()
 
-    LazyColumn(
-        modifier = modifier
-            .onSizeChanged {
-                imagesPerRow = it.width / style.image_width
-            }
+    Row(
+        modifier = modifier,
     ) {
-        items(splitImages) { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                row.forEach { imgData ->
-                    ImageGridItem(
-                        imgData,
-                        onOpen = { onOpen(imgData) },
-                        modifier = Modifier
-                            .weight(imgData.calculateWeight())
-                            .padding(padding)
-                            .clip(RoundedCornerShape(smallCorners))
-                    )
+        Column(
+            modifier = Modifier
+                .weight(1F)
+                .verticalScroll(scrollState)
+                .onSizeChanged {
+                    imagesPerRow = it.width / style.image_width
                 }
+        ) {
+            splitImages.forEach { row ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    row.forEach { imgData ->
+                        ImageGridItem(
+                            imgData,
+                            onOpen = { onOpen(imgData) },
+                            modifier = Modifier
+                                .weight(imgData.calculateWeight())
+                                .padding(padding)
+                                .clip(RoundedCornerShape(smallCorners))
+                        )
+                    }
 
-                repeat(imagesPerRow - row.size) {
-                    Spacer(
-                        modifier = Modifier
-                            .weight(1F)
-                            .padding(padding)
-                    )
+                    repeat(imagesPerRow - row.size) {
+                        Spacer(
+                            modifier = Modifier
+                                .weight(1F)
+                                .padding(padding)
+                        )
+                    }
                 }
             }
         }
+
+        VerticalScrollbar(
+            rememberScrollbarAdapter(scrollState),
+            style = LocalScrollbarStyle.current.copy(unhoverColor = colorBackgroundSecondLighter, hoverColor = colorBackgroundSecond),
+            modifier = Modifier
+                .padding(top = padding, end = padding, bottom = padding)
+                .background(colorBackground, RoundedCornerShape(smallCorners))
+                .fillMaxHeight()
+                .width(scrollbarThickness),
+        )
     }
 }
 

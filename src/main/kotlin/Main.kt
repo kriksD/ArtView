@@ -127,7 +127,7 @@ fun main() = application {
                             ImageGrid(
                                 images.filter(filter).also { filteredImages = it },
                                 onOpen = { selectedImage = it },
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.weight(1F),
                             )
                         }
                     }
