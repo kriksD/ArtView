@@ -9,7 +9,7 @@ data class ImageInfo(
     var name: String = "",
     var description: String = "",
     var favorite: Boolean = false,
-    var tags: List<String> = listOf(),
+    val tags: MutableList<String> = mutableListOf(),
 ) {
     @Transient
     var image: ImageBitmap? = null

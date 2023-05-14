@@ -3,7 +3,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -22,6 +24,7 @@ fun main() = application {
 
     val images = remember { Properties.imagesData().images.toState() }
     var filteredImages by remember { mutableStateOf(images.toList()) }
+    val selectedImages = remember { mutableStateListOf<ImageInfo>() }
     var selectedImage by remember { mutableStateOf<ImageInfo?>(null) }
 
     val tags = remember { Properties.imagesData().tags.toState() }
@@ -125,8 +128,26 @@ fun main() = application {
                             )
 
                             ImageGrid(
-                                images.filter(filter).also { filteredImages = it },
-                                onOpen = { selectedImage = it },
+                                imageInfo = images.filter(filter).also { filteredImages = it },
+                                checkedList = selectedImages,
+                                onCheckedClick = { imgInfo, isSelected ->
+                                    if (isSelected) {
+                                        selectedImages.add(imgInfo)
+                                    } else {
+                                        selectedImages.remove(imgInfo)
+                                    }
+                                },
+                                onOpen = {
+                                    if (selectedImages.isEmpty()) {
+                                        selectedImage = it
+                                    } else {
+                                        if (selectedImages.contains(it)) {
+                                            selectedImages.remove(it)
+                                        } else {
+                                            selectedImages.add(it)
+                                        }
+                                    }
+                                },
                                 modifier = Modifier.weight(1F),
                             )
                         }
@@ -140,6 +161,7 @@ fun main() = application {
                                 hasSelectedTags && hasAntiSelectedTags
                             })
                         }
+
                         MenuItem.Favorites -> {
                             ImageTableView(filter = { image ->
                                 val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
@@ -147,6 +169,7 @@ fun main() = application {
                                 hasSelectedTags && hasAntiSelectedTags && image.favorite
                             })
                         }
+
                         MenuItem.Collections -> {}
                         MenuItem.Settings -> {}
                     }
@@ -159,8 +182,14 @@ fun main() = application {
                         selectedImage = null
                         isEditing = false
                     },
-                    onNext = { filteredImages.getOrNull(filteredImages.indexOf(selectedImage) + 1)?.let { selectedImage = it } },
-                    onPrevious = { filteredImages.getOrNull(filteredImages.indexOf(selectedImage) - 1)?.let { selectedImage = it } },
+                    onNext = {
+                        filteredImages.getOrNull(filteredImages.indexOf(selectedImage) + 1)
+                            ?.let { selectedImage = it }
+                    },
+                    onPrevious = {
+                        filteredImages.getOrNull(filteredImages.indexOf(selectedImage) - 1)
+                            ?.let { selectedImage = it }
+                    },
                     onDelete = {
                         selectedImage?.let { Properties.imagesData().delete(it) }
                         images.remove(selectedImage)
@@ -176,39 +205,138 @@ fun main() = application {
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
+                    selectedImage?.let { imgInfo ->
+                        EditImageWindow(
+                            tags = tags,
+                            imageInfo = imgInfo,
+                            onCancel = { isEditing = false },
+                            onDone = { newImageInfo ->
+                                val index = images.indexOf(images.find { it.path == newImageInfo.path })
+                                images[index] = newImageInfo
+                                Properties.imagesData().images[index] = newImageInfo
+                                Properties.saveData()
+                                selectedImage = newImageInfo
+                                isEditing = false
+                            },
+                            onNewTag = {
+                                if (it.isNotEmpty() && !selectedTags.contains(it)) {
+                                    tags.add(it)
+                                    tags.sort()
+                                    Properties.imagesData().tags.add(it)
+                                    Properties.imagesData().tags.sort()
+                                    Properties.saveData()
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(0.65F)
+                                .heightIn(0.dp, (window.height * 0.8F).dp)
+                                .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
+                                .padding(padding),
+                        )
+                    }
+                }
+
+                var isEditingTags by remember { mutableStateOf(false) }
+                AppearDisappearAnimation(
+                    selectedImages.isNotEmpty(),
+                    normalAnimationDuration,
+                    Modifier
+                        .padding(biggerPadding)
+                        .align(Alignment.BottomStart),
+                ) {
                     Column(
+                        verticalArrangement = Arrangement.spacedBy(padding),
+                    ) {
+                        ButtonText(
+                            "Select all",
+                            onClick = {
+                                selectedImages.clear()
+                                selectedImages.addAll(filteredImages)
+                            },
+                        )
+                        ButtonText(
+                            "Deselect all",
+                            onClick = {
+                                selectedImages.clear()
+                            },
+                        )
+                        ButtonText(
+                            "Manage tags for all",
+                            onClick = {
+                                isEditingTags = true
+                            },
+                        )
+                    }
+                }
+
+                AppearDisappearAnimation(
+                    isEditingTags,
+                    normalAnimationDuration,
+                    Modifier.align(Alignment.Center),
+                ) {
+                    val newTags = remember { mutableStateListOf<String>() }
+                    val removeTags = remember { mutableStateListOf<String>() }
+
+                    EditImageTagsWindow(
+                        tags = tags,
+                        newTags = newTags,
+                        removeTags = removeTags,
+                        onTagClick = {
+                            if (newTags.contains(it)) {
+                                newTags.remove(it)
+                                removeTags.add(it)
+
+                            } else if (removeTags.contains(it)) {
+                                newTags.remove(it)
+                                removeTags.remove(it)
+
+                            } else {
+                                newTags.add(it)
+                                removeTags.remove(it)
+                            }
+                        },
+                        onNewTag = {
+                            if (it.isNotEmpty() && !selectedTags.contains(it)) {
+                                tags.add(it)
+                                tags.sort()
+                                Properties.imagesData().tags.add(it)
+                                Properties.imagesData().tags.sort()
+                                Properties.saveData()
+                            }
+                        },
+                        onDone = {
+                            images.forEach {
+                                if (selectedImages.contains(it)) {
+                                    it.tags.addAll(newTags)
+                                    it.tags.removeAll(removeTags)
+                                }
+                            }
+                            Properties.imagesData().images.forEach {
+                                if (selectedImages.contains(it)) {
+                                    it.tags.addAll(newTags)
+                                    it.tags.removeAll(removeTags)
+                                }
+                            }
+                            Properties.saveData()
+
+                            selectedImages.clear()
+                            newTags.clear()
+                            removeTags.clear()
+
+                            isEditingTags = false
+                        },
+                        onCancel = {
+                            newTags.clear()
+                            removeTags.clear()
+
+                            isEditingTags = false
+                        },
                         modifier = Modifier
                             .fillMaxWidth(0.65F)
                             .heightIn(0.dp, (window.height * 0.8F).dp)
                             .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
                             .padding(padding),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        selectedImage?.let { imgInfo ->
-                            EditImageWindow(
-                                tags = tags,
-                                imageInfo = imgInfo,
-                                onCancel = { isEditing = false },
-                                onFinish = { newImageInfo ->
-                                    val index = images.indexOf(images.find { it.path == newImageInfo.path })
-                                    images[index] = newImageInfo
-                                    Properties.imagesData().images[index] = newImageInfo
-                                    Properties.saveData()
-                                    selectedImage = newImageInfo
-                                    isEditing = false
-                                },
-                                onNewTag = {
-                                    if (it.isNotEmpty() && !selectedTags.contains(it)) {
-                                        tags.add(it)
-                                        tags.sort()
-                                        Properties.imagesData().tags.add(it)
-                                        Properties.imagesData().tags.sort()
-                                        Properties.saveData()
-                                    }
-                                }
-                            )
-                        }
-                    }
+                    )
                 }
             }
         }

@@ -1,4 +1,3 @@
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -6,8 +5,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,12 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import properties.Properties
 
 @Composable
 fun EditImageWindow(
     tags: List<String>,
     imageInfo: ImageInfo,
-    onFinish: (ImageInfo) -> Unit = {},
+    onDone: (ImageInfo) -> Unit = {},
     onCancel: () -> Unit = {},
     onNewTag: (String) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -89,16 +87,15 @@ fun EditImageWindow(
             horizontalArrangement = Arrangement.spacedBy(padding),
             modifier = Modifier.align(Alignment.CenterHorizontally),
         ) {
-            Button(
-                onClick = onCancel,
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
-            ) {
-                Text("Cancel", color = colorText, fontSize = normalText)
-            }
+            ButtonText(
+                "Cancel",
+                onClick = onCancel
+            )
 
-            Button(
+            ButtonText(
+                "Save",
                 onClick = {
-                    onFinish(
+                    onDone(
                         ImageInfo(
                             path = imageInfo.path,
                             name = name.text,
@@ -108,10 +105,50 @@ fun EditImageWindow(
                         )
                     )
                 },
-                colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
-            ) {
-                Text("Save", color = colorText, fontSize = normalText)
-            }
+            )
+        }
+    }
+}
+
+@Composable
+fun EditImageTagsWindow(
+    tags: List<String>,
+    newTags: List<String>,
+    removeTags: List<String>,
+    onTagClick: (String) -> Unit = {},
+    onNewTag: (String) -> Unit = {},
+    onDone: () -> Unit = {},
+    onCancel: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        TagTable(
+            tags = tags,
+            selectedTags = newTags,
+            antiSelectedTags = removeTags,
+            expandable = false,
+            onTagClick = onTagClick,
+            onNew = onNewTag,
+            modifier = Modifier
+                .weight(1F)
+                .verticalScroll(rememberScrollState()),
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(padding),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            ButtonText(
+                "Cancel",
+                onClick = onCancel
+            )
+
+            ButtonText(
+                "Save",
+                onClick = onDone,
+            )
         }
     }
 }

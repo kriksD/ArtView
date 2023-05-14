@@ -3,31 +3,32 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import properties.Properties
 
 @Composable
 fun ImageGrid(
-    imageData: List<ImageInfo>,
+    imageInfo: List<ImageInfo>,
+    checkedList: List<ImageInfo> = listOf(),
+    onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
     onOpen: (ImageInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var imagesPerRow by remember { mutableStateOf(8) }
-    val splitImages = imageData.chunked(imagesPerRow)
+    val splitImages = imageInfo.chunked(imagesPerRow)
     val scrollState = rememberScrollState()
 
     Row(
@@ -46,12 +47,14 @@ fun ImageGrid(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    row.forEach { imgData ->
+                    row.forEach { imgInfo ->
                         ImageGridItem(
-                            imgData,
-                            onOpen = { onOpen(imgData) },
+                            imageInfo = imgInfo,
+                            checked = checkedList.contains(imgInfo),
+                            onCheckedChange = { onCheckedClick(imgInfo, it) },
+                            onOpen = { onOpen(imgInfo) },
                             modifier = Modifier
-                                .weight(imgData.calculateWeight())
+                                .weight(imgInfo.calculateWeight())
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners))
                         )
@@ -86,6 +89,8 @@ private fun ImageInfo.calculateWeight(): Float = (image?.width?.toFloat() ?: 1F)
 @Composable
 private fun ImageGridItem(
     imageInfo: ImageInfo,
+    checked: Boolean = false,
+    onCheckedChange: (Boolean) -> Unit = {},
     onOpen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
@@ -95,6 +100,7 @@ private fun ImageGridItem(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {
                 showInfo = true
@@ -157,6 +163,16 @@ private fun ImageGridItem(
                                 }
                         )
                     }
+
+                    Checkbox(
+                        checked = checked,
+                        onCheckedChange = onCheckedChange,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = colorTextSecond,
+                            uncheckedColor = colorText,
+                            checkmarkColor = colorText,
+                        )
+                    )
                 }
             }
         }
