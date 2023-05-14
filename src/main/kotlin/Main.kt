@@ -3,9 +3,7 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -312,7 +310,7 @@ fun main() = application {
                                 }
                             }
                             Properties.imagesData().images.forEach {
-                                if (selectedImages.contains(it)) {
+                                if (selectedImages.find { fi -> fi.path == it.path } != null) {
                                     it.tags.addAll(newTags)
                                     it.tags.removeAll(removeTags)
                                 }
