@@ -34,7 +34,7 @@ class DataContainer {
         allFiles?.filter { f ->
             data.images.none { it.path == f.path }
         }?.forEach {
-            data.images.add(ImageInfo(it.path, it.name))
+            data.images.add(0, ImageInfo(it.path, it.name))
         }
     }
 

@@ -38,6 +38,16 @@ fun main() = application {
         filteredImages = images.filter { image -> antiSelectedTags.none { tag -> image.tags.contains(tag) } }
     }
 
+    fun newTag(tag: String) {
+        if (tag.isNotEmpty() && !selectedTags.contains(tag)) {
+            tags.add(tag)
+            tags.sort()
+            Properties.imagesData().tags.add(tag)
+            Properties.imagesData().tags.sort()
+            Properties.saveData()
+        }
+    }
+
     val windowState = rememberWindowState(
         width = 1400.dp,
         height = 700.dp,
@@ -109,15 +119,7 @@ fun main() = application {
                                         antiSelectedTags.remove(it)
                                     }
                                 },
-                                onNew = {
-                                    if (it.isNotEmpty() && !selectedTags.contains(it)) {
-                                        tags.add(it)
-                                        tags.sort()
-                                        Properties.imagesData().tags.add(it)
-                                        Properties.imagesData().tags.sort()
-                                        Properties.saveData()
-                                    }
-                                },
+                                onNew = ::newTag,
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
                                 modifier = Modifier
@@ -159,7 +161,6 @@ fun main() = application {
                                 hasSelectedTags && hasAntiSelectedTags
                             })
                         }
-
                         MenuItem.Favorites -> {
                             ImageTableView(filter = { image ->
                                 val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
@@ -167,7 +168,6 @@ fun main() = application {
                                 hasSelectedTags && hasAntiSelectedTags && image.favorite
                             })
                         }
-
                         MenuItem.Collections -> {}
                         MenuItem.Settings -> {}
                     }
@@ -216,15 +216,7 @@ fun main() = application {
                                 selectedImage = newImageInfo
                                 isEditing = false
                             },
-                            onNewTag = {
-                                if (it.isNotEmpty() && !selectedTags.contains(it)) {
-                                    tags.add(it)
-                                    tags.sort()
-                                    Properties.imagesData().tags.add(it)
-                                    Properties.imagesData().tags.sort()
-                                    Properties.saveData()
-                                }
-                            },
+                            onNewTag = ::newTag,
                             modifier = Modifier
                                 .fillMaxWidth(0.65F)
                                 .heightIn(0.dp, (window.height * 0.8F).dp)
@@ -254,15 +246,11 @@ fun main() = application {
                         )
                         ButtonText(
                             "Deselect all",
-                            onClick = {
-                                selectedImages.clear()
-                            },
+                            onClick = { selectedImages.clear() },
                         )
                         ButtonText(
                             "Manage tags for all",
-                            onClick = {
-                                isEditingTags = true
-                            },
+                            onClick = { isEditingTags = true },
                         )
                     }
                 }
@@ -293,15 +281,7 @@ fun main() = application {
                                 removeTags.remove(it)
                             }
                         },
-                        onNewTag = {
-                            if (it.isNotEmpty() && !selectedTags.contains(it)) {
-                                tags.add(it)
-                                tags.sort()
-                                Properties.imagesData().tags.add(it)
-                                Properties.imagesData().tags.sort()
-                                Properties.saveData()
-                            }
-                        },
+                        onNewTag = ::newTag,
                         onDone = {
                             images.forEach { ii ->
                                 if (selectedImages.contains(ii)) {
