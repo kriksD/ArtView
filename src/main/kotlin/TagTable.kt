@@ -10,10 +10,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -160,8 +157,9 @@ private fun AllTags(
     onNew: (String) -> Unit,
 ) {
     var newTagText by remember { mutableStateOf<TextFieldValue?>(null) }
+    var tagFilter by remember { mutableStateOf<TextFieldValue?>(null) }
 
-    tags.forEach { tag ->
+    tags.filter { it.contains(tagFilter?.text.orEmpty(), true) }.forEach { tag ->
         Tag(
             text = tag,
             isSelected = tag in selectedTags,
@@ -174,11 +172,9 @@ private fun AllTags(
         newTagText != null,
         normalAnimationDuration,
     ) {
-        TagFiled(
+        TagFieled(
             newTagText ?: TextFieldValue(),
-            onValueChange = {
-                newTagText = it
-            },
+            onValueChange = { newTagText = it },
             onFinish = {
                 onNew(newTagText?.text ?: "")
                 newTagText = null
@@ -186,7 +182,19 @@ private fun AllTags(
         )
     }
 
+    AppearDisappearAnimation(
+        tagFilter != null,
+        normalAnimationDuration,
+    ) {
+        TagFieled(
+            tagFilter ?: TextFieldValue(),
+            onValueChange = { tagFilter = it },
+            onFinish = { tagFilter = null }
+        )
+    }
+
     AddTag(onClick = { newTagText = TextFieldValue() })
+    FilterTag(onClick = { tagFilter = TextFieldValue() })
 }
 
 @Composable
@@ -226,7 +234,7 @@ private fun Tag(
 }
 
 @Composable
-private fun TagFiled(
+private fun TagFieled(
     fieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     onFinish: () -> Unit,
@@ -277,6 +285,28 @@ private fun AddTag(
         Icon(
             Icons.Default.Add,
             "add new tag",
+            tint = colorText,
+        )
+    }
+}
+
+@Composable
+private fun FilterTag(
+    onClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(padding)
+            .background(
+                color = colorBackground,
+                shape = RoundedCornerShape(smallCorners)
+            )
+            .padding(padding)
+    ) {
+        Icon(
+            Icons.Default.Search,
+            "filter tags",
             tint = colorText,
         )
     }

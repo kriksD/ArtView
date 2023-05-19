@@ -9,7 +9,7 @@ import java.io.File
 class DataContainer {
     lateinit var data: Data
 
-    val json = Json {
+    private val json = Json {
         prettyPrint = true
         encodeDefaults = true
     }
