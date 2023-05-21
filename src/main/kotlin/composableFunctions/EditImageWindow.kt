@@ -1,3 +1,6 @@
+package composableFunctions
+
+import ImageInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,7 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
-import properties.Properties
+import colorText
+import normalText
+import padding
+import toState
 
 @Composable
 fun EditImageWindow(

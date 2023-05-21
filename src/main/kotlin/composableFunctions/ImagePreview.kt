@@ -1,3 +1,6 @@
+package composableFunctions
+
+import ImageInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -13,7 +16,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Dialog
+import bigIconSize
+import colorBackground
+import colorBackgroundLighter
+import colorBackgroundSecondLighter
+import colorText
+import corners
+import emptyImageBitmap
+import hugeText
+import iconSize
+import normalAnimationDuration
+import normalText
+import padding
 import properties.Properties
+import shortAnimationDuration
+import transparency
+import transparencySecond
 
 @Composable
 fun ImagePreview(

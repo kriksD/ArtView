@@ -1,3 +1,5 @@
+package composableFunctions
+
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -18,6 +20,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import colorBackground
+import colorBackgroundDelete
+import colorBackgroundSecondLighter
+import colorText
+import colorTextSuccess
+import iconSize
+import normalAnimationDuration
+import normalText
+import padding
+import smallCorners
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

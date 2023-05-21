@@ -1,3 +1,6 @@
+package composableFunctions
+
+import ImageInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -16,8 +19,24 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import bigText
+import border
+import colorBackground
+import colorBackgroundSecond
+import colorBackgroundSecondLighter
+import colorText
+import colorTextSecond
+import emptyImageBitmap
+import iconSize
+import normalAnimationDuration
+import normalText
+import padding
 import properties.Properties
+import scrollbarThickness
+import shortAnimationDuration
+import smallCorners
+import style
+import transparencyLight
 
 @Composable
 fun ImageGrid(

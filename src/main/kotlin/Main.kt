@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
+import composableFunctions.*
 import properties.Properties
 import java.io.File
 import java.net.URI
@@ -74,7 +75,7 @@ fun main() = application {
                             is DragData.FilesList -> {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
-                                    addImage(URI(path).path)?.let { images.add(0, it) }
+                                    Properties.imagesData().addImage(URI(path).path)?.let { images.add(0, it) }
                                 }
                             }
                         }
@@ -247,6 +248,26 @@ fun main() = application {
                         ButtonText(
                             "Deselect all",
                             onClick = { selectedImages.clear() },
+                        )
+                        ButtonText(
+                            "Delete selected images",
+                            onClick = {
+                                selectedImages.forEach { it.delete() }
+                                images.removeAll(selectedImages)
+                                selectedImages.clear()
+
+                                Properties.imagesData().images.removeAll(selectedImages)
+                                Properties.saveData()
+                            },
+                        )
+                        ButtonText(
+                            "Save selected images in new folder",
+                            onClick = {
+                                val folder = File("images_filtered")
+                                folder.mkdir()
+                                folder.listFiles()?.forEach { it.delete() }
+                                selectedImages.forEach { it.saveFileTo(folder) }
+                             },
                         )
                         ButtonText(
                             "Manage tags for all",

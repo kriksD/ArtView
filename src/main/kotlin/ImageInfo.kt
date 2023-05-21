@@ -27,5 +27,13 @@ data class ImageInfo(
             } catch (e: Exception) { null }
         }
 
+    fun saveFileTo(folder: File) {
+        File(path).copyTo(
+            File("${folder.path}/${path.substringAfterLast("\\").substringAfterLast("/")}")
+        )
+    }
+
+    fun saveFileTo(path: String) = saveFileTo(File(path))
+
     fun delete() { File(path).delete() }
 }
