@@ -24,12 +24,15 @@ data class ImageInfo(
                 image = newImage
                 newImage
 
-            } catch (e: Exception) { null }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
     fun saveFileTo(folder: File) {
         File(path).copyTo(
-            File("${folder.path}/${path.substringAfterLast("\\").substringAfterLast("/")}")
+            File("${folder.path}${File.separator}${path.substringAfterLast("\\").substringAfterLast("/")}")
         )
     }
 

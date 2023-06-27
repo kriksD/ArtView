@@ -84,9 +84,7 @@ fun EditImageWindow(
                 }
             },
             onNew = onNewTag,
-            modifier = Modifier
-                .weight(1F)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.weight(1F),
         )
 
         Row(
@@ -137,9 +135,7 @@ fun EditImageTagsWindow(
             expandable = false,
             onTagClick = onTagClick,
             onNew = onNewTag,
-            modifier = Modifier
-                .weight(1F)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.weight(1F),
         )
 
         Row(

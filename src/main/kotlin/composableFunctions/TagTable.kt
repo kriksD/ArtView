@@ -1,12 +1,10 @@
 package composableFunctions
 
+import TagCategory
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
@@ -18,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import colorBackground
@@ -30,13 +29,96 @@ import normalAnimationDuration
 import normalText
 import padding
 import smallCorners
+import smallText
+
+@Composable
+fun TagTableWithCategories(
+    tags: List<TagCategory>,
+    selectedTags: List<String> = emptyList(),
+    antiSelectedTags: List<String> = emptyList(),
+    controls: Boolean = true,
+    expandable: Boolean = true,
+    expanded: Boolean = true,
+    onExpandedChange: (Boolean) -> Unit = {},
+    onTagClick: (String) -> Unit = {},
+    onNew: (name: String, category: String) -> Unit = { _, _ -> },
+    modifier: Modifier = Modifier,
+) {
+    if (expanded) {
+        Box(
+            modifier = modifier
+        ) {
+            Column(modifier = modifier) {
+                tags.forEach { category ->
+                    var categoryExpanded by remember { mutableStateOf(false) }
+                    Text("${category.name}:", color = colorText, fontSize = normalText)
+                    TagTable(
+                        category.tags,
+                        selectedTags,
+                        antiSelectedTags,
+                        controls,
+                        expandable,
+                        categoryExpanded,
+                        onExpandedChange = { categoryExpanded = it },
+                        onTagClick = onTagClick,
+                        onNew = { onNew(it, category.name) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            if (expandable) {
+                Icon(
+                    Icons.Default.KeyboardArrowUp,
+                    contentDescription = null,
+                    tint = colorText,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .align(Alignment.TopEnd)
+                        .clickable { onExpandedChange(false) }
+                )
+            }
+        }
+    } else {
+        Row(
+            modifier = modifier,
+        ) {
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .weight(1F),
+            ) {
+                AllTags(
+                    tags = tags.find { it.name == "Other" }?.tags ?: emptyList(),
+                    selectedTags = selectedTags,
+                    antiSelectedTags = antiSelectedTags,
+                    controls = controls,
+                    onTagClick = { tag -> onTagClick(tag) },
+                    onNew = { onNew(it, "Other") },
+                )
+            }
+
+            if (expandable) {
+                Icon(
+                    Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = colorText,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clickable { onExpandedChange(true) }
+                )
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagTable(
     tags: List<String>,
-    selectedTags: List<String>,
-    antiSelectedTags: List<String>,
+    selectedTags: List<String> = emptyList(),
+    antiSelectedTags: List<String> = emptyList(),
+    controls: Boolean = true,
     expandable: Boolean = true,
     expanded: Boolean = true,
     onExpandedChange: (Boolean) -> Unit = {},
@@ -48,13 +130,14 @@ fun TagTable(
         Box(
             modifier = modifier
         ) {
-            FlowRow {
+            FlowRow(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 AllTags(
                     tags = tags,
                     selectedTags = selectedTags,
                     antiSelectedTags = antiSelectedTags,
+                    controls = controls,
                     onTagClick = { tag -> onTagClick(tag) },
-                    onNew = onNew
+                    onNew = onNew,
                 )
             }
 
@@ -83,6 +166,7 @@ fun TagTable(
                     tags = tags,
                     selectedTags = selectedTags,
                     antiSelectedTags = antiSelectedTags,
+                    controls = controls,
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = onNew,
                 )
@@ -102,71 +186,14 @@ fun TagTable(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun BasicTagTable(
-    tags: List<String>,
-    expanded: Boolean = true,
-    onExpandedChange: (Boolean) -> Unit = {},
-    modifier: Modifier = Modifier,
-) {
-    if (expanded) {
-        Box {
-            FlowRow(modifier = modifier) {
-                tags.forEach { tag ->
-                    Tag(
-                        text = tag,
-                        isSelected = false,
-                        clickable = false,
-                    )
-                }
-            }
-
-            Icon(
-                Icons.Default.KeyboardArrowUp,
-                contentDescription = null,
-                tint = colorText,
-                modifier = Modifier
-                    .size(iconSize)
-                    .align(Alignment.TopEnd)
-                    .clickable { onExpandedChange(false) }
-            )
-        }
-    } else {
-        Row {
-            Row(
-                modifier = modifier
-                    .horizontalScroll(rememberScrollState())
-                    .weight(1F)
-            ) {
-                tags.forEach { tag ->
-                    Tag(
-                        text = tag,
-                        isSelected = false,
-                        clickable = false,
-                    )
-                }
-            }
-
-            Icon(
-                Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                tint = colorText,
-                modifier = Modifier
-                    .size(iconSize)
-                    .clickable { onExpandedChange(true) }
-            )
-        }
-    }
-}
-
 @Composable
 private fun AllTags(
     tags: List<String>,
     selectedTags: List<String>,
     antiSelectedTags: List<String>,
-    onTagClick: (String) -> Unit,
-    onNew: (String) -> Unit,
+    controls: Boolean = true,
+    onTagClick: (String) -> Unit = {},
+    onNew: (String) -> Unit = {},
 ) {
     var newTagText by remember { mutableStateOf<TextFieldValue?>(null) }
     var tagFilter by remember { mutableStateOf<TextFieldValue?>(null) }
@@ -176,37 +203,41 @@ private fun AllTags(
             text = tag,
             isSelected = tag in selectedTags,
             isAntiSelected = tag in antiSelectedTags,
+            clickable = controls,
             onClick = { onTagClick(tag) }
         )
     }
 
-    AppearDisappearAnimation(
-        newTagText != null,
-        normalAnimationDuration,
-    ) {
-        TagFieled(
-            newTagText ?: TextFieldValue(),
-            onValueChange = { newTagText = it },
-            onFinish = {
-                onNew(newTagText?.text ?: "")
-                newTagText = null
-            }
-        )
-    }
+    if (controls) {
+        AppearDisappearAnimation(
+            newTagText != null,
+            normalAnimationDuration,
+        ) {
+            TagField(
+                newTagText ?: TextFieldValue(),
+                onValueChange = { newTagText = it },
+                onFinish = {
+                    onNew(newTagText?.text ?: "")
+                    newTagText = null
+                },
+            )
+        }
 
-    AppearDisappearAnimation(
-        tagFilter != null,
-        normalAnimationDuration,
-    ) {
-        TagFieled(
-            tagFilter ?: TextFieldValue(),
-            onValueChange = { tagFilter = it },
-            onFinish = { tagFilter = null }
-        )
-    }
+        AppearDisappearAnimation(
+            tagFilter != null,
+            normalAnimationDuration,
+        ) {
+            TagField(
+                tagFilter ?: TextFieldValue(),
+                onValueChange = { tagFilter = it },
+                onFinish = { tagFilter = null },
+                icon = Icons.Default.Close,
+            )
+        }
 
-    AddTag(onClick = { newTagText = TextFieldValue() })
-    FilterTag(onClick = { tagFilter = TextFieldValue() })
+        AddTag(onClick = { newTagText = TextFieldValue() })
+        FilterTag(onClick = { tagFilter = TextFieldValue() })
+    }
 }
 
 @Composable
@@ -246,10 +277,11 @@ private fun Tag(
 }
 
 @Composable
-private fun TagFieled(
+private fun TagField(
     fieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     onFinish: () -> Unit,
+    icon: ImageVector = Icons.Default.Check
 ) {
     Row(
         modifier = Modifier
@@ -271,7 +303,7 @@ private fun TagFieled(
         )
 
         Icon(
-            Icons.Default.Check,
+            icon,
             "finish tag adding",
             tint = colorTextSuccess,
             modifier = Modifier

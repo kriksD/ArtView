@@ -3,7 +3,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -26,7 +28,7 @@ fun main() = application {
     val selectedImages = remember { mutableStateListOf<ImageInfo>() }
     var selectedImage by remember { mutableStateOf<ImageInfo?>(null) }
 
-    val tags = remember { Properties.imagesData().tags.toState() }
+    val tags = remember { Properties.imagesData().tags.first().tags.toState() }
     val selectedTags = remember { mutableStateListOf<String>() }
     val antiSelectedTags = remember { mutableStateListOf<String>() }
 
@@ -43,8 +45,8 @@ fun main() = application {
         if (tag.isNotEmpty() && !selectedTags.contains(tag)) {
             tags.add(tag)
             tags.sort()
-            Properties.imagesData().tags.add(tag)
-            Properties.imagesData().tags.sort()
+            //Properties.imagesData().tags.add(tag)
+            //Properties.imagesData().tags.sort()
             Properties.saveData()
         }
     }
@@ -102,8 +104,8 @@ fun main() = application {
                     ) {
                         var expanded by remember { mutableStateOf(false) }
                         Column {
-                            TagTable(
-                                tags = tags,
+                            TagTableWithCategories(
+                                tags = Properties.imagesData().tags,
                                 selectedTags = selectedTags,
                                 antiSelectedTags = antiSelectedTags,
                                 onTagClick = {
@@ -120,7 +122,10 @@ fun main() = application {
                                         antiSelectedTags.remove(it)
                                     }
                                 },
-                                onNew = ::newTag,
+                                onNew = { name, category ->
+                                    Properties.imagesData().addTag(name, category)
+                                    Properties.saveData()
+                                },
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
                                 modifier = Modifier
@@ -170,7 +175,7 @@ fun main() = application {
                             })
                         }
                         MenuItem.Collections -> {}
-                        MenuItem.Settings -> {}
+                        MenuItem.Settings -> { SettingsScreen(modifier = Modifier.fillMaxWidth()) }
                     }
                 }
 

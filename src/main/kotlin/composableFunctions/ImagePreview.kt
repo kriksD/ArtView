@@ -80,10 +80,11 @@ fun ImagePreview(
                     )
 
                     var expanded by remember { mutableStateOf(false) }
-                    BasicTagTable(
+                    TagTable(
                         tags = imgData.tags,
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
+                        controls = false,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
