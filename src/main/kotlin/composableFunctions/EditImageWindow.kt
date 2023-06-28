@@ -5,12 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -20,6 +19,7 @@ import normalText
 import padding
 import toState
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditImageWindow(
     tags: List<String>,
@@ -114,6 +114,7 @@ fun EditImageWindow(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditImageTagsWindow(
     tags: List<String>,

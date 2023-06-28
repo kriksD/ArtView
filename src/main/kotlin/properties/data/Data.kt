@@ -74,6 +74,13 @@ data class Data(
         tagsList?.sort()
     }
 
+    fun moveTag(tag: String, category: String) {
+        if (!containsTagCategory(category)) return
+
+        removeTag(tag)
+        addTag(tag, category)
+    }
+
     fun removeTag(tag: String) {
         if (tag == "NSFW") return
         tags.forEach { it.tags.remove(tag) }

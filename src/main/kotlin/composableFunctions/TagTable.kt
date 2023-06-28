@@ -4,6 +4,7 @@ import TagCategory
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -13,12 +14,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.*
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
 import colorBackground
 import colorBackgroundDelete
 import colorBackgroundSecondLighter
@@ -28,9 +32,10 @@ import iconSize
 import normalAnimationDuration
 import normalText
 import padding
+import properties.Properties
 import smallCorners
-import smallText
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TagTableWithCategories(
     tags: List<TagCategory>,
@@ -45,26 +50,58 @@ fun TagTableWithCategories(
     modifier: Modifier = Modifier,
 ) {
     if (expanded) {
+        var mousePosition by remember { mutableStateOf(Offset.Zero) }
         Box(
             modifier = modifier
+                .onPointerEvent(PointerEventType.Move) {
+                    mousePosition = it.changes.first().position
+                }
         ) {
-            Column(modifier = modifier) {
+            var draggingTag by remember { mutableStateOf<String?>(null) }
+            var isDraggingTag by remember { mutableStateOf(false) }
+
+            Column(modifier = modifier.verticalScroll(rememberScrollState())) {
                 tags.forEach { category ->
                     var categoryExpanded by remember { mutableStateOf(false) }
-                    Text("${category.name}:", color = colorText, fontSize = normalText)
-                    TagTable(
-                        category.tags,
-                        selectedTags,
-                        antiSelectedTags,
-                        controls,
-                        expandable,
-                        categoryExpanded,
-                        onExpandedChange = { categoryExpanded = it },
-                        onTagClick = onTagClick,
-                        onNew = { onNew(it, category.name) },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+
+                    Column(
+                        modifier = Modifier
+                            .onPointerEvent(PointerEventType.Move) {
+                                if (!isDraggingTag) {
+                                    draggingTag?.let { tag ->
+                                        Properties.imagesData().moveTag(tag, category.name)
+                                        draggingTag = null
+                                    }
+                                }
+                            }
+                    ) {
+                        Text("${category.name}:", color = colorText, fontSize = normalText)
+                        TagTable(
+                            category.tags,
+                            selectedTags,
+                            antiSelectedTags,
+                            controls = controls,
+                            scrollable = false,
+                            expandable = expandable,
+                            expanded = categoryExpanded,
+                            onExpandedChange = { categoryExpanded = it },
+                            onTagClick = onTagClick,
+                            onNew = { onNew(it, category.name) },
+                            onTagDrag = { tag ->
+                                isDraggingTag = true
+                                draggingTag = tag
+                            },
+                            onTagDrop = {
+                                isDraggingTag = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 }
+            }
+
+            if (draggingTag != null) {
+                Tag(draggingTag ?: "ERROR", false, modifier = Modifier.offset(mousePosition.x.dp, mousePosition.y.dp))
             }
 
             if (expandable) {
@@ -119,9 +156,13 @@ fun TagTable(
     selectedTags: List<String> = emptyList(),
     antiSelectedTags: List<String> = emptyList(),
     controls: Boolean = true,
+    draggableTags: Boolean = true,
+    scrollable: Boolean = true,
     expandable: Boolean = true,
     expanded: Boolean = true,
     onExpandedChange: (Boolean) -> Unit = {},
+    onTagDrag: (String) -> Unit = {},
+    onTagDrop: (String) -> Unit = {},
     onTagClick: (String) -> Unit = {},
     onNew: (String) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -130,7 +171,7 @@ fun TagTable(
         Box(
             modifier = modifier
         ) {
-            FlowRow(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            FlowRow(modifier = if (scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier) {
                 AllTags(
                     tags = tags,
                     selectedTags = selectedTags,
@@ -167,6 +208,9 @@ fun TagTable(
                     selectedTags = selectedTags,
                     antiSelectedTags = antiSelectedTags,
                     controls = controls,
+                    draggableTags = draggableTags,
+                    onTagDrag = onTagDrag,
+                    onTagDrop = onTagDrop,
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = onNew,
                 )
@@ -192,6 +236,9 @@ private fun AllTags(
     selectedTags: List<String>,
     antiSelectedTags: List<String>,
     controls: Boolean = true,
+    draggableTags: Boolean = true,
+    onTagDrag: (String) -> Unit = {},
+    onTagDrop: (String) -> Unit = {},
     onTagClick: (String) -> Unit = {},
     onNew: (String) -> Unit = {},
 ) {
@@ -204,7 +251,10 @@ private fun AllTags(
             isSelected = tag in selectedTags,
             isAntiSelected = tag in antiSelectedTags,
             clickable = controls,
-            onClick = { onTagClick(tag) }
+            onClick = { onTagClick(tag) },
+            draggableTags = draggableTags,
+            onTagDrag = onTagDrag,
+            onTagDrop = onTagDrop,
         )
     }
 
@@ -240,6 +290,7 @@ private fun AllTags(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Tag(
     text: String,
@@ -247,24 +298,34 @@ private fun Tag(
     isAntiSelected: Boolean = false,
     clickable: Boolean = true,
     onClick: () -> Unit = {},
+    draggableTags: Boolean = true,
+    onTagDrag: (String) -> Unit = {},
+    onTagDrop: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
     Crossfade(
         isSelected,
         animationSpec = tween(normalAnimationDuration),
-    ) { iss ->
+    ) { isS ->
         Crossfade(
             isAntiSelected,
             animationSpec = tween(normalAnimationDuration),
-        ) { isas ->
+        ) { isAS ->
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .clickable(clickable, onClick = onClick)
                     .padding(padding)
                     .background(
-                        color = if (iss) colorBackgroundSecondLighter else if (isas) colorBackgroundDelete else colorBackground,
+                        color = if (isS) colorBackgroundSecondLighter else if (isAS) colorBackgroundDelete else colorBackground,
                         shape = RoundedCornerShape(smallCorners)
                     )
                     .padding(padding)
+                    .onDrag(
+                        enabled = draggableTags,
+                        onDragStart = { onTagDrag(text) },
+                        onDrag = { onTagDrag(text) },
+                        onDragEnd = { onTagDrop(text) },
+                    )
             ) {
                 Text(
                     text = text,
