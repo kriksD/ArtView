@@ -28,7 +28,6 @@ fun main() = application {
     val selectedImages = remember { mutableStateListOf<ImageInfo>() }
     var selectedImage by remember { mutableStateOf<ImageInfo?>(null) }
 
-    val tags = remember { Properties.imagesData().tags.first().tags.toState() }
     val selectedTags = remember { mutableStateListOf<String>() }
     val antiSelectedTags = remember { mutableStateListOf<String>() }
 
@@ -39,16 +38,6 @@ fun main() = application {
         File("images").mkdir()
         antiSelectedTags.add("NSFW")
         filteredImages = images.filter { image -> antiSelectedTags.none { tag -> image.tags.contains(tag) } }
-    }
-
-    fun newTag(tag: String) {
-        if (tag.isNotEmpty() && !selectedTags.contains(tag)) {
-            tags.add(tag)
-            tags.sort()
-            //Properties.imagesData().tags.add(tag)
-            //Properties.imagesData().tags.sort()
-            Properties.saveData()
-        }
     }
 
     val windowState = rememberWindowState(
@@ -121,10 +110,6 @@ fun main() = application {
                                         selectedTags.add(it)
                                         antiSelectedTags.remove(it)
                                     }
-                                },
-                                onNew = { name, category ->
-                                    Properties.imagesData().addTag(name, category)
-                                    Properties.saveData()
                                 },
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
@@ -211,7 +196,6 @@ fun main() = application {
                 ) {
                     selectedImage?.let { imgInfo ->
                         EditImageWindow(
-                            tags = tags,
                             imageInfo = imgInfo,
                             onCancel = { isEditing = false },
                             onDone = { newImageInfo ->
@@ -222,7 +206,6 @@ fun main() = application {
                                 selectedImage = newImageInfo
                                 isEditing = false
                             },
-                            onNewTag = ::newTag,
                             modifier = Modifier
                                 .fillMaxWidth(0.65F)
                                 .heightIn(0.dp, (window.height * 0.8F).dp)
@@ -290,7 +273,6 @@ fun main() = application {
                     val removeTags = remember { mutableStateListOf<String>() }
 
                     EditImageTagsWindow(
-                        tags = tags,
                         newTags = newTags,
                         removeTags = removeTags,
                         onTagClick = {
@@ -307,7 +289,6 @@ fun main() = application {
                                 removeTags.remove(it)
                             }
                         },
-                        onNewTag = ::newTag,
                         onDone = {
                             images.forEach { ii ->
                                 if (selectedImages.contains(ii)) {

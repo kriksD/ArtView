@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -17,16 +16,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import colorText
 import normalText
 import padding
+import properties.Properties
 import toState
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditImageWindow(
-    tags: List<String>,
     imageInfo: ImageInfo,
     onDone: (ImageInfo) -> Unit = {},
     onCancel: () -> Unit = {},
-    onNewTag: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -70,8 +67,8 @@ fun EditImageWindow(
             )
         }
 
-        TagTable(
-            tags = tags,
+        TagTableWithCategories(
+            tags = Properties.imagesData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -83,7 +80,6 @@ fun EditImageWindow(
                     selectedTags.sort()
                 }
             },
-            onNew = onNewTag,
             modifier = Modifier.weight(1F),
         )
 
@@ -114,14 +110,11 @@ fun EditImageWindow(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditImageTagsWindow(
-    tags: List<String>,
     newTags: List<String>,
     removeTags: List<String>,
     onTagClick: (String) -> Unit = {},
-    onNewTag: (String) -> Unit = {},
     onDone: () -> Unit = {},
     onCancel: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -129,13 +122,12 @@ fun EditImageTagsWindow(
     Column(
         modifier = modifier,
     ) {
-        TagTable(
-            tags = tags,
+        TagTableWithCategories(
+            tags = Properties.imagesData().tags,
             selectedTags = newTags,
             antiSelectedTags = removeTags,
             expandable = false,
             onTagClick = onTagClick,
-            onNew = onNewTag,
             modifier = Modifier.weight(1F),
         )
 

@@ -46,7 +46,6 @@ fun TagTableWithCategories(
     expanded: Boolean = true,
     onExpandedChange: (Boolean) -> Unit = {},
     onTagClick: (String) -> Unit = {},
-    onNew: (name: String, category: String) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     if (expanded) {
@@ -70,6 +69,7 @@ fun TagTableWithCategories(
                                 if (!isDraggingTag) {
                                     draggingTag?.let { tag ->
                                         Properties.imagesData().moveTag(tag, category.name)
+                                        Properties.saveData()
                                         draggingTag = null
                                     }
                                 }
@@ -86,7 +86,10 @@ fun TagTableWithCategories(
                             expanded = categoryExpanded,
                             onExpandedChange = { categoryExpanded = it },
                             onTagClick = onTagClick,
-                            onNew = { onNew(it, category.name) },
+                            onNew = { tag ->
+                                Properties.imagesData().addTag(tag, category.name)
+                                Properties.saveData()
+                            },
                             onTagDrag = { tag ->
                                 isDraggingTag = true
                                 draggingTag = tag
@@ -131,7 +134,10 @@ fun TagTableWithCategories(
                     antiSelectedTags = antiSelectedTags,
                     controls = controls,
                     onTagClick = { tag -> onTagClick(tag) },
-                    onNew = { onNew(it, "Other") },
+                    onNew = { tag ->
+                        Properties.imagesData().addTag(tag)
+                        Properties.saveData()
+                    },
                 )
             }
 
