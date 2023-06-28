@@ -183,6 +183,9 @@ fun TagTable(
                     selectedTags = selectedTags,
                     antiSelectedTags = antiSelectedTags,
                     controls = controls,
+                    draggableTags = draggableTags,
+                    onTagDrag = onTagDrag,
+                    onTagDrop = onTagDrop,
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = onNew,
                 )
