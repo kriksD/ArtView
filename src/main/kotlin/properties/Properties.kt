@@ -6,7 +6,7 @@ import properties.settings.Settings
 import properties.settings.SettingsContainer
 
 object Properties {
-    const val version = "0.0.0 alpha"
+    const val version = "0.1.0"
 
     private val languageContainer: LanguageContainer = LanguageContainer()
     fun language(): Language = languageContainer.language

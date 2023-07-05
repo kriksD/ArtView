@@ -3,8 +3,10 @@ package composableFunctions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -26,19 +28,47 @@ import iconSize
 import normalText
 import padding
 import properties.Properties
+import settings
 import smallCorners
+import toState
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        TagsCategories(modifier = Modifier.fillMaxWidth())
+        TagSelectionByDefault(modifier = Modifier.fillMaxWidth())
+        Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+            Options(modifier = Modifier.fillMaxWidth())
+            TagsCategories(modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 
 @Composable
-fun TagsCategories(
+private fun Options(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text("Options:", color = colorText, fontSize = bigText)
+
+        var autoSelectCreatedTagsValue by remember { mutableStateOf(settings.auto_select_created_tags) }
+        CheckboxText(
+            text = "Auto select created tags",
+            value = autoSelectCreatedTagsValue,
+            onValueChange = {
+                autoSelectCreatedTagsValue = it
+                settings.auto_select_created_tags = it
+                Properties.saveSettings()
+            },
+        )
+    }
+}
+
+@Composable
+private fun TagsCategories(
     modifier: Modifier = Modifier,
 ) {
     var reload by remember { mutableStateOf(false) }
@@ -84,7 +114,7 @@ fun TagsCategories(
 }
 
 @Composable
-fun TagCategoryCard(
+private fun TagCategoryCard(
     name: String,
     tagsCount: Int,
     removable: Boolean = true,
@@ -120,7 +150,7 @@ fun TagCategoryCard(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun NewTagCategoryCard(
+private fun NewTagCategoryCard(
     nameValue: String,
     onNameValueChange: (String) -> Unit = {},
     onCreate: () -> Unit = {},
@@ -177,6 +207,48 @@ fun NewTagCategoryCard(
                 .size(iconSize)
                 .clickable(onClick = onCreate)
                 .padding(horizontal = biggerPadding, vertical = padding),
+        )
+    }
+}
+
+@Composable
+private fun TagSelectionByDefault(
+    modifier: Modifier = Modifier,
+) {
+    val selectedByDefault = remember { settings.selected_tags_by_default.toState() }
+    val antiSelectedByDefault = remember { settings.anti_selected_tags_by_default.toState() }
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        Text("Tag selection by default:", color = colorText, fontSize = bigText)
+
+        TagTableWithCategories(
+            Properties.imagesData().tags,
+            selectedByDefault,
+            antiSelectedByDefault,
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            onTagClick = {
+                if (selectedByDefault.contains(it)) {
+                    selectedByDefault.remove(it)
+                    antiSelectedByDefault.add(it)
+
+                } else if (antiSelectedByDefault.contains(it)) {
+                    selectedByDefault.remove(it)
+                    antiSelectedByDefault.remove(it)
+
+                } else {
+                    selectedByDefault.add(it)
+                    antiSelectedByDefault.remove(it)
+                }
+
+                settings.selected_tags_by_default.clear()
+                settings.selected_tags_by_default.addAll(selectedByDefault)
+                settings.anti_selected_tags_by_default.clear()
+                settings.anti_selected_tags_by_default.addAll(antiSelectedByDefault)
+                Properties.saveSettings()
+            },
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

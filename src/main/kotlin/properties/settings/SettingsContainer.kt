@@ -6,11 +6,11 @@ import java.io.File
 
 class SettingsContainer {
     lateinit var settings: Settings
-    val json = Json {
+    private val json = Json {
         prettyPrint = true
         encodeDefaults = true
     }
-    val file = File("data/settings.json")
+    private val file = File("settings.json")
 
     fun load() {
         settings = if (file.exists()) {

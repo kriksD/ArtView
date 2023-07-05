@@ -17,6 +17,7 @@ import colorText
 import normalText
 import padding
 import properties.Properties
+import settings
 import toState
 
 @Composable
@@ -80,6 +81,10 @@ fun EditImageWindow(
                     selectedTags.sort()
                 }
             },
+            onNew = {
+                if (settings.auto_select_created_tags)
+                    selectedTags.add(it)
+            },
             modifier = Modifier.weight(1F),
         )
 
@@ -115,6 +120,7 @@ fun EditImageTagsWindow(
     newTags: List<String>,
     removeTags: List<String>,
     onTagClick: (String) -> Unit = {},
+    onNew: (String) -> Unit = {},
     onDone: () -> Unit = {},
     onCancel: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -128,6 +134,7 @@ fun EditImageTagsWindow(
             antiSelectedTags = removeTags,
             expandable = false,
             onTagClick = onTagClick,
+            onNew = onNew,
             modifier = Modifier.weight(1F),
         )
 

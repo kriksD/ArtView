@@ -18,6 +18,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.text.TextStyle
@@ -47,6 +48,7 @@ fun TagTableWithCategories(
     expanded: Boolean = true,
     onExpandedChange: (Boolean) -> Unit = {},
     onTagClick: (String) -> Unit = {},
+    onNew: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (expanded) {
@@ -91,6 +93,7 @@ fun TagTableWithCategories(
                                 if (tag.isNotEmpty()) {
                                     Properties.imagesData().addTag(tag, category.name)
                                     Properties.saveData()
+                                    onNew(tag)
                                 }
                             },
                             onTagDrag = { tag ->
@@ -138,8 +141,11 @@ fun TagTableWithCategories(
                     controls = controls,
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = { tag ->
-                        Properties.imagesData().addTag(tag)
-                        Properties.saveData()
+                        if (tag.isNotEmpty()) {
+                            Properties.imagesData().addTag(tag)
+                            Properties.saveData()
+                            onNew(tag)
+                        }
                     },
                 )
             }
@@ -349,6 +355,7 @@ private fun Tag(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TagField(
     fieldValue: TextFieldValue,
@@ -372,7 +379,18 @@ private fun TagField(
                 color = colorText,
                 fontSize = normalText,
             ),
+            singleLine = true,
+            maxLines = 1,
             cursorBrush = SolidColor(colorText),
+            modifier = Modifier
+                .onKeyEvent { keyEvent ->
+                    if (keyEvent.type == KeyEventType.KeyUp && keyEvent.key == Key.Enter) {
+                        onFinish()
+                        return@onKeyEvent true
+                    }
+
+                    false
+                },
         )
 
         Icon(

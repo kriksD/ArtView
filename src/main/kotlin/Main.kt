@@ -36,8 +36,14 @@ fun main() = application {
         isFirstTime = false
 
         File("images").mkdir()
-        antiSelectedTags.add("NSFW")
-        filteredImages = images.filter { image -> antiSelectedTags.none { tag -> image.tags.contains(tag) } }
+        antiSelectedTags.addAll(settings.anti_selected_tags_by_default)
+        selectedTags.addAll(settings.selected_tags_by_default)
+
+        filteredImages = images.filter { image ->
+            val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
+            val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
+            hasSelectedTags && hasAntiSelectedTags
+        }
     }
 
     val windowState = rememberWindowState(
@@ -46,7 +52,11 @@ fun main() = application {
         position = WindowPosition.Aligned(Alignment.Center)
     )
 
-    Window(onCloseRequest = ::exitApplication, state = windowState) {
+    Window(
+        onCloseRequest = ::exitApplication,
+        state = windowState,
+        title = "Art View ${ Properties.version } 🎨🎀💝💖",
+    ) {
         var menuItem by remember { mutableStateOf(MenuItem.Images) }
         var isDroppable by remember { mutableStateOf(false) }
 
@@ -288,6 +298,10 @@ fun main() = application {
                                 newTags.add(it)
                                 removeTags.remove(it)
                             }
+                        },
+                        onNew = {
+                            if (settings.auto_select_created_tags)
+                                newTags.add(it)
                         },
                         onDone = {
                             images.forEach { ii ->
