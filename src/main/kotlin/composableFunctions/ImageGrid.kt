@@ -102,7 +102,7 @@ fun ImageGrid(
     }
 }
 
-private fun ImageInfo.calculateWeight(): Float = (image?.width?.toFloat() ?: 1F) / (image?.height?.toFloat() ?: 1F)
+private fun ImageInfo.calculateWeight(): Float = (scaledDownImage?.width?.toFloat() ?: 1F) / (scaledDownImage?.height?.toFloat() ?: 1F)
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -129,7 +129,7 @@ private fun ImageGridItem(
             }
     ) {
         Image(
-            imageInfo.image ?: emptyImageBitmap,
+            imageInfo.scaledDownImage ?: emptyImageBitmap,
             imageInfo.name,
             modifier = Modifier.fillMaxSize(),
         )
