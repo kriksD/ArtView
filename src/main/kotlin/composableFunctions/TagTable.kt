@@ -88,8 +88,10 @@ fun TagTableWithCategories(
                             onExpandedChange = { categoryExpanded = it },
                             onTagClick = onTagClick,
                             onNew = { tag ->
-                                Properties.imagesData().addTag(tag, category.name)
-                                Properties.saveData()
+                                if (tag.isNotEmpty()) {
+                                    Properties.imagesData().addTag(tag, category.name)
+                                    Properties.saveData()
+                                }
                             },
                             onTagDrag = { tag ->
                                 isDraggingTag = true

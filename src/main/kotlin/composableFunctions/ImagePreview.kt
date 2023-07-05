@@ -34,7 +34,6 @@ import shortAnimationDuration
 import transparency
 import transparencySecond
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImagePreview(
     selectedImage: ImageInfo?,
