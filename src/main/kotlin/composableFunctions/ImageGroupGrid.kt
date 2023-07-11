@@ -1,13 +1,15 @@
 package composableFunctions
 
-import ImageInfo
+import ImageGroup
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Checkbox
+import androidx.compose.material.CheckboxDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -16,7 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.*
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import bigText
@@ -40,15 +42,15 @@ import style
 import transparencyLight
 
 @Composable
-fun ImageGrid(
-    imageInfo: List<ImageInfo>,
-    checkedList: List<ImageInfo> = listOf(),
-    onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
-    onOpen: (ImageInfo) -> Unit = {},
+fun ImageGroupGrid(
+    imageGroups: List<ImageGroup>,
+    checkedList: List<ImageGroup> = listOf(),
+    onCheckedClick: (ImageGroup, Boolean) -> Unit = { _, _ -> },
+    onOpen: (ImageGroup) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var imagesPerRow by remember { mutableStateOf(8) }
-    val splitImages = imageInfo.chunked(imagesPerRow)
+    val splitImages = imageGroups.chunked(imagesPerRow)
     val scrollState = rememberScrollState()
 
     Row(
@@ -67,14 +69,14 @@ fun ImageGrid(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    row.forEach { imgInfo ->
-                        ImageGridItem(
-                            imageInfo = imgInfo,
-                            checked = checkedList.contains(imgInfo),
-                            onCheckedChange = { onCheckedClick(imgInfo, it) },
-                            onOpen = { onOpen(imgInfo) },
+                    row.forEach { imgGroup ->
+                        ImageGroupGridItem(
+                            imageGroup = imgGroup,
+                            checked = checkedList.contains(imgGroup),
+                            onCheckedChange = { onCheckedClick(imgGroup, it) },
+                            onOpen = { onOpen(imgGroup) },
                             modifier = Modifier
-                                .weight(imgInfo.calculateWeight())
+                                .weight(imgGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners))
                         )
@@ -105,15 +107,15 @@ fun ImageGrid(
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-private fun ImageGridItem(
-    imageInfo: ImageInfo,
+private fun ImageGroupGridItem(
+    imageGroup: ImageGroup,
     checked: Boolean = false,
     onCheckedChange: (Boolean) -> Unit = {},
     onOpen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showInfo by remember { mutableStateOf(false) }
-    var favorite by remember { mutableStateOf(imageInfo.favorite) }
+    var favorite by remember { mutableStateOf(imageGroup.favorite) }
 
     Box(
         modifier = modifier
@@ -127,11 +129,26 @@ private fun ImageGridItem(
                 showInfo = false
             }
     ) {
-        Image(
-            imageInfo.scaledDownImage ?: emptyImageBitmap,
-            imageInfo.name,
-            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            Image(
+                imageGroup.getImageInfo(1)?.scaledDownImage ?: emptyImageBitmap,
+                imageGroup.name,
+                modifier = Modifier
+                    .fillMaxSize(0.7F)
+                    .align(Alignment.CenterEnd)
+                    .clip(RoundedCornerShape(smallCorners)),
+            )
+            Image(
+                imageGroup.getImageInfo(0)?.scaledDownImage ?: emptyImageBitmap,
+                imageGroup.name,
+                modifier = Modifier
+                    .fillMaxSize(0.9F)
+                    .align(Alignment.CenterStart)
+                    .clip(RoundedCornerShape(smallCorners)),
+            )
+        }
 
         AppearDisappearAnimation(
             showInfo,
@@ -139,7 +156,7 @@ private fun ImageGridItem(
         ) {
             Column {
                 Text(
-                    imageInfo.name,
+                    imageGroup.name,
                     color = colorText,
                     fontSize = bigText,
                     modifier = Modifier
@@ -155,7 +172,7 @@ private fun ImageGridItem(
                         .padding(padding),
                 ) {
                     Text(
-                        imageInfo.description,
+                        imageGroup.description,
                         color = colorText,
                         fontSize = normalText,
                         maxLines = 2,
@@ -175,7 +192,7 @@ private fun ImageGridItem(
                                 .size(iconSize)
                                 .clickable {
                                     favorite = !favorite
-                                    imageInfo.favorite = favorite
+                                    imageGroup.favorite = favorite
                                     Properties.saveData()
                                 }
                         )

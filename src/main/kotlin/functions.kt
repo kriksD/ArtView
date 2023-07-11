@@ -110,6 +110,8 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
     } ?: return null
 }
 
+fun ImageInfo.calculateWeight(): Float = (scaledDownImage?.width?.toFloat() ?: 1F) / (scaledDownImage?.height?.toFloat() ?: 1F)
+
 
 /* -= additional functions =- */
 fun Int.roundToStep(step: Int): Int {

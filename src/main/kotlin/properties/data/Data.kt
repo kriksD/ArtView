@@ -1,5 +1,6 @@
 package properties.data
 
+import ImageGroup
 import ImageInfo
 import TagCategory
 import androidx.compose.ui.graphics.ImageBitmap
@@ -13,6 +14,7 @@ import java.io.File
 data class Data(
     val tags: MutableList<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
     val images: MutableList<ImageInfo> = mutableListOf(),
+    val imageGroups: MutableList<ImageGroup> = mutableListOf(),
 ) {
     fun addImage(file: File): ImageInfo? {
         if (!file.exists()) return null

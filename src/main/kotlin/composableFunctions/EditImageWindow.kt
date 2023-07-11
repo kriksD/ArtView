@@ -1,5 +1,6 @@
 package composableFunctions
 
+import ImageGroup
 import ImageInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -106,6 +107,101 @@ fun EditImageWindow(
                             name = name.text,
                             description = description.text,
                             favorite = imageInfo.favorite,
+                            tags = selectedTags,
+                        )
+                    )
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun EditImageGroupWindow(
+    imageGroup: ImageGroup,
+    onDone: (ImageGroup) -> Unit = {},
+    onCancel: () -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        var name by remember { mutableStateOf(TextFieldValue(imageGroup.name)) }
+        var description by remember { mutableStateOf(TextFieldValue(imageGroup.description)) }
+        val selectedTags = remember { imageGroup.tags.toState() }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(padding),
+        ) {
+            Text("Name:", color = colorText, fontSize = normalText)
+            BasicTextField(
+                name,
+                onValueChange = { name = it },
+                singleLine = true,
+                maxLines = 1,
+                textStyle = TextStyle(
+                    color = colorText,
+                    fontSize = normalText,
+                ),
+                cursorBrush = SolidColor(colorText),
+            )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(padding),
+        ) {
+            Text("Description:", color = colorText, fontSize = normalText)
+            BasicTextField(
+                description,
+                onValueChange = { description = it },
+                textStyle = TextStyle(
+                    color = colorText,
+                    fontSize = normalText,
+                ),
+                cursorBrush = SolidColor(colorText),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        TagTableWithCategories(
+            tags = Properties.imagesData().tags,
+            selectedTags = selectedTags,
+            antiSelectedTags = emptyList(),
+            expandable = false,
+            onTagClick = {
+                if (selectedTags.contains(it)) {
+                    selectedTags.remove(it)
+                } else {
+                    selectedTags.add(it)
+                    selectedTags.sort()
+                }
+            },
+            onNew = {
+                if (settings.auto_select_created_tags)
+                    selectedTags.add(it)
+            },
+            modifier = Modifier.weight(1F),
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(padding),
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+        ) {
+            ButtonText(
+                "Cancel",
+                onClick = onCancel
+            )
+
+            ButtonText(
+                "Save",
+                onClick = {
+                    onDone(
+                        ImageGroup(
+                            imagePaths = imageGroup.imagePaths,
+                            name = name.text,
+                            description = description.text,
+                            favorite = imageGroup.favorite,
                             tags = selectedTags,
                         )
                     )

@@ -19,9 +19,11 @@ import colorBackground
 import colorBackgroundSecond
 import colorText
 import padding
+import runCommand
+import java.io.File
 
 enum class MenuItem {
-    Images, Favorites, Collections, Settings
+    Images, Favorites, Groups, Settings
 }
 
 @Composable
@@ -47,13 +49,18 @@ fun LeftSideMenu(
         )
         MenuOption(
             icon = painterResource("photo_library.svg"),
-            selected = selected == MenuItem.Collections,
-            onClick = { onOptionSelected(MenuItem.Collections) }
+            selected = selected == MenuItem.Groups,
+            onClick = { onOptionSelected(MenuItem.Groups) }
         )
         MenuOption(
             icon = Icons.Default.Settings,
             selected = selected == MenuItem.Settings,
             onClick = { onOptionSelected(MenuItem.Settings) }
+        )
+        MenuOption(
+            icon = painterResource("folder_open.svg"),
+            selected = false,
+            onClick = { "explorer \"${File(".").absolutePath}\\\"".runCommand(File(".")) }
         )
     }
 }
