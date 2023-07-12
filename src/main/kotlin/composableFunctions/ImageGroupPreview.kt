@@ -30,6 +30,7 @@ fun ImageGroupPreview(
     onClose: () -> Unit = {},
     onEdit: () -> Unit = {},
     onImageSelected: (ImageInfo, List<ImageInfo>) -> Unit = { _, _ -> },
+    onSelectedUpdated: (List<ImageInfo>) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val images = remember { Properties.imagesData().images.filter { imageGroup.imagePaths.contains(it.path) }.toState() }
@@ -108,6 +109,8 @@ fun ImageGroupPreview(
                     } else {
                         selectedImages.remove(imgInfo)
                     }
+
+                    onSelectedUpdated(selectedImages)
                 },
                 onOpen = {
                     if (selectedImages.isEmpty()) {

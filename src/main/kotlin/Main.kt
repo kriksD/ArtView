@@ -260,8 +260,15 @@ fun main() = application {
                             } else {
                                 ImageGroupPreview(
                                     selectedImageGroup!!,
-                                    onClose = { selectedImageGroup = null },
+                                    onClose = {
+                                        selectedImageGroup = null
+                                        selectedImages.clear()
+                                    },
                                     onEdit = { isEditingGroup = true },
+                                    onSelectedUpdated = { newSelected ->
+                                        selectedImages.clear()
+                                        selectedImages.addAll(newSelected)
+                                    },
                                     onImageSelected = { img, all ->
                                         filteredImages = all
                                         selectedImage = img
