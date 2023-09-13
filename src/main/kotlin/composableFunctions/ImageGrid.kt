@@ -45,11 +45,29 @@ fun ImageGrid(
     checkedList: List<ImageInfo> = listOf(),
     onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
     onOpen: (ImageInfo) -> Unit = {},
+    onEndReached: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var imagesPerRow by remember { mutableStateOf(8) }
     val splitImages = imageInfo.chunked(imagesPerRow)
     val scrollState = rememberScrollState()
+
+    var onEndReachedCalled by remember { mutableStateOf(false) }
+    LaunchedEffect(scrollState) {
+        snapshotFlow { scrollState.value }
+            .collect {
+                if (!scrollState.canScrollForward && !scrollState.canScrollBackward) {
+                    onEndReached(imagesPerRow)
+                }
+
+                onEndReachedCalled = if (!scrollState.canScrollForward && !onEndReachedCalled) {
+                    onEndReached(imagesPerRow)
+                    true
+                } else {
+                    false
+                }
+            }
+    }
 
     Row(
         modifier = modifier,

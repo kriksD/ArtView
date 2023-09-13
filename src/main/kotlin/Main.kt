@@ -22,9 +22,11 @@ fun main() = application {
     Properties.loadData()
 
     val images = remember { Properties.imagesData().images.toState() }
-    var filteredImages by remember { mutableStateOf(images.toList()) }
+    //var filteredImages by remember { mutableStateOf(images.toList()) }
     val selectedImages = remember { mutableStateListOf<ImageInfo>() }
     var selectedImage by remember { mutableStateOf<ImageInfo?>(null) }
+
+    val imageLoader by remember { mutableStateOf(ImageLoader()) }
 
     val groups = remember { Properties.imagesData().imageGroups.toState() }
     var filteredImageGroups by remember { mutableStateOf(groups.toList()) }
@@ -44,11 +46,13 @@ fun main() = application {
         antiSelectedTags.addAll(settings.anti_selected_tags_by_default)
         selectedTags.addAll(settings.selected_tags_by_default)
 
-        filteredImages = images.filter { image ->
+        imageLoader.filter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+        //filteredImages = imageLoader.loadedList
+        /*filteredImages = images.filter { image ->
             val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
             val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
             hasSelectedTags && hasAntiSelectedTags
-        }
+        }*/
     }
 
     val windowState = rememberWindowState(
@@ -95,21 +99,25 @@ fun main() = application {
                     menuItem = it
                     when (menuItem) {
                         MenuItem.Images -> {
+                            imageLoader.reset()
                             selectedImageGroups.clear()
                             selectedImageGroup = null
                         }
 
                         MenuItem.Favorites -> {
+                            imageLoader.reset()
                             selectedImageGroups.clear()
                             selectedImageGroup = null
                         }
 
                         MenuItem.Groups -> {
+                            imageLoader.reset()
                             selectedImages.clear()
                             selectedImage = null
                         }
 
                         MenuItem.Settings -> {
+                            imageLoader.reset()
                             selectedImageGroups.clear()
                             selectedImageGroup = null
                             selectedImages.clear()
@@ -129,7 +137,7 @@ fun main() = application {
 
                     @Composable
                     fun ImageTableView(
-                        filter: (ImageInfo) -> Boolean,
+                        filter: FilterBuilder,
                     ) {
                         var expanded by remember { mutableStateOf(false) }
                         Column {
@@ -150,6 +158,9 @@ fun main() = application {
                                         selectedTags.add(it)
                                         antiSelectedTags.remove(it)
                                     }
+
+                                    imageLoader.reset()
+                                    imageLoader.filter(filter.tags(selectedTags).antiTags(antiSelectedTags))
                                 },
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
@@ -159,7 +170,7 @@ fun main() = application {
                             )
 
                             ImageGrid(
-                                imageInfo = images.filter(filter).also { filteredImages = it },
+                                imageInfo = imageLoader.also { it.filter(filter) }.loadedList, //images.filter(filter).also { filteredImages = it },
                                 checkedList = selectedImages,
                                 onCheckedClick = { imgInfo, isSelected ->
                                     if (isSelected) {
@@ -179,6 +190,11 @@ fun main() = application {
                                         }
                                     }
                                 },
+                                onEndReached = { amountToLoad ->
+                                    repeat(amountToLoad) {
+                                        imageLoader.loadNext()
+                                    }
+                                },
                                 modifier = Modifier.weight(1F),
                             )
                         }
@@ -186,18 +202,20 @@ fun main() = application {
 
                     when (item) {
                         MenuItem.Images -> {
-                            ImageTableView(filter = { image ->
+                            ImageTableView(filter = FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags)
+                                /*{ image ->
                                 val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
                                 val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
                                 hasSelectedTags && hasAntiSelectedTags
-                            })
+                            }*/)
                         }
                         MenuItem.Favorites -> {
-                            ImageTableView(filter = { image ->
+                            ImageTableView(filter = FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite()
+                                /*{ image ->
                                 val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
                                 val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
                                 hasSelectedTags && hasAntiSelectedTags && image.favorite
-                            })
+                            }*/)
                         }
                         MenuItem.Groups -> {
                             if (selectedImageGroup == null) {
@@ -270,7 +288,9 @@ fun main() = application {
                                         selectedImages.addAll(newSelected)
                                     },
                                     onImageSelected = { img, all ->
-                                        filteredImages = all
+                                        //filteredImages = all
+                                        imageLoader.reset()
+                                        FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).group(selectedImageGroup!!)
                                         selectedImage = img
                                     }
                                 )
@@ -288,11 +308,11 @@ fun main() = application {
                         isEditing = false
                     },
                     onNext = {
-                        filteredImages.getOrNull(filteredImages.indexOf(selectedImage) + 1)
+                        imageLoader.loadedList.getOrNull(imageLoader.loadedList.indexOf(selectedImage) + 1)
                             ?.let { selectedImage = it }
                     },
                     onPrevious = {
-                        filteredImages.getOrNull(filteredImages.indexOf(selectedImage) - 1)
+                        imageLoader.loadedList.getOrNull(imageLoader.loadedList.indexOf(selectedImage) - 1)
                             ?.let { selectedImage = it }
                     },
                     onDelete = {
@@ -380,7 +400,7 @@ fun main() = application {
                             onClick = {
                                 if (selectedImages.isNotEmpty()) {
                                     selectedImages.clear()
-                                    selectedImages.addAll(filteredImages)
+                                    selectedImages.addAll(imageLoader.loadedList)
 
                                 } else if (selectedImageGroups.isNotEmpty()) {
                                     selectedImageGroups.clear()
