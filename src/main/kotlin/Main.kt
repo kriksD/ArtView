@@ -86,6 +86,7 @@ fun main() = application {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
                                     Properties.imagesData().addImage(URI(path).path)?.let { images.add(0, it) }
+                                    imageLoader.update()
                                 }
                             }
                         }
@@ -139,6 +140,7 @@ fun main() = application {
                     fun ImageTableView(
                         filter: FilterBuilder,
                     ) {
+                        var reload by remember { mutableStateOf(false) }
                         var expanded by remember { mutableStateOf(false) }
                         Column {
                             TagTableWithCategories(
@@ -161,6 +163,7 @@ fun main() = application {
 
                                     imageLoader.reset()
                                     imageLoader.filter(filter.tags(selectedTags).antiTags(antiSelectedTags))
+                                    reload = true
                                 },
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
@@ -168,6 +171,11 @@ fun main() = application {
                                     .fillMaxWidth()
                                     .background(colorBackgroundLighter),
                             )
+
+                            if (reload) {
+                                reload = false
+                                return@Column
+                            }
 
                             ImageGrid(
                                 imageInfo = imageLoader.also { it.filter(filter) }.loadedList, //images.filter(filter).also { filteredImages = it },
@@ -322,6 +330,7 @@ fun main() = application {
                         }
                         images.remove(selectedImage)
                         Properties.saveData()
+                        imageLoader.update()
 
                         selectedImage = null
                         isEditing = false
@@ -424,12 +433,14 @@ fun main() = application {
                                     Properties.imagesData().images.removeAll(selectedImages)
                                     selectedImages.clear()
                                     Properties.saveData()
+                                    imageLoader.update()
 
                                 } else if (selectedImageGroups.isNotEmpty()) {
                                     groups.removeAll(selectedImageGroups)
                                     Properties.imagesData().imageGroups.removeAll(selectedImageGroups)
                                     selectedImageGroups.clear()
                                     Properties.saveData()
+                                    imageLoader.update()
                                 }
                             },
                         )

@@ -54,6 +54,10 @@ fun ImageGrid(
 
     var onEndReachedCalled by remember { mutableStateOf(false) }
     LaunchedEffect(scrollState) {
+        if (imageInfo.isEmpty()) {
+            onEndReached(imagesPerRow)
+        }
+
         snapshotFlow { scrollState.value }
             .collect {
                 if (!scrollState.canScrollForward && !scrollState.canScrollBackward) {
@@ -111,7 +115,10 @@ fun ImageGrid(
 
         VerticalScrollbar(
             rememberScrollbarAdapter(scrollState),
-            style = LocalScrollbarStyle.current.copy(unhoverColor = colorBackgroundSecondLighter, hoverColor = colorBackgroundSecond),
+            style = LocalScrollbarStyle.current.copy(
+                unhoverColor = colorBackgroundSecondLighter,
+                hoverColor = colorBackgroundSecond
+            ),
             modifier = Modifier
                 .padding(top = padding, end = padding, bottom = padding)
                 .background(colorBackground, RoundedCornerShape(smallCorners))
