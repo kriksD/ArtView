@@ -4,20 +4,22 @@ import ImageGroup
 import ImageInfo
 import TagCategory
 import androidx.compose.ui.graphics.ImageBitmap
+import getImageBitmap
 import kotlinx.serialization.Serializable
-import properties.Properties
 import saveWebPTo
 import uniqueName
 import java.io.File
 
 @Serializable
 data class Data(
+    val meta: DataMeta = DataMeta(),
     val tags: MutableList<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
     val images: MutableList<ImageInfo> = mutableListOf(),
     val imageGroups: MutableList<ImageGroup> = mutableListOf(),
 ) {
     fun addImage(file: File): ImageInfo? {
         if (!file.exists()) return null
+        val image = getImageBitmap(file) ?: return null
 
         val newFile = File("images/${
             uniqueName(file.nameWithoutExtension, file.extension, File("images"))
@@ -27,6 +29,8 @@ data class Data(
 
         return ImageInfo(
             newFile.path,
+            image.width,
+            image.height,
             newFile.name,
         ).also {
             images.add(0, it)
@@ -41,6 +45,8 @@ data class Data(
 
         return ImageInfo(
             newFile.path,
+            image.width,
+            image.height,
             newFile.name,
         ).also {
             images.add(0, it)

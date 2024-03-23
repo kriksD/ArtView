@@ -1,43 +1,80 @@
 import androidx.compose.runtime.mutableStateListOf
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import properties.Properties
 
-class ImageLoader {
-    private val filtered = mutableListOf<ImageInfo>()
-    val loadedList = mutableStateListOf<ImageInfo>()
-    private var index = 0
+enum class LoadingState {
+    Load, Unload;
+}
 
+data class LoadRequest(
+    val image: ImageInfo,
+    val state: LoadingState,
+)
+
+class ImageLoader {
+    val filteredImages = mutableStateListOf<ImageInfo>()
     private var lastFilter: FilterBuilder = FilterBuilder()
 
-    fun loadNext(): ImageInfo? {
-        if (index > filtered.lastIndex) return null
-
-        return filtered[index].also {
-            loadedList.add(it)
-            index++
-        }
-    }
+    private val loadingChannel = Channel<LoadRequest>(Channel.UNLIMITED)
 
     fun filter(filter: FilterBuilder) {
-        filtered.clear()
-        filtered.addAll(
+        filteredImages.clear()
+        filteredImages.addAll(
             filter.filter(Properties.imagesData().images)
         )
         lastFilter = filter
     }
 
-    fun reset() {
-        loadedList.clear()
-        index = 0
+    fun update() {
+        filteredImages.clear()
+        filteredImages.addAll(lastFilter.filter(Properties.imagesData().images))
     }
 
-    fun update() {
-        val lastLoadedAmount = loadedList.size
+    fun reset() {
+        filteredImages.clear()
+        filteredImages.addAll(lastFilter.filter(Properties.imagesData().images))
+    }
 
-        reset()
-        filter(lastFilter)
+    suspend fun loadNext(image: ImageInfo) {
+        if (image.isLoaded) return
 
-        repeat(lastLoadedAmount + 1) {
-            loadNext()
+        try {
+            loadingChannel.send(LoadRequest(image, LoadingState.Load))
+        } catch (e: Exception) {
+            // Handle the case where sending to the channel fails (e.g., channel is closed)
+        }
+    }
+
+    suspend fun unloadNext(image: ImageInfo) {
+        if (!image.isLoaded) return
+
+        try {
+            loadingChannel.send(LoadRequest(image, LoadingState.Unload))
+        } catch (e: Exception) {
+            // Handle the case where sending to the channel fails (e.g., channel is closed)
+        }
+    }
+
+    suspend fun load() = coroutineScope {
+        launch(Dispatchers.IO) {
+            for (loadRequest in loadingChannel) {
+                try {
+                    when (loadRequest.state) {
+                        LoadingState.Load -> {
+                            if (loadRequest.image.isLoaded) continue
+                            loadRequest.image.load()
+                            println(1)
+                        }
+                        LoadingState.Unload -> {
+                            if (!loadRequest.image.isLoaded) continue
+                            loadRequest.image.unload()
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Handle the case where sending to the channel fails (e.g., channel is closed)
+                }
+            }
         }
     }
 }

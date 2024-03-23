@@ -104,6 +104,8 @@ fun EditImageWindow(
                     onDone(
                         ImageInfo(
                             path = imageInfo.path,
+                            width = imageInfo.width,
+                            height = imageInfo.height,
                             name = name.text,
                             description = description.text,
                             favorite = imageInfo.favorite,

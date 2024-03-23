@@ -1,11 +1,6 @@
-import ImageInfo
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateMap
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import org.jetbrains.skia.*
@@ -110,7 +105,7 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
     } ?: return null
 }
 
-fun ImageInfo.calculateWeight(): Float = (scaledDownImage?.width?.toFloat() ?: 1F) / (scaledDownImage?.height?.toFloat() ?: 1F)
+fun ImageInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 
 
 /* -= additional functions =- */

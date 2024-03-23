@@ -1,32 +1,41 @@
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 import java.awt.image.BufferedImage
 import java.io.File
 
 @Serializable
 data class ImageInfo(
     val path: String,
+    val width: Int,
+    val height: Int,
     var name: String = "",
     var description: String = "",
     var favorite: Boolean = false,
     val tags: MutableList<String> = mutableListOf(),
 ) {
-    @Transient
-    var scaledDownImage: ImageBitmap? = null
-        get() {
-            if (field != null) return field
+    var scaledDownImage: ImageBitmap? by mutableStateOf(null)
+    val isLoaded get() = scaledDownImage != null
 
-            return try {
-                val newImage = image
-                val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
-                scaledDownImage = newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
-                newImage
+    fun load() {
+        if (scaledDownImage != null) return
 
-            } catch (e: Exception) { null }
-        }
+        scaledDownImage = try {
+            val newImage = image
+            val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
+            scaledDownImage = newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
+            newImage
+
+        } catch (e: Exception) { image }
+    }
+
+    fun unload() {
+        scaledDownImage = null
+    }
 
     private fun ImageBitmap.scaleAndCropImage(width: Int, height: Int): ImageBitmap {
         val bufferedImage = this.toAwtImage()

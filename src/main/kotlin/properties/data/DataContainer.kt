@@ -2,6 +2,7 @@ package properties.data
 
 import ImageInfo
 import TagCategory
+import getImageBitmap
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -25,31 +26,15 @@ class DataContainer {
     }
 
     private fun loadFromJsonFile() {
-        data = tryToLoadData() ?: tryToLoadOldData() ?: Data()
-    }
+        if (!file.exists()) return
 
-    private fun tryToLoadData(): Data? {
-        return try {
-            if (file.exists()) {
-                data.images.removeIf { !File(it.path).exists() }
-                json.decodeFromString(file.readText())
+        try {
+            data = json.decodeFromString(file.readText())
 
-            } else { null }
-        } catch (e: Exception) { null }
-    }
-
-    private fun tryToLoadOldData(): Data? {
-        return try {
-            if (file.exists()) {
-                val oldData = json.decodeFromString<OldData>(file.readText())
-                data.images.removeIf { !File(it.path).exists() }
-                Data(
-                    mutableListOf(TagCategory("Other", oldData.tags)),
-                    oldData.images,
-                )
-
-            } else { null }
-        } catch (e: Exception) { null }
+        } catch (e: Exception) {
+            val converter = DataConverter(file)
+            data = converter.loadAndConvert() ?: Data()
+        }
     }
 
     private fun removeNonexistentImages() {
@@ -61,7 +46,8 @@ class DataContainer {
         allFiles?.filter { f ->
             data.images.none { it.path == f.path }
         }?.forEach {
-            data.images.add(0, ImageInfo(it.path, it.name))
+            val image = getImageBitmap(it) ?: return@forEach
+            data.images.add(0, ImageInfo(it.path, image.width, image.height, it.name))
         }
     }
 
