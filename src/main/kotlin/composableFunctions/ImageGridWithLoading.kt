@@ -31,7 +31,6 @@ import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
 import iconSize
-import kotlinx.coroutines.*
 import normalAnimationDuration
 import normalText
 import padding
@@ -45,17 +44,17 @@ import transparencyLight
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImageGridWithLoading(
+    images: List<ImageInfo>,
     imageLoader: ImageLoader,
     checkedList: List<ImageInfo> = listOf(),
     onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
     onOpen: (ImageInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val windowSize = LocalWindowInfo.current.containerSize
 
     var imagesPerRow by remember { mutableStateOf(4) }
-    val splitImages = remember { imageLoader.filteredImages.chunked(imagesPerRow).toMutableStateList() }
+    val splitImages = images.chunked(imagesPerRow).toMutableStateList()
     val scrollState = rememberScrollState()
 
     Row(
@@ -71,7 +70,7 @@ fun ImageGridWithLoading(
 
                     if (imagesPerRow != previousImagesPerRow) {
                         splitImages.clear()
-                        splitImages.addAll(imageLoader.filteredImages.chunked(imagesPerRow))
+                        splitImages.addAll(images.chunked(imagesPerRow))
                     }
                 }
         ) {
@@ -97,15 +96,13 @@ fun ImageGridWithLoading(
                                     val bottom = c.positionInWindow().y + c.size.height
 
                                     val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
-                                    if (newValue != isOnScreen) {
+                                    if (newValue != isOnScreen || (newValue && !imgInfo.isLoaded)) {
                                         isOnScreen = newValue
 
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            if (isOnScreen) {
-                                                imageLoader.loadNext(imgInfo)
-                                            } else {
-                                                imageLoader.unloadNext(imgInfo)
-                                            }
+                                        if (isOnScreen) {
+                                            imageLoader.loadNext(imgInfo)
+                                        } else {
+                                            imageLoader.unloadNext(imgInfo)
                                         }
                                     }
                                 },
@@ -162,22 +159,31 @@ private fun ImageGridWithLoadingItem(
                 showInfo = false
             }
     ) {
-        if (!imageInfo.isLoaded) {
-            Image(
-                ImageBitmap(imageInfo.width, imageInfo.height),
-                "loading an image",
-                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)).background(colorBackground),
-            )
-            LoadingIcon(
-                contentDescription = "loading an image",
-                modifier = Modifier.size(iconSize).align(Alignment.Center)
-            )
-        } else {
-            Image(
-                imageInfo.scaledDownImage ?: ImageBitmap(imageInfo.width, imageInfo.height),
-                imageInfo.name,
-                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
-            )
+        Crossfade(
+            imageInfo.isLoaded,
+            animationSpec = tween(normalAnimationDuration),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (!it) {
+                Image(
+                    ImageBitmap(imageInfo.width, imageInfo.height),
+                    "loading an image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(smallCorners))
+                        .background(colorBackground),
+                )
+                LoadingIcon(
+                    contentDescription = "loading an image",
+                    modifier = Modifier.size(iconSize).align(Alignment.Center)
+                )
+            } else {
+                Image(
+                    imageInfo.scaledDownImage ?: ImageBitmap(imageInfo.width, imageInfo.height),
+                    imageInfo.name,
+                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
+                )
+            }
         }
 
         AppearDisappearAnimation(

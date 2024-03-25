@@ -1,79 +1,69 @@
-import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import properties.Properties
 
-enum class LoadingState {
-    Load, Unload;
-}
-
-data class LoadRequest(
-    val image: ImageInfo,
-    val state: LoadingState,
-)
-
 class ImageLoader {
-    val filteredImages = mutableStateListOf<ImageInfo>()
-    private var lastFilter: FilterBuilder = FilterBuilder()
+    private val loadRequests = mutableListOf<ImageInfo>()
+    private val unloadRequests = mutableListOf<ImageInfo>()
 
-    private val loadingChannel = Channel<LoadRequest>(Channel.UNLIMITED)
+    val isLoading get() = loadRequests.isNotEmpty() || unloadRequests.isNotEmpty()
+    val requestAmount get() = loadRequests.size + unloadRequests.size
 
-    fun filter(filter: FilterBuilder) {
-        filteredImages.clear()
-        filteredImages.addAll(
-            filter.filter(Properties.imagesData().images)
-        )
-        lastFilter = filter
-    }
+    private val mutex = Mutex()
+    private val scope = CoroutineScope(Dispatchers.Default)
+    private var isRunning = true
 
-    fun update() {
-        filteredImages.clear()
-        filteredImages.addAll(lastFilter.filter(Properties.imagesData().images))
-    }
+    fun loadNext(image: ImageInfo) {
+        scope.launch {
+            mutex.withLock {
+                if (loadRequests.contains(image)) return@launch
+                if (unloadRequests.contains(image)/* && unloadRequests.firstOrNull() != image*/) unloadRequests.remove(image)
 
-    fun reset() {
-        filteredImages.clear()
-        filteredImages.addAll(lastFilter.filter(Properties.imagesData().images))
-    }
-
-    suspend fun loadNext(image: ImageInfo) {
-        if (image.isLoaded) return
-
-        try {
-            loadingChannel.send(LoadRequest(image, LoadingState.Load))
-        } catch (e: Exception) {
-            // Handle the case where sending to the channel fails (e.g., channel is closed)
+                loadRequests.add(image)
+            }
         }
     }
 
-    suspend fun unloadNext(image: ImageInfo) {
-        if (!image.isLoaded) return
+    fun unloadNext(image: ImageInfo) {
+        scope.launch {
+            mutex.withLock {
+                if (unloadRequests.contains(image)) return@launch
+                if (loadRequests.contains(image)/* && unloadRequests.firstOrNull() != image*/) loadRequests.remove(image)
 
-        try {
-            loadingChannel.send(LoadRequest(image, LoadingState.Unload))
-        } catch (e: Exception) {
-            // Handle the case where sending to the channel fails (e.g., channel is closed)
+                unloadRequests.add(image)
+            }
+        }
+    }
+
+    fun cancel() {
+        scope.launch {
+            mutex.withLock {
+                isRunning = false
+                Properties.imagesData().images.filter { it.isLoaded }.forEach { it.unload() }
+                loadRequests.clear()
+                unloadRequests.clear()
+            }
         }
     }
 
     suspend fun load() = coroutineScope {
-        launch(Dispatchers.IO) {
-            for (loadRequest in loadingChannel) {
-                try {
-                    when (loadRequest.state) {
-                        LoadingState.Load -> {
-                            if (loadRequest.image.isLoaded) continue
-                            loadRequest.image.load()
-                            println(1)
-                        }
-                        LoadingState.Unload -> {
-                            if (!loadRequest.image.isLoaded) continue
-                            loadRequest.image.unload()
-                        }
+        launch(Dispatchers.Default) {
+            while(isRunning) {
+                if (loadRequests.isNotEmpty()) {
+                    val image = mutex.withLock {
+                        loadRequests.removeFirst()
                     }
-                } catch (e: Exception) {
-                    // Handle the case where sending to the channel fails (e.g., channel is closed)
+                    image.load()
+
+                } else if (unloadRequests.isNotEmpty()) {
+                    val image = mutex.withLock {
+                        unloadRequests.removeFirst()
+                    }
+                    image.unload()
                 }
+
+                delay(30)
             }
         }
     }

@@ -4,6 +4,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -16,20 +17,18 @@ import java.net.URI
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
-    Properties.loadStyle()
-    Properties.loadSettings()
-    Properties.loadLanguage(settings.language)
-    Properties.loadData()
+    var isFirstTime1 by remember { mutableStateOf(true) }
+    if (isFirstTime1) {
+        isFirstTime1 = false
 
-    val selectedImages = remember { mutableStateListOf<ImageInfo>() }
-    var selectedImage by remember { mutableStateOf<ImageInfo?>(null) }
+        Properties.loadStyle()
+        Properties.loadSettings()
+        Properties.loadLanguage(settings.language)
+        Properties.loadData()
+    }
 
-    val imageLoader by remember { mutableStateOf(ImageLoader()) }
-
-    val groups = remember { Properties.imagesData().imageGroups.toState() }
-    var filteredImageGroups by remember { mutableStateOf(groups.toList()) }
-    val selectedImageGroups = remember { mutableStateListOf<ImageGroup>() }
-    var selectedImageGroup by remember { mutableStateOf<ImageGroup?>(null) }
+    val imageStorage by remember { mutableStateOf(ImageStorage()) }
+    var imageLoader by remember { mutableStateOf(ImageLoader()) }
 
     val selectedTags = remember { mutableStateListOf<String>() }
     val antiSelectedTags = remember { mutableStateListOf<String>() }
@@ -44,11 +43,11 @@ fun main() = application {
         antiSelectedTags.addAll(settings.anti_selected_tags_by_default)
         selectedTags.addAll(settings.selected_tags_by_default)
 
-        LaunchedEffect(true) {
-            imageLoader.load()
-        }
+        imageStorage.filter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+    }
 
-        imageLoader.filter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+    LaunchedEffect(imageLoader) {
+        imageLoader.load()
     }
 
     val windowState = rememberWindowState(
@@ -82,7 +81,7 @@ fun main() = application {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
                                     Properties.imagesData().addImage(URI(path).path)
-                                    imageLoader.update()
+                                    imageStorage.update()
                                 }
                             }
                         }
@@ -93,34 +92,38 @@ fun main() = application {
             LeftSideMenu(
                 menuItem,
                 onOptionSelected = {
-                    menuItem = it
-                    when (menuItem) {
+                    when (it) {
                         MenuItem.Images -> {
-                            imageLoader.reset()
-                            selectedImageGroups.clear()
-                            selectedImageGroup = null
+                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.withGroups = false
+                            imageStorage.update()
+                            imageLoader.cancel()
+                            imageLoader = ImageLoader()
                         }
 
                         MenuItem.Favorites -> {
-                            imageLoader.reset()
-                            selectedImageGroups.clear()
-                            selectedImageGroup = null
+                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite())
+                            imageStorage.withGroups = false
+                            imageStorage.update()
+                            imageLoader.cancel()
+                            imageLoader = ImageLoader()
                         }
 
                         MenuItem.Groups -> {
-                            imageLoader.reset()
-                            selectedImages.clear()
-                            selectedImage = null
+                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.withGroups = true
+                            imageStorage.update()
+                            imageLoader.cancel()
+                            imageLoader = ImageLoader()
                         }
 
                         MenuItem.Settings -> {
-                            imageLoader.reset()
-                            selectedImageGroups.clear()
-                            selectedImageGroup = null
-                            selectedImages.clear()
-                            selectedImage = null
+                            imageStorage.reset()
+                            imageLoader.cancel()
+                            imageLoader = ImageLoader()
                         }
                     }
+                    menuItem = it
                 },
                 modifier = Modifier.fillMaxHeight(),
             )
@@ -133,10 +136,7 @@ fun main() = application {
                 ) { item ->
 
                     @Composable
-                    fun ImageTableView(
-                        filter: FilterBuilder,
-                    ) {
-                        var reload by remember { mutableStateOf(false) }
+                    fun ImageTableView() {
                         var expanded by remember { mutableStateOf(false) }
                         Column {
                             TagTableWithCategories(
@@ -157,9 +157,10 @@ fun main() = application {
                                         antiSelectedTags.remove(it)
                                     }
 
-                                    imageLoader.reset()
-                                    imageLoader.filter(filter.tags(selectedTags).antiTags(antiSelectedTags))
-                                    reload = true
+                                    imageStorage.updateFilterTags(selectedTags, antiSelectedTags)
+                                    imageStorage.update()
+                                    imageLoader.cancel()
+                                    imageLoader = ImageLoader()
                                 },
                                 expanded = expanded,
                                 onExpandedChange = { expanded = it },
@@ -168,29 +169,25 @@ fun main() = application {
                                     .background(colorBackgroundLighter),
                             )
 
-                            if (reload) {
-                                reload = false
-                                return@Column
-                            }
-
                             ImageGridWithLoading(
-                                imageLoader = imageLoader.also { it.filter(filter) },
-                                checkedList = selectedImages,
+                                images = imageStorage.filteredImages,
+                                imageLoader = imageLoader,
+                                checkedList = imageStorage.selectedImages,
                                 onCheckedClick = { imgInfo, isSelected ->
                                     if (isSelected) {
-                                        selectedImages.add(imgInfo)
+                                        imageStorage.select(imgInfo)
                                     } else {
-                                        selectedImages.remove(imgInfo)
+                                        imageStorage.deselect(imgInfo)
                                     }
                                 },
                                 onOpen = {
-                                    if (selectedImages.isEmpty()) {
-                                        selectedImage = it
+                                    if (imageStorage.selectedImages.isEmpty()) {
+                                        imageStorage.open(it)
                                     } else {
-                                        if (selectedImages.contains(it)) {
-                                            selectedImages.remove(it)
+                                        if (!imageStorage.selectedImages.contains(it)) {
+                                            imageStorage.select(it)
                                         } else {
-                                            selectedImages.add(it)
+                                            imageStorage.deselect(it)
                                         }
                                     }
                                 },
@@ -201,13 +198,13 @@ fun main() = application {
 
                     when (item) {
                         MenuItem.Images -> {
-                            ImageTableView(filter = FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+                            ImageTableView()
                         }
                         MenuItem.Favorites -> {
-                            ImageTableView(filter = FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite())
+                            ImageTableView()
                         }
                         MenuItem.Groups -> {
-                            if (selectedImageGroup == null) {
+                            if (imageStorage.openedImageGroup == null) {
                                 var expanded by remember { mutableStateOf(false) }
                                 Column {
                                     TagTableWithCategories(
@@ -235,29 +232,32 @@ fun main() = application {
                                             .background(colorBackgroundLighter),
                                     )
                                     ImageGroupGrid(
-                                        imageGroups = Properties.imagesData().imageGroups.filter { imageGroup ->
+                                        imageGroups = imageStorage
+                                            .also { it.filterGroups(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite()) }
+                                            .filteredGroups,
+                                        /*Properties.imagesData().imageGroups.filter { imageGroup ->
                                             val hasSelectedTags =
                                                 selectedTags.all { tag -> imageGroup.tags.contains(tag) }
                                             val hasAntiSelectedTags =
                                                 antiSelectedTags.none { tag -> imageGroup.tags.contains(tag) }
                                             hasSelectedTags && hasAntiSelectedTags
-                                        }.also { filteredImageGroups = it },
-                                        checkedList = selectedImageGroups,
+                                        }.also { filteredImageGroups = it },*/
+                                        checkedList = imageStorage.selectedGroups,
                                         onCheckedClick = { imgGroup, isSelected ->
                                             if (isSelected) {
-                                                selectedImageGroups.add(imgGroup)
+                                                imageStorage.select(imgGroup)
                                             } else {
-                                                selectedImageGroups.remove(imgGroup)
+                                                imageStorage.deselect(imgGroup)
                                             }
                                         },
                                         onOpen = {
-                                            if (selectedImageGroups.isEmpty()) {
-                                                selectedImageGroup = it
+                                            if (imageStorage.selectedGroups.isEmpty()) {
+                                                imageStorage.openGroup(it)
                                             } else {
-                                                if (selectedImageGroups.contains(it)) {
-                                                    selectedImageGroups.remove(it)
+                                                if (imageStorage.selectedGroups.contains(it)) {
+                                                    imageStorage.select(it)
                                                 } else {
-                                                    selectedImageGroups.add(it)
+                                                    imageStorage.deselect(it)
                                                 }
                                             }
                                         },
@@ -266,20 +266,14 @@ fun main() = application {
                                 }
                             } else {
                                 ImageGroupPreview(
-                                    selectedImageGroup!!,
-                                    onClose = {
-                                        selectedImageGroup = null
-                                        selectedImages.clear()
-                                    },
+                                    imageStorage.openedImageGroup!!,
+                                    onClose = { imageStorage.closeGroup() },
                                     onEdit = { isEditingGroup = true },
                                     onSelectedUpdated = { newSelected ->
-                                        selectedImages.clear()
-                                        selectedImages.addAll(newSelected)
+                                        newSelected.forEach { imageStorage.select(it) }
                                     },
                                     onImageSelected = { img, _ ->
-                                        imageLoader.reset()
-                                        FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).group(selectedImageGroup!!)
-                                        selectedImage = img
+                                        imageStorage.open(img)
                                     }
                                 )
                             }
@@ -290,28 +284,15 @@ fun main() = application {
 
                 var isEditing by remember { mutableStateOf(false) }
                 ImagePreview(
-                    selectedImage,
+                    imageStorage.openedImage,
                     onClose = {
-                        selectedImage = null
+                        imageStorage.close()
                         isEditing = false
                     },
-                    onNext = {
-                        imageLoader.filteredImages.getOrNull(imageLoader.filteredImages.indexOf(selectedImage) + 1)
-                            ?.let { selectedImage = it }
-                    },
-                    onPrevious = {
-                        imageLoader.filteredImages.getOrNull(imageLoader.filteredImages.indexOf(selectedImage) - 1)
-                            ?.let { selectedImage = it }
-                    },
+                    onNext = { imageStorage.next() },
+                    onPrevious = { imageStorage.previous() },
                     onDelete = {
-                        selectedImage?.let {
-                            selectedImageGroup?.imagePaths?.remove(it.path)
-                            Properties.imagesData().delete(it)
-                        }
-                        Properties.saveData()
-                        imageLoader.update()
-
-                        selectedImage = null
+                        imageStorage.delete(listOfNotNull(imageStorage.openedImage))
                         isEditing = false
                     },
                     onEdit = { isEditing = true },
@@ -323,7 +304,7 @@ fun main() = application {
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
-                    selectedImage?.let { imgInfo ->
+                    imageStorage.openedImage?.let { imgInfo ->
                         EditImageWindow(
                             imageInfo = imgInfo,
                             onCancel = { isEditing = false },
@@ -331,7 +312,6 @@ fun main() = application {
                                 val index = Properties.imagesData().images.indexOf(Properties.imagesData().images.find { it.path == newImageInfo.path })
                                 Properties.imagesData().images[index] = newImageInfo
                                 Properties.saveData()
-                                selectedImage = newImageInfo
                                 isEditing = false
                             },
                             modifier = Modifier
@@ -348,15 +328,15 @@ fun main() = application {
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
-                    selectedImageGroup?.let { imgGroup ->
+                    imageStorage.openedImageGroup?.let { imgGroup ->
                         EditImageGroupWindow(
                             imageGroup = imgGroup,
                             onCancel = { isEditingGroup = false },
                             onDone = { newImageGroup ->
-                                selectedImageGroup?.name = newImageGroup.name
-                                selectedImageGroup?.description = newImageGroup.description
-                                selectedImageGroup?.tags?.clear()
-                                selectedImageGroup?.tags?.addAll(newImageGroup.tags)
+                                imageStorage.openedImageGroup?.name = newImageGroup.name
+                                imageStorage.openedImageGroup?.description = newImageGroup.description
+                                imageStorage.openedImageGroup?.tags?.clear()
+                                imageStorage.openedImageGroup?.tags?.addAll(newImageGroup.tags)
                                 Properties.saveData()
 
                                 isEditingGroup = false
@@ -373,7 +353,7 @@ fun main() = application {
                 var isEditingTags by remember { mutableStateOf(false) }
                 var isAddingImagesToGroup by remember { mutableStateOf(false) }
                 AppearDisappearAnimation(
-                    selectedImages.isNotEmpty() || selectedImageGroups.isNotEmpty(),
+                    imageStorage.selectedImages.isNotEmpty() || imageStorage.selectedGroups.isNotEmpty(),
                     normalAnimationDuration,
                     Modifier
                         .padding(biggerPadding)
@@ -385,27 +365,25 @@ fun main() = application {
                         ButtonText(
                             "Select all",
                             onClick = {
-                                if (selectedImages.isNotEmpty()) {
-                                    selectedImages.clear()
-                                    selectedImages.addAll(imageLoader.filteredImages)
+                                if (imageStorage.selectedImages.isNotEmpty()) {
+                                    imageStorage.selectAll()
 
-                                } else if (selectedImageGroups.isNotEmpty()) {
-                                    selectedImageGroups.clear()
-                                    selectedImageGroups.addAll(filteredImageGroups)
+                                } else if (imageStorage.selectedGroups.isNotEmpty()) {
+                                    imageStorage.selectAllGroups()
                                 }
                             },
                         )
                         ButtonText(
                             "Deselect all",
                             onClick = {
-                                selectedImages.clear()
-                                selectedImageGroups.clear()
+                                imageStorage.deselectAll()
+                                imageStorage.deselectAllGroups()
                             },
                         )
                         ButtonText(
                             "Delete selected images/groups",
                             onClick = {
-                                if (selectedImages.isNotEmpty()) {
+                                /*if (selectedImages.isNotEmpty()) {
                                     selectedImages.forEach { it.delete() }
                                     Properties.imagesData().images.removeAll(selectedImages)
                                     selectedImages.clear()
@@ -418,47 +396,25 @@ fun main() = application {
                                     selectedImageGroups.clear()
                                     Properties.saveData()
                                     imageLoader.update()
-                                }
+                                }*/
                             },
                         )
                         ButtonText(
                             "Save selected images in new folder",
-                            onClick = {
-                                if (selectedImages.isNotEmpty()) {
-                                    val folder = File("images_filtered")
-                                    folder.mkdir()
-                                    folder.listFiles()?.forEach { it.delete() }
-                                    selectedImages.forEach { it.saveFileTo(folder) }
-
-                                } else if (selectedImageGroups.isNotEmpty()) {
-                                    val folder = File("images_filtered")
-                                    folder.mkdir()
-                                    folder.listFiles()?.forEach { it.delete() }
-                                    selectedImageGroups.forEach { it.saveImageFilesTo(folder) }
-                                }
-                            },
+                            onClick = { imageStorage.saveImageFilesTo() },
                         )
                         ButtonText(
                             "Manage tags for all",
                             onClick = { isEditingTags = true },
                         )
-                        if (selectedImages.isNotEmpty()) {
+                        if (imageStorage.selectedImages.isNotEmpty()) {
                             ButtonText(
                                 "Create group",
-                                onClick = {
-                                    val imagePaths = selectedImages.map { it.path }.toMutableList()
-                                    val newGroup = ImageGroup(imagePaths)
-
-                                    groups.add(newGroup)
-                                    Properties.imagesData().imageGroups.add(newGroup)
-                                    Properties.saveData()
-                                },
+                                onClick = { imageStorage.createNewGroup() },
                             )
                             ButtonText(
                                 "Add to group",
-                                onClick = {
-                                    isAddingImagesToGroup = true
-                                },
+                                onClick = { isAddingImagesToGroup = true },
                             )
                         }
                     }
@@ -494,22 +450,21 @@ fun main() = application {
                                 newTags.add(it)
                         },
                         onDone = {
-                            if (selectedImages.isNotEmpty()) {
-                                selectedImages.forEach { ii ->
+                            if (imageStorage.selectedImages.isNotEmpty()) {
+                                imageStorage.selectedImages.forEach { ii ->
                                     ii.tags.addAll(newTags.filter { !ii.tags.contains(it) })
                                     ii.tags.removeAll(removeTags)
                                 }
 
-                            } else if (selectedImageGroups.isNotEmpty()) {
-                                selectedImageGroups.forEach { ig ->
+                            } else if (imageStorage.selectedGroups.isNotEmpty()) {
+                                imageStorage.selectedGroups.forEach { ig ->
                                     ig.tags.addAll(newTags.filter { !ig.tags.contains(it) })
                                     ig.tags.removeAll(removeTags)
                                 }
                             }
 
                             Properties.saveData()
-                            selectedImages.clear()
-                            selectedImageGroups.clear()
+                            imageStorage.update()
                             newTags.clear()
                             removeTags.clear()
 
@@ -536,10 +491,10 @@ fun main() = application {
                 ) {
                     ImageGroupListWindow(
                         onDone = { imageGroup ->
-                            imageGroup.imagePaths.addAll(selectedImages.map { it.path }.filter { !imageGroup.imagePaths.contains(it) })
+                            imageGroup.imagePaths.addAll(imageStorage.selectedImages.map { it.path }.filter { !imageGroup.imagePaths.contains(it) })
 
                             Properties.saveData()
-                            selectedImages.clear()
+                            imageStorage.update()
 
                             isAddingImagesToGroup = false
                         },
@@ -552,6 +507,51 @@ fun main() = application {
                             .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
                             .padding(padding),
                     )
+                }
+
+                if (true) {
+                    Column(
+                        modifier = Modifier
+                            .background(colorBackground.copy(transparencySecond))
+                            .align(Alignment.BottomEnd)
+                            .padding(padding),
+                    ) {
+                        Text(
+                            "Loaded images: ${Properties.imagesData().images.size}/${Properties.imagesData().images.count { it.isLoaded }}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Filtered images: ${Properties.imagesData().images.size}/${imageStorage.filteredImages.size}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Selected images: ${imageStorage.filteredImages.size}/${imageStorage.selectedImages.size}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Filtered groups: ${Properties.imagesData().imageGroups.size}/${imageStorage.filteredGroups.size}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Selected groups: ${imageStorage.filteredGroups.size}/${imageStorage.selectedGroups.size}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Is loading: ${imageLoader.isLoading}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Text(
+                            "Loading requests: ${imageLoader.requestAmount}",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                    }
                 }
             }
         }
