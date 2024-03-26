@@ -15,7 +15,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
@@ -159,32 +158,12 @@ private fun ImageGridWithLoadingItem(
                 showInfo = false
             }
     ) {
-        Crossfade(
-            imageInfo.isLoaded,
-            animationSpec = tween(normalAnimationDuration),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            if (!it) {
-                Image(
-                    ImageBitmap(imageInfo.width, imageInfo.height),
-                    "loading an image",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(smallCorners))
-                        .background(colorBackground),
-                )
-                LoadingIcon(
-                    contentDescription = "loading an image",
-                    modifier = Modifier.size(iconSize).align(Alignment.Center)
-                )
-            } else {
-                Image(
-                    imageInfo.scaledDownImage ?: ImageBitmap(imageInfo.width, imageInfo.height),
-                    imageInfo.name,
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
-                )
-            }
-        }
+        LoadingImage(
+            imageInfo = imageInfo,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(smallCorners))
+        )
 
         AppearDisappearAnimation(
             showInfo,

@@ -2,6 +2,7 @@ package composableFunctions
 
 import ImageGroup
 import ImageInfo
+import ImageLoader
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,6 +28,7 @@ import toState
 @Composable
 fun ImageGroupPreview(
     imageGroup: ImageGroup,
+    imageLoader: ImageLoader,
     onClose: () -> Unit = {},
     onEdit: () -> Unit = {},
     onImageSelected: (ImageInfo, List<ImageInfo>) -> Unit = { _, _ -> },
@@ -95,13 +97,14 @@ fun ImageGroupPreview(
                     .background(colorBackgroundLighter),
             )
 
-            ImageGrid(
-                imageInfo = images.filter { image ->
+            ImageGridWithLoading(
+                images = images.filter { image ->
                     val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
                     val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
                     hasSelectedTags && hasAntiSelectedTags
 
                 }.also { filteredImages = it },
+                imageLoader = imageLoader,
                 checkedList = selectedImages,
                 onCheckedClick = { imgInfo, isSelected ->
                     if (isSelected) {

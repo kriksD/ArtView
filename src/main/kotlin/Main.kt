@@ -92,6 +92,7 @@ fun main() = application {
             LeftSideMenu(
                 menuItem,
                 onOptionSelected = {
+                    menuItem = it
                     when (it) {
                         MenuItem.Images -> {
                             imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
@@ -123,7 +124,6 @@ fun main() = application {
                             imageLoader = ImageLoader()
                         }
                     }
-                    menuItem = it
                 },
                 modifier = Modifier.fillMaxHeight(),
             )
@@ -224,6 +224,11 @@ fun main() = application {
                                                 selectedTags.add(it)
                                                 antiSelectedTags.remove(it)
                                             }
+
+                                            imageStorage.updateFilterTags(selectedTags, antiSelectedTags)
+                                            imageStorage.update()
+                                            imageLoader.cancel()
+                                            imageLoader = ImageLoader()
                                         },
                                         expanded = expanded,
                                         onExpandedChange = { expanded = it },
@@ -232,16 +237,8 @@ fun main() = application {
                                             .background(colorBackgroundLighter),
                                     )
                                     ImageGroupGrid(
-                                        imageGroups = imageStorage
-                                            .also { it.filterGroups(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite()) }
-                                            .filteredGroups,
-                                        /*Properties.imagesData().imageGroups.filter { imageGroup ->
-                                            val hasSelectedTags =
-                                                selectedTags.all { tag -> imageGroup.tags.contains(tag) }
-                                            val hasAntiSelectedTags =
-                                                antiSelectedTags.none { tag -> imageGroup.tags.contains(tag) }
-                                            hasSelectedTags && hasAntiSelectedTags
-                                        }.also { filteredImageGroups = it },*/
+                                        imageGroups = imageStorage.filteredGroups,
+                                        imageLoader = imageLoader,
                                         checkedList = imageStorage.selectedGroups,
                                         onCheckedClick = { imgGroup, isSelected ->
                                             if (isSelected) {
@@ -254,7 +251,7 @@ fun main() = application {
                                             if (imageStorage.selectedGroups.isEmpty()) {
                                                 imageStorage.openGroup(it)
                                             } else {
-                                                if (imageStorage.selectedGroups.contains(it)) {
+                                                if (!imageStorage.selectedGroups.contains(it)) {
                                                     imageStorage.select(it)
                                                 } else {
                                                     imageStorage.deselect(it)
@@ -267,6 +264,7 @@ fun main() = application {
                             } else {
                                 ImageGroupPreview(
                                     imageStorage.openedImageGroup!!,
+                                    imageLoader = imageLoader,
                                     onClose = { imageStorage.closeGroup() },
                                     onEdit = { isEditingGroup = true },
                                     onSelectedUpdated = { newSelected ->

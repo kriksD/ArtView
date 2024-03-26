@@ -1,6 +1,7 @@
 package composableFunctions
 
 import ImageGroup
+import ImageLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -18,7 +19,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import bigText
@@ -29,7 +33,6 @@ import colorBackgroundSecond
 import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
-import emptyImageBitmap
 import iconSize
 import normalAnimationDuration
 import normalText
@@ -41,16 +44,20 @@ import smallCorners
 import style
 import transparencyLight
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImageGroupGrid(
     imageGroups: List<ImageGroup>,
+    imageLoader: ImageLoader,
     checkedList: List<ImageGroup> = listOf(),
     onCheckedClick: (ImageGroup, Boolean) -> Unit = { _, _ -> },
     onOpen: (ImageGroup) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var imagesPerRow by remember { mutableStateOf(8) }
-    val splitImages = imageGroups.chunked(imagesPerRow)
+    val windowSize = LocalWindowInfo.current.containerSize
+
+    var imagesPerRow by remember { mutableStateOf(4) }
+    val splitImages = imageGroups.chunked(imagesPerRow).toMutableStateList()
     val scrollState = rememberScrollState()
 
     Row(
@@ -70,6 +77,8 @@ fun ImageGroupGrid(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     row.forEach { imgGroup ->
+                        var isOnScreen by remember { mutableStateOf(false) }
+
                         ImageGroupGridItem(
                             imageGroup = imgGroup,
                             checked = checkedList.contains(imgGroup),
@@ -79,6 +88,25 @@ fun ImageGroupGrid(
                                 .weight(imgGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners))
+                                .onGloballyPositioned { c ->
+                                    val top = c.positionInWindow().y
+                                    val bottom = c.positionInWindow().y + c.size.height
+
+                                    val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
+                                    val firstImage = imgGroup.getImageInfo(0)
+                                    val secondImage = imgGroup.getImageInfo(1)
+                                    if (newValue != isOnScreen || (newValue && firstImage?.isLoaded == false && secondImage?.isLoaded == false)) {
+                                        isOnScreen = newValue
+
+                                        if (isOnScreen) {
+                                            firstImage?.let { imageLoader.loadNext(it) }
+                                            secondImage?.let { imageLoader.loadNext(it) }
+                                        } else {
+                                            firstImage?.let { imageLoader.unloadNext(it) }
+                                            secondImage?.let { imageLoader.unloadNext(it) }
+                                        }
+                                    }
+                                },
                         )
                     }
 
@@ -132,22 +160,27 @@ private fun ImageGroupGridItem(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            Image(
-                imageGroup.getImageInfo(1)?.scaledDownImage ?: emptyImageBitmap,
-                imageGroup.name,
-                modifier = Modifier
-                    .fillMaxSize(0.7F)
-                    .align(Alignment.CenterEnd)
-                    .clip(RoundedCornerShape(smallCorners)),
-            )
-            Image(
-                imageGroup.getImageInfo(0)?.scaledDownImage ?: emptyImageBitmap,
-                imageGroup.name,
-                modifier = Modifier
-                    .fillMaxSize(0.9F)
-                    .align(Alignment.CenterStart)
-                    .clip(RoundedCornerShape(smallCorners)),
-            )
+            imageGroup.getImageInfo(1)?.let {
+                LoadingImage(
+                    it,
+                    imageGroup.name,
+                    modifier = Modifier
+                        .fillMaxSize(0.7F)
+                        .align(Alignment.CenterEnd)
+                        .clip(RoundedCornerShape(smallCorners)),
+                )
+            }
+
+            imageGroup.getImageInfo(0)?.let {
+                LoadingImage(
+                    it,
+                    imageGroup.name,
+                    modifier = Modifier
+                        .fillMaxSize(0.9F)
+                        .align(Alignment.CenterStart)
+                        .clip(RoundedCornerShape(smallCorners)),
+                )
+            }
         }
 
         AppearDisappearAnimation(
