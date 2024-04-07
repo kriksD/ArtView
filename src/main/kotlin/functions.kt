@@ -1,18 +1,21 @@
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.*
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.toImage
 import properties.*
 import properties.Properties
 import properties.settings.Settings
+import java.awt.Dimension
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.imageio.ImageIO
+import javax.imageio.ImageReader
 
 
 /* -= shortcuts =- */
@@ -24,19 +27,14 @@ val style: Style get() = Properties.style()
 /* -= image functions =- */
 val emptyImageBitmap: ImageBitmap = ImageBitmap(1, 1)
 
-fun getImageBitmap(imagePath: String): ImageBitmap? {
-    return if (File(imagePath).exists())
-        Image.makeFromEncoded(File(imagePath).readBytes()).toComposeImageBitmap()
-    else
-        null
-}
-
 fun getImageBitmap(imageFile: File): ImageBitmap? {
     return if (imageFile.exists())
         Image.makeFromEncoded(imageFile.readBytes()).toComposeImageBitmap()
     else
         null
 }
+
+fun getImageBitmap(imagePath: String): ImageBitmap? = getImageBitmap(File(imagePath))
 
 fun getImageBitmap(imageBytes: ByteArray): ImageBitmap = Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
 
@@ -45,9 +43,7 @@ fun ImageBitmap.saveWebPTo(file: File) {
     data?.let { file.writeBytes(it.bytes) }
 }
 
-fun ImageBitmap.saveWebPTo(path: String) {
-    saveWebPTo(File(path))
-}
+fun ImageBitmap.saveWebPTo(path: String) = saveWebPTo(File(path))
 
 fun ImageBitmap.encodeToWebP(): ByteArray? {
     return this.toAwtImage().toImage().encodeToData(EncodedImageFormat.WEBP, 95)?.bytes
@@ -106,6 +102,26 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
 }
 
 fun ImageInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
+
+// This code is from the comment https://stackoverflow.com/a/1560052 and auto converted to Kotlin ¯\_(ツ)_/¯
+fun getImageDimensions(file: File): Dimension? {
+    ImageIO.createImageInputStream(file).use { `in` ->
+        val readers: Iterator<ImageReader> = ImageIO.getImageReaders(`in`)
+        if (readers.hasNext()) {
+            val reader: ImageReader = readers.next()
+            try {
+                reader.input = `in`
+                return Dimension(reader.getWidth(0), reader.getHeight(0))
+            } finally {
+                reader.dispose()
+            }
+        }
+    }
+
+    return null
+}
+
+fun getImageDimensions(path: String): Dimension? = getImageDimensions(File(path))
 
 
 /* -= additional functions =- */

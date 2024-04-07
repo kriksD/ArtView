@@ -115,4 +115,23 @@ data class Data(
             tags.remove(category)
         }
     }
+
+    fun countSize(): Long {
+        var sizeOfImageInfoInBytes = 0L
+
+        images.forEach { image ->
+            sizeOfImageInfoInBytes += image.name.encodeToByteArray().size
+            sizeOfImageInfoInBytes += image.path.encodeToByteArray().size
+            sizeOfImageInfoInBytes += image.description.encodeToByteArray().size
+
+            image.tags.forEach {
+                sizeOfImageInfoInBytes += it.encodeToByteArray().size
+            }
+
+            sizeOfImageInfoInBytes += 1 // width
+            sizeOfImageInfoInBytes += 1 // height
+        }
+
+        return sizeOfImageInfoInBytes
+    }
 }

@@ -2,7 +2,7 @@ package properties.data
 
 import ImageInfo
 import TagCategory
-import getImageBitmap
+import getImageDimensions
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -42,23 +42,21 @@ class DataConverter(private val file: File) {
         return try {
             if (file.exists()) {
                 val oldData = json.decodeFromString<Data2d0>(file.readText())
-                Data(
-                    DataMeta(),
-                    oldData.tags,
-                    oldData.images.mapNotNull {
-                        val image = getImageBitmap(it.path) ?: return@mapNotNull null
+                val images = oldData.images.mapNotNull {
+                    val dimensions = getImageDimensions(it.path) ?: return@mapNotNull null
 
-                        ImageInfo(
-                            it.path,
-                            image.width,
-                            image.height,
-                            it.name,
-                            it.description,
-                            it.favorite,
-                            it.tags,
-                        )
-                    }.toMutableList(),
-                )
+                    ImageInfo(
+                        it.path,
+                        dimensions.width,
+                        dimensions.height,
+                        it.name,
+                        it.description,
+                        it.favorite,
+                        it.tags,
+                    )
+                }.toMutableList()
+
+                Data(DataMeta(), oldData.tags, images)
 
             } else { null }
         } catch (e: Exception) { null }

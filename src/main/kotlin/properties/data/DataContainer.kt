@@ -2,11 +2,12 @@ package properties.data
 
 import ImageInfo
 import TagCategory
-import getImageBitmap
+import getImageDimensions
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+
 
 class DataContainer {
     var data: Data = Data()
@@ -46,8 +47,8 @@ class DataContainer {
         allFiles?.filter { f ->
             data.images.none { it.path == f.path }
         }?.forEach {
-            val image = getImageBitmap(it) ?: return@forEach
-            data.images.add(0, ImageInfo(it.path, image.width, image.height, it.name))
+            val dimensions = getImageDimensions(it.path) ?: return@forEach
+            data.images.add(0, ImageInfo(it.path, dimensions.width, dimensions.height, it.name))
         }
     }
 

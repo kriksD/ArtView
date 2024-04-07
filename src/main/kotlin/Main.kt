@@ -2,6 +2,7 @@
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
@@ -507,51 +508,82 @@ fun main() = application {
                     )
                 }
 
-                if (true) {
-                    Column(
-                        modifier = Modifier
-                            .background(colorBackground.copy(transparencySecond))
-                            .align(Alignment.BottomEnd)
-                            .padding(padding),
-                    ) {
-                        Text(
-                            "Loaded images: ${Properties.imagesData().images.size}/${Properties.imagesData().images.count { it.isLoaded }}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Filtered images: ${Properties.imagesData().images.size}/${imageStorage.filteredImages.size}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Selected images: ${imageStorage.filteredImages.size}/${imageStorage.selectedImages.size}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Filtered groups: ${Properties.imagesData().imageGroups.size}/${imageStorage.filteredGroups.size}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Selected groups: ${imageStorage.filteredGroups.size}/${imageStorage.selectedGroups.size}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Is loading: ${imageLoader.isLoading}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                        Text(
-                            "Loading requests: ${imageLoader.requestAmount}",
-                            color = colorText,
-                            fontSize = normalText,
-                        )
-                    }
-                }
+                Debug(
+                    imageStorage = imageStorage,
+                    imageLoader = imageLoader,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(biggerPadding),
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun Debug(
+    imageStorage: ImageStorage,
+    imageLoader: ImageLoader,
+    modifier: Modifier = Modifier,
+) {
+    var showDebug by remember { mutableStateOf(false) }
+    if (showDebug) {
+        Column(
+            modifier = modifier.background(colorBackground.copy(transparencySecond)),
+        ) {
+            Text(
+                "The size of text: ${Properties.imagesData().countSize()} bytes (${Properties.imagesData().countSize() / 1024} KB)",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Loaded images: ${Properties.imagesData().images.size}/${Properties.imagesData().images.count { it.isLoaded }}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Filtered images: ${Properties.imagesData().images.size}/${imageStorage.filteredImages.size}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Selected images: ${imageStorage.filteredImages.size}/${imageStorage.selectedImages.size}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Filtered groups: ${Properties.imagesData().imageGroups.size}/${imageStorage.filteredGroups.size}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Selected groups: ${imageStorage.filteredGroups.size}/${imageStorage.selectedGroups.size}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Is loading: ${imageLoader.isLoading}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Loading requests: ${imageLoader.requestAmount}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Debug",
+                color = colorTextSuccess,
+                fontSize = normalText,
+                modifier = Modifier.clickable { showDebug = false },
+            )
+        }
+    } else {
+        Text(
+            "Debug",
+            color = colorTextError,
+            fontSize = normalText,
+            modifier = modifier.clickable { showDebug = true },
+        )
     }
 }
