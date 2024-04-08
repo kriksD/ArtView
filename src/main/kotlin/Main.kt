@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
@@ -349,6 +351,7 @@ fun main() = application {
                     }
                 }
 
+                var toDelete by remember { mutableStateOf(false) }
                 var isEditingTags by remember { mutableStateOf(false) }
                 var isAddingImagesToGroup by remember { mutableStateOf(false) }
                 AppearDisappearAnimation(
@@ -381,22 +384,7 @@ fun main() = application {
                         )
                         ButtonText(
                             "Delete selected images/groups",
-                            onClick = {
-                                /*if (selectedImages.isNotEmpty()) {
-                                    selectedImages.forEach { it.delete() }
-                                    Properties.imagesData().images.removeAll(selectedImages)
-                                    selectedImages.clear()
-                                    Properties.saveData()
-                                    imageLoader.update()
-
-                                } else if (selectedImageGroups.isNotEmpty()) {
-                                    groups.removeAll(selectedImageGroups)
-                                    Properties.imagesData().imageGroups.removeAll(selectedImageGroups)
-                                    selectedImageGroups.clear()
-                                    Properties.saveData()
-                                    imageLoader.update()
-                                }*/
-                            },
+                            onClick = { toDelete = true },
                         )
                         ButtonText(
                             "Save selected images in new folder",
@@ -415,6 +403,53 @@ fun main() = application {
                                 "Add to group",
                                 onClick = { isAddingImagesToGroup = true },
                             )
+                        }
+                    }
+                }
+
+                Dialog(
+                    visible = toDelete,
+                    onCloseRequest = { toDelete = false },
+                    resizable = false,
+                    undecorated = true,
+                    transparent = true,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
+                            .padding(padding),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            "You are going to delete these images/groups forever. Are you sure?",
+                            color = colorText,
+                            fontSize = normalText,
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(padding)
+                        ) {
+                            Button(
+                                onClick = { toDelete = false },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
+                            ) {
+                                Text("No", color = colorText, fontSize = normalText)
+                            }
+
+                            Button(
+                                onClick = {
+                                    if (imageStorage.selectedImages.isNotEmpty()) {
+                                        imageStorage.delete(imageStorage.selectedImages)
+
+                                    } else if (imageStorage.selectedGroups.isNotEmpty()) {
+                                        imageStorage.deleteGroups(imageStorage.selectedGroups)
+                                    }
+
+                                    toDelete = false
+                                },
+                                colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
+                            ) {
+                                Text("Yes", color = colorText, fontSize = normalText)
+                            }
                         }
                     }
                 }

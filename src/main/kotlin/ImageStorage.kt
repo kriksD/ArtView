@@ -86,6 +86,11 @@ class ImageStorage {
         update()
     }
 
+    fun deleteGroups(images: List<ImageGroup>) {
+        Properties.imagesData().deleteGroups(images)
+        update()
+    }
+
     fun saveImageFilesTo(folder: File = File("images_filtered")) {
         folder.mkdir()
         folder.listFiles()?.forEach { it.delete() }

@@ -61,6 +61,11 @@ data class Data(
         Properties.saveData()
     }
 
+    fun deleteGroups(imagesForDeletion: List<ImageGroup>) {
+        imageGroups.removeAll(imagesForDeletion)
+        Properties.saveData()
+    }
+
     fun containsTag(tag: String): Boolean {
         tags.forEach { category ->
             if (category.tags.contains(tag)) return true
