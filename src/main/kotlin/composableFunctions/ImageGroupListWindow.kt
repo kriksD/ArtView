@@ -13,7 +13,6 @@ import border
 import colorBackgroundSecond
 import colorText
 import corners
-import emptyImageBitmap
 import normalText
 import padding
 import properties.Properties
@@ -21,8 +20,8 @@ import smallCorners
 
 @Composable
 fun ImageGroupListWindow(
-    onDone: (ImageGroup) -> Unit = {},
-    onCancel: () -> Unit = {},
+    onDone: (ImageGroup) -> Unit,
+    onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -78,13 +77,15 @@ private fun ImageGroupListItem(
         Box(
             modifier = Modifier.fillMaxWidth(0.2F).aspectRatio(1F),
         ) {
-            Image(
-                imageGroup.getImageInfo(0)?.scaledDownImage ?: emptyImageBitmap,
-                imageGroup.name,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .clip(RoundedCornerShape(smallCorners)),
-            )
+            imageGroup.getImageInfo(0)?.let {
+                LoadingImage(
+                    it,
+                    imageGroup.name,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(smallCorners)),
+                )
+            }
         }
 
         Column {

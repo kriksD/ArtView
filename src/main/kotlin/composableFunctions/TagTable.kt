@@ -355,7 +355,6 @@ private fun Tag(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun TagField(
     fieldValue: TextFieldValue,

@@ -106,7 +106,9 @@ fun main() = application {
                         }
 
                         MenuItem.Favorites -> {
-                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite())
+                            imageStorage.setFilter(
+                                FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite()
+                            )
                             imageStorage.withGroups = false
                             imageStorage.update()
                             imageLoader.cancel()
@@ -268,7 +270,10 @@ fun main() = application {
                                 ImageGroupPreview(
                                     imageStorage.openedImageGroup!!,
                                     imageLoader = imageLoader,
-                                    onClose = { imageStorage.closeGroup() },
+                                    onClose = {
+                                        imageStorage.openedImageGroup?.getImageInfoList()?.forEach { imageLoader.unloadNext(it) }
+                                        imageStorage.closeGroup()
+                                    },
                                     onEdit = { isEditingGroup = true },
                                     onSelectedUpdated = { newSelected ->
                                         newSelected.forEach { imageStorage.select(it) }
@@ -313,6 +318,7 @@ fun main() = application {
                                 val index = Properties.imagesData().images.indexOf(Properties.imagesData().images.find { it.path == newImageInfo.path })
                                 Properties.imagesData().images[index] = newImageInfo
                                 Properties.saveData()
+                                imageStorage.update(true)
                                 isEditing = false
                             },
                             modifier = Modifier
@@ -401,7 +407,16 @@ fun main() = application {
                             )
                             ButtonText(
                                 "Add to group",
-                                onClick = { isAddingImagesToGroup = true },
+                                onClick = {
+                                    Properties.imagesData().imageGroups.forEach { ig ->
+                                        ig.imagePaths.firstOrNull()?.let { path ->
+                                            Properties.imagesData().images.find { it.path == path }?.let {
+                                                imageLoader.loadNext(it)
+                                            }
+                                        }
+                                    }
+                                    isAddingImagesToGroup = true
+                                },
                             )
                         }
                     }

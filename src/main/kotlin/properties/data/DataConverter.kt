@@ -2,6 +2,7 @@ package properties.data
 
 import ImageInfo
 import TagCategory
+import getImageBitmap
 import getImageDimensions
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -9,6 +10,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import properties.data.oldData.Data2d0
 import properties.data.oldData.Data1d0
+import java.awt.Dimension
 import java.io.File
 
 class DataConverter(private val file: File) {
@@ -43,7 +45,12 @@ class DataConverter(private val file: File) {
             if (file.exists()) {
                 val oldData = json.decodeFromString<Data2d0>(file.readText())
                 val images = oldData.images.mapNotNull {
-                    val dimensions = getImageDimensions(it.path) ?: return@mapNotNull null
+                    val dimensions = getImageDimensions(it.path)
+                        ?: run {
+                            val image = getImageBitmap(it.path) ?: return@run null
+                            Dimension(image.width, image.height)
+                        }
+                        ?: run { println("Failed to convert: ${it.path}"); return@mapNotNull null }
 
                     ImageInfo(
                         it.path,
@@ -56,7 +63,7 @@ class DataConverter(private val file: File) {
                     )
                 }.toMutableList()
 
-                Data(DataMeta(), oldData.tags, images)
+                Data(DataMeta(), oldData.tags, images, oldData.imageGroups)
 
             } else { null }
         } catch (e: Exception) { null }

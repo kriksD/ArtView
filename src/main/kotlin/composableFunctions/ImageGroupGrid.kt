@@ -68,7 +68,13 @@ fun ImageGroupGrid(
                 .weight(1F)
                 .verticalScroll(scrollState)
                 .onSizeChanged {
+                    val previousImagesPerRow = imagesPerRow
                     imagesPerRow = it.width / style.image_width
+
+                    if (imagesPerRow != previousImagesPerRow) {
+                        splitImages.clear()
+                        splitImages.addAll(imageGroups.chunked(imagesPerRow))
+                    }
                 }
         ) {
             splitImages.forEach { row ->
@@ -95,7 +101,7 @@ fun ImageGroupGrid(
                                     val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
                                     val firstImage = imgGroup.getImageInfo(0)
                                     val secondImage = imgGroup.getImageInfo(1)
-                                    if (newValue != isOnScreen || (newValue && firstImage?.isLoaded == false && secondImage?.isLoaded == false)) {
+                                    if (newValue != isOnScreen || (newValue && (firstImage?.isLoaded == false || secondImage?.isLoaded == false))) {
                                         isOnScreen = newValue
 
                                         if (isOnScreen) {
@@ -148,6 +154,7 @@ private fun ImageGroupGridItem(
     Box(
         modifier = modifier
             .fillMaxSize()
+            .aspectRatio(imageGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
             .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {

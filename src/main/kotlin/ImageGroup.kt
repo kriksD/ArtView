@@ -16,6 +16,10 @@ data class ImageGroup(
         return Properties.imagesData().images.find { it.path == imagePaths.getOrNull(index) }
     }
 
+    fun getImageInfoList(): List<ImageInfo> {
+        return imagePaths.mapNotNull { path -> Properties.imagesData().images.find { it.path == path } }
+    }
+
     fun saveImageFilesTo(folder: File) {
         imagePaths.forEach {
             File(it).copyTo(

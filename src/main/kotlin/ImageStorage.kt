@@ -36,16 +36,20 @@ class ImageStorage {
         lastFilter = filter
     }
 
-    fun update() {
+    fun update(withoutClosing: Boolean = false) {
         selectedImages.clear()
-        opened = null
         filter(lastFilter)
+        opened = if (!withoutClosing) {
+            null
+        } else {
+            filteredImages.find { it.path == opened?.path }
+        }
 
+        selectedGroups.clear()
         if (withGroups) {
             filterGroups(lastFilter)
         } else {
             filteredGroups.clear()
-            selectedGroups.clear()
             openedGroup = null
         }
     }

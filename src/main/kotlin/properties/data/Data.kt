@@ -4,6 +4,7 @@ import ImageGroup
 import ImageInfo
 import TagCategory
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toPixelMap
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import properties.Properties
@@ -142,5 +143,5 @@ data class Data(
 
     fun countImageSize(): Long = images
         .filter { it.isLoaded }
-        .sumOf { it.scaledDownImage!!.height.toLong() * it.scaledDownImage!!.width.toLong() * 4L * 4L }
+        .sumOf { it.scaledDownImage!!.toPixelMap().buffer.size * 16L }
 }
