@@ -97,7 +97,7 @@ fun ImageGroupPreview(
                     .background(colorBackgroundLighter),
             )
 
-            ImageGridWithLoading(
+            ImageGrid(
                 images = images.filter { image ->
                     val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
                     val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }

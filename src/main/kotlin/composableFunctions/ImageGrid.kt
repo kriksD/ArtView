@@ -1,6 +1,7 @@
 package composableFunctions
 
 import ImageInfo
+import ImageLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import bigText
@@ -27,7 +29,6 @@ import colorBackgroundSecond
 import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
-import emptyImageBitmap
 import iconSize
 import normalAnimationDuration
 import normalText
@@ -39,39 +40,21 @@ import smallCorners
 import style
 import transparencyLight
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImageGrid(
-    imageInfo: List<ImageInfo>,
+    images: List<ImageInfo>,
+    imageLoader: ImageLoader,
     checkedList: List<ImageInfo> = listOf(),
     onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
     onOpen: (ImageInfo) -> Unit = {},
-    onEndReached: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var imagesPerRow by remember { mutableStateOf(8) }
-    val splitImages = imageInfo.chunked(imagesPerRow)
+    val windowSize = LocalWindowInfo.current.containerSize
+
+    var imagesPerRow by remember { mutableStateOf(4) }
+    val splitImages = images.chunked(imagesPerRow).toMutableStateList()
     val scrollState = rememberScrollState()
-
-    var onEndReachedCalled by remember { mutableStateOf(false) }
-    LaunchedEffect(scrollState) {
-        if (imageInfo.isEmpty()) {
-            onEndReached(imagesPerRow)
-        }
-
-        snapshotFlow { scrollState.value }
-            .collect {
-                if (!scrollState.canScrollForward && !scrollState.canScrollBackward) {
-                    onEndReached(imagesPerRow)
-                }
-
-                onEndReachedCalled = if (!scrollState.canScrollForward && !onEndReachedCalled) {
-                    onEndReached(imagesPerRow)
-                    true
-                } else {
-                    false
-                }
-            }
-    }
 
     Row(
         modifier = modifier,
@@ -81,7 +64,13 @@ fun ImageGrid(
                 .weight(1F)
                 .verticalScroll(scrollState)
                 .onSizeChanged {
+                    val previousImagesPerRow = imagesPerRow
                     imagesPerRow = it.width / style.image_width
+
+                    if (imagesPerRow != previousImagesPerRow) {
+                        splitImages.clear()
+                        splitImages.addAll(images.chunked(imagesPerRow))
+                    }
                 }
         ) {
             splitImages.forEach { row ->
@@ -90,6 +79,8 @@ fun ImageGrid(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     row.forEach { imgInfo ->
+                        var isOnScreen by remember { mutableStateOf(false) }
+
                         ImageGridItem(
                             imageInfo = imgInfo,
                             checked = checkedList.contains(imgInfo),
@@ -99,6 +90,21 @@ fun ImageGrid(
                                 .weight(imgInfo.calculateWeight())
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners))
+                                .onGloballyPositioned { c ->
+                                    val top = c.positionInWindow().y
+                                    val bottom = c.positionInWindow().y + c.size.height
+
+                                    val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
+                                    if (newValue != isOnScreen || (newValue && !imgInfo.isLoaded)) {
+                                        isOnScreen = newValue
+
+                                        if (isOnScreen) {
+                                            imageLoader.loadNext(imgInfo)
+                                        } else {
+                                            imageLoader.unloadNext(imgInfo)
+                                        }
+                                    }
+                                },
                         )
                     }
 
@@ -152,10 +158,11 @@ private fun ImageGridItem(
                 showInfo = false
             }
     ) {
-        Image(
-            imageInfo.scaledDownImage ?: emptyImageBitmap,
-            imageInfo.name,
-            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
+        LoadingImage(
+            imageInfo = imageInfo,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(smallCorners))
         )
 
         AppearDisappearAnimation(

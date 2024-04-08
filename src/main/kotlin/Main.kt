@@ -170,7 +170,7 @@ fun main() = application {
                                     .background(colorBackgroundLighter),
                             )
 
-                            ImageGridWithLoading(
+                            ImageGrid(
                                 images = imageStorage.filteredImages,
                                 imageLoader = imageLoader,
                                 checkedList = imageStorage.selectedImages,
@@ -533,6 +533,11 @@ private fun Debug(
         ) {
             Text(
                 "The size of text: ${Properties.imagesData().countSize()} bytes (${Properties.imagesData().countSize() / 1024} KB)",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "The size of images: ${Properties.imagesData().countImageSize() / 1024} KB (${Properties.imagesData().countImageSize() / 1024 / 1024} MB)",
                 color = colorText,
                 fontSize = normalText,
             )

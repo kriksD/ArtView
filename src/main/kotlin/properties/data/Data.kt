@@ -6,6 +6,7 @@ import TagCategory
 import androidx.compose.ui.graphics.ImageBitmap
 import getImageBitmap
 import kotlinx.serialization.Serializable
+import properties.Properties
 import saveWebPTo
 import uniqueName
 import java.io.File
@@ -53,12 +54,11 @@ data class Data(
         }
     }
 
-    fun delete(imageInfo: ImageInfo) {
-        val found = images.find { it.path == imageInfo.path }
-        found?.let {
-            images.remove(it)
-            it.delete()
-        }
+    fun delete(imagesForDeletion: List<ImageInfo>) {
+        images.removeAll(imagesForDeletion)
+        imageGroups.forEach { ig -> ig.imagePaths.removeAll(imagesForDeletion.map { it.path }) }
+        imagesForDeletion.forEach { it.delete() }
+        Properties.saveData()
     }
 
     fun containsTag(tag: String): Boolean {
@@ -134,4 +134,8 @@ data class Data(
 
         return sizeOfImageInfoInBytes
     }
+
+    fun countImageSize(): Long = images
+        .filter { it.isLoaded }
+        .sumOf { it.scaledDownImage!!.height.toLong() * it.scaledDownImage!!.width.toLong() * 4L * 4L }
 }

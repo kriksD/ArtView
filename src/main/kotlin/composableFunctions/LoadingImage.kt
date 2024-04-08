@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
+import calculateWeight
 import colorBackground
 import iconSize
 import normalAnimationDuration
@@ -32,13 +34,12 @@ fun LoadingImage(
             modifier = Modifier.fillMaxSize(),
         ) {
             if (!it) {
-                Image(
-                    ImageBitmap(imageInfo.width, imageInfo.height),
-                    "loading an image",
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .aspectRatio(imageInfo.calculateWeight())
                         .clip(RoundedCornerShape(smallCorners))
-                        .background(colorBackground),
+                        .background(colorBackground)
                 )
                 LoadingIcon(
                     contentDescription = "loading an image",
@@ -48,7 +49,7 @@ fun LoadingImage(
                 Image(
                     imageInfo.scaledDownImage ?: ImageBitmap(imageInfo.width, imageInfo.height),
                     description,
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)),
+                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)).background(colorBackground),
                 )
             }
         }

@@ -18,7 +18,7 @@ class ImageLoader {
         scope.launch {
             mutex.withLock {
                 if (loadRequests.contains(image)) return@launch
-                if (unloadRequests.contains(image)/* && unloadRequests.firstOrNull() != image*/) unloadRequests.remove(image)
+                if (unloadRequests.contains(image)) unloadRequests.remove(image)
 
                 loadRequests.add(image)
             }
@@ -29,7 +29,7 @@ class ImageLoader {
         scope.launch {
             mutex.withLock {
                 if (unloadRequests.contains(image)) return@launch
-                if (loadRequests.contains(image)/* && unloadRequests.firstOrNull() != image*/) loadRequests.remove(image)
+                if (loadRequests.contains(image)) loadRequests.remove(image)
 
                 unloadRequests.add(image)
             }

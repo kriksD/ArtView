@@ -82,10 +82,7 @@ class ImageStorage {
     }
 
     fun delete(images: List<ImageInfo>) {
-        Properties.imagesData().images.removeAll(images)
-        Properties.imagesData().imageGroups.forEach { ig -> ig.imagePaths.removeAll(images.map { it.path }) }
-        images.forEach { it.delete() }
-        Properties.saveData()
+        Properties.imagesData().delete(images)
         update()
     }
 

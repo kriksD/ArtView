@@ -24,13 +24,13 @@ data class ImageInfo(
     fun load() {
         if (scaledDownImage != null) return
 
-        scaledDownImage = try {
-            val newImage = image
-            val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
-            scaledDownImage = newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
-            newImage
+        val newImage = image
 
-        } catch (e: Exception) { image }
+        scaledDownImage = try {
+            val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
+            newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
+
+        } catch (e: Exception) { newImage }
     }
 
     fun unload() {
