@@ -1,25 +1,25 @@
-class FilterBuilder {
+class Filter {
     private var filterTags: List<String>? = null
     private var filterAntiTags: List<String>? = null
     private var imageGroup: ImageGroup? = null
     private var filterFavorite: Boolean = false
 
-    fun tags(filterTags: List<String>): FilterBuilder {
+    fun tags(filterTags: List<String>): Filter {
         this.filterTags = filterTags
         return this
     }
 
-    fun antiTags(filterAntiTags: List<String>): FilterBuilder {
+    fun antiTags(filterAntiTags: List<String>): Filter {
         this.filterAntiTags = filterAntiTags
         return this
     }
 
-    fun group(imageGroup: ImageGroup): FilterBuilder {
+    fun group(imageGroup: ImageGroup): Filter {
         this.imageGroup = imageGroup
         return this
     }
 
-    fun favorite(): FilterBuilder {
+    fun favorite(): Filter {
         filterFavorite = true
         return this
     }

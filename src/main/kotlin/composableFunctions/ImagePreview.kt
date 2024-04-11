@@ -3,7 +3,6 @@ package composableFunctions
 import ImageInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,9 +12,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Dialog
 import bigIconSize
 import colorBackground
@@ -23,7 +22,6 @@ import colorBackgroundLighter
 import colorBackgroundSecondLighter
 import colorText
 import corners
-import emptyImageBitmap
 import hugeText
 import iconSize
 import normalAnimationDuration
@@ -63,21 +61,25 @@ fun ImagePreview(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        imgData.name,
+                        "",
                         color = colorText,
                         fontSize = hugeText,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(colorBackground.copy(alpha = transparency))
                             .padding(padding),
                     )
 
-                    Image(
-                        imgData.image ?: emptyImageBitmap,
-                        imgData.name,
+                    var imageScale by remember { mutableStateOf(1F) }
+                    var imageOffset by remember { mutableStateOf(IntOffset(0, 0)) }
+                    ScalableImage(
+                        imageInfo = imgData,
+                        scale = imageScale,
+                        onScaleChange = { imageScale = it },
+                        offset = imageOffset,
+                        onOffsetChange = { imageOffset = it },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1F)
+                            .weight(1F),
                     )
 
                     var expanded by remember { mutableStateOf(false) }
@@ -184,6 +186,17 @@ fun ImagePreview(
                         )
                     }
                 }
+
+                Text(
+                    imgData.name,
+                    color = colorText,
+                    fontSize = hugeText,
+                    modifier = Modifier
+                        .fillMaxWidth(0.5F)
+                        .background(colorBackground.copy(alpha = transparency))
+                        .padding(padding)
+                        .align(Alignment.TopCenter),
+                )
 
                 Icon(
                     Icons.Default.Close,

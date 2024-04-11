@@ -12,9 +12,9 @@ class ImageStorage {
     val selectedGroups = mutableStateListOf<ImageGroup>()
     private var openedGroup by mutableStateOf<ImageGroup?>(null)
 
-    private var lastFilter: FilterBuilder = FilterBuilder()
+    private var lastFilter: Filter = Filter()
 
-    fun setFilter(filter: FilterBuilder) {
+    fun setFilter(filter: Filter) {
         lastFilter = filter
     }
 
@@ -22,14 +22,14 @@ class ImageStorage {
         filter(lastFilter.antiTags(antiTags).tags(tags))
     }
 
-    fun filter(filter: FilterBuilder) {
+    fun filter(filter: Filter) {
         filteredImages.clear()
         selectedImages.clear()
         filteredImages.addAll(filter.filter(Properties.imagesData().images))
         lastFilter = filter
     }
 
-    fun filterGroups(filter: FilterBuilder) {
+    fun filterGroups(filter: Filter) {
         filteredGroups.clear()
         selectedGroups.clear()
         filteredGroups.addAll(filter.filterGroups(Properties.imagesData().imageGroups))

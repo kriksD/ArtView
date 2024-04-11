@@ -46,7 +46,7 @@ fun main() = application {
         antiSelectedTags.addAll(settings.anti_selected_tags_by_default)
         selectedTags.addAll(settings.selected_tags_by_default)
 
-        imageStorage.filter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+        imageStorage.filter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
     }
 
     LaunchedEffect(imageLoader) {
@@ -98,7 +98,7 @@ fun main() = application {
                     menuItem = it
                     when (it) {
                         MenuItem.Images -> {
-                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.setFilter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
                             imageStorage.withGroups = false
                             imageStorage.update()
                             imageLoader.cancel()
@@ -107,7 +107,7 @@ fun main() = application {
 
                         MenuItem.Favorites -> {
                             imageStorage.setFilter(
-                                FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags).favorite()
+                                Filter().tags(selectedTags).antiTags(antiSelectedTags).favorite()
                             )
                             imageStorage.withGroups = false
                             imageStorage.update()
@@ -116,7 +116,7 @@ fun main() = application {
                         }
 
                         MenuItem.Groups -> {
-                            imageStorage.setFilter(FilterBuilder().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.setFilter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
                             imageStorage.withGroups = true
                             imageStorage.update()
                             imageLoader.cancel()
