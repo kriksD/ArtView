@@ -50,17 +50,18 @@ class ImageLoader {
     suspend fun load() = coroutineScope {
         launch(Dispatchers.Default) {
             while(isRunning) {
-                if (loadRequests.isNotEmpty()) {
+                if (unloadRequests.isNotEmpty()) {
+                    val image = mutex.withLock {
+                        unloadRequests.removeFirst()
+                    }
+                    image.unload()
+
+                } else if (loadRequests.isNotEmpty()) {
                     val image = mutex.withLock {
                         loadRequests.removeFirst()
                     }
                     image.load()
 
-                } else if (unloadRequests.isNotEmpty()) {
-                    val image = mutex.withLock {
-                        unloadRequests.removeFirst()
-                    }
-                    image.unload()
                 }
 
                 delay(30)

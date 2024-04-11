@@ -97,7 +97,7 @@ fun ScalableImage(
 
         if (scale != 1F || offset != IntOffset(0, 0)) {
             Text(
-                "Scale: $scale | Offset: $offset",
+                "Scale: $scale\nOffset: $offset",
                 color = colorText,
                 fontSize = tinyText,
                 modifier = Modifier
