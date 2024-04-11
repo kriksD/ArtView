@@ -108,7 +108,10 @@ class ImageStorage {
     }
 
     fun createNewGroup() {
-        val newGroup = ImageGroup(selectedImages.map { it.path }.toMutableList())
+        val newGroup = ImageGroup(
+            imagePaths = selectedImages.map { it.path }.toMutableList(),
+            tags = selectedImages.map { it.tags }.flatten().distinct().toMutableList(),
+        )
         Properties.imagesData().imageGroups.add(newGroup)
         Properties.saveData()
         update()
