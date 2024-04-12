@@ -17,7 +17,7 @@ class ImageLoader {
     fun loadNext(image: ImageInfo) {
         scope.launch {
             mutex.withLock {
-                if (loadRequests.contains(image)) return@launch
+                if (loadRequests.contains(image)) return@withLock
                 if (unloadRequests.contains(image)) unloadRequests.remove(image)
 
                 loadRequests.add(image)
@@ -28,7 +28,7 @@ class ImageLoader {
     fun unloadNext(image: ImageInfo) {
         scope.launch {
             mutex.withLock {
-                if (unloadRequests.contains(image)) return@launch
+                if (unloadRequests.contains(image)) return@withLock
                 if (loadRequests.contains(image)) loadRequests.remove(image)
 
                 unloadRequests.add(image)
@@ -64,7 +64,7 @@ class ImageLoader {
 
                 }
 
-                delay(30)
+                delay(1)
             }
         }
     }
