@@ -275,12 +275,16 @@ fun main() = application {
                                         imageStorage.closeGroup()
                                     },
                                     onEdit = { isEditingGroup = true },
+                                    onDelete = {
+                                        imageStorage.deleteGroups(listOfNotNull(imageStorage.openedImageGroup))
+                                        imageStorage.closeGroup()
+                                    },
                                     onSelectedUpdated = { newSelected ->
                                         newSelected.forEach { imageStorage.select(it) }
                                     },
                                     onImageSelected = { img, _ ->
                                         imageStorage.open(img)
-                                    }
+                                    },
                                 )
                             }
                         }
