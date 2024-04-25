@@ -21,7 +21,6 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import bigText
 import border
 import calculateWeight
 import colorBackground
@@ -173,7 +172,9 @@ private fun ImageGridItem(
                 Text(
                     imageInfo.name,
                     color = colorText,
-                    fontSize = bigText,
+                    fontSize = normalText,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(colorBackground.copy(alpha = transparencyLight))

@@ -13,16 +13,17 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Dialog
 import bigIconSize
+import bigText
 import colorBackground
 import colorBackgroundLighter
 import colorBackgroundSecondLighter
 import colorText
 import corners
-import hugeText
 import iconSize
 import normalAnimationDuration
 import normalText
@@ -61,12 +62,13 @@ fun ImagePreview(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
-                        "",
+                        imgData.name,
                         color = colorText,
-                        fontSize = hugeText,
+                        fontSize = bigText,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(padding),
+                            .padding(padding)
+                            .alpha(0.0F),
                     )
 
                     var imageScale by remember { mutableStateOf(1F) }
@@ -190,7 +192,7 @@ fun ImagePreview(
                 Text(
                     imgData.name,
                     color = colorText,
-                    fontSize = hugeText,
+                    fontSize = bigText,
                     modifier = Modifier
                         .fillMaxWidth(0.5F)
                         .background(colorBackground.copy(alpha = transparency))

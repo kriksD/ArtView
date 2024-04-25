@@ -30,7 +30,6 @@ import padding
 import properties.Properties
 import settings
 import smallCorners
-import toState
 
 @Composable
 fun SettingsScreen(
@@ -54,13 +53,29 @@ private fun Options(
     ) {
         Text("Options:", color = colorText, fontSize = bigText)
 
-        var autoSelectCreatedTagsValue by remember { mutableStateOf(settings.auto_select_created_tags) }
         CheckboxText(
             text = "Auto select created tags",
-            value = autoSelectCreatedTagsValue,
+            value = settings.autoSelectCreatedTags,
             onValueChange = {
-                autoSelectCreatedTagsValue = it
-                settings.auto_select_created_tags = it
+                settings.autoSelectCreatedTags = it
+                Properties.saveSettings()
+            },
+        )
+
+        CheckboxText(
+            text = "Add tags to created groups",
+            value = settings.addTagsToCreatedGroups,
+            onValueChange = {
+                settings.addTagsToCreatedGroups = it
+                Properties.saveSettings()
+            },
+        )
+
+        CheckboxText(
+            text = "Show debug",
+            value = settings.showDebug,
+            onValueChange = {
+                settings.showDebug = it
                 Properties.saveSettings()
             },
         )
@@ -215,8 +230,6 @@ private fun NewTagCategoryCard(
 private fun TagSelectionByDefault(
     modifier: Modifier = Modifier,
 ) {
-    val selectedByDefault = remember { settings.selected_tags_by_default.toState() }
-    val antiSelectedByDefault = remember { settings.anti_selected_tags_by_default.toState() }
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {
@@ -224,28 +237,24 @@ private fun TagSelectionByDefault(
 
         TagTableWithCategories(
             Properties.imagesData().tags,
-            selectedByDefault,
-            antiSelectedByDefault,
+            settings.selectedTagsByDefault,
+            settings.antiSelectedTagsByDefault,
             expanded = expanded,
             onExpandedChange = { expanded = it },
             onTagClick = {
-                if (selectedByDefault.contains(it)) {
-                    selectedByDefault.remove(it)
-                    antiSelectedByDefault.add(it)
+                if (settings.selectedTagsByDefault.contains(it)) {
+                    settings.selectedTagsByDefault.remove(it)
+                    settings.antiSelectedTagsByDefault.add(it)
 
-                } else if (antiSelectedByDefault.contains(it)) {
-                    selectedByDefault.remove(it)
-                    antiSelectedByDefault.remove(it)
+                } else if (settings.antiSelectedTagsByDefault.contains(it)) {
+                    settings.selectedTagsByDefault.remove(it)
+                    settings.antiSelectedTagsByDefault.remove(it)
 
                 } else {
-                    selectedByDefault.add(it)
-                    antiSelectedByDefault.remove(it)
+                    settings.selectedTagsByDefault.add(it)
+                    settings.antiSelectedTagsByDefault.remove(it)
                 }
 
-                settings.selected_tags_by_default.clear()
-                settings.selected_tags_by_default.addAll(selectedByDefault)
-                settings.anti_selected_tags_by_default.clear()
-                settings.anti_selected_tags_by_default.addAll(antiSelectedByDefault)
                 Properties.saveSettings()
             },
             modifier = Modifier.fillMaxWidth(),

@@ -83,7 +83,7 @@ fun EditImageWindow(
                 }
             },
             onNew = {
-                if (settings.auto_select_created_tags)
+                if (settings.autoSelectCreatedTags)
                     selectedTags.add(it)
             },
             modifier = Modifier.weight(1F),
@@ -180,7 +180,7 @@ fun EditImageGroupWindow(
                 }
             },
             onNew = {
-                if (settings.auto_select_created_tags)
+                if (settings.autoSelectCreatedTags)
                     selectedTags.add(it)
             },
             modifier = Modifier.weight(1F),

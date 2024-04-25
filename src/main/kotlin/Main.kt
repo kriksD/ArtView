@@ -43,8 +43,8 @@ fun main() = application {
         isFirstTime = false
 
         File("images").mkdir()
-        antiSelectedTags.addAll(settings.anti_selected_tags_by_default)
-        selectedTags.addAll(settings.selected_tags_by_default)
+        antiSelectedTags.addAll(settings.antiSelectedTagsByDefault)
+        selectedTags.addAll(settings.selectedTagsByDefault)
 
         imageStorage.filter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
     }
@@ -495,7 +495,7 @@ fun main() = application {
                             }
                         },
                         onNew = {
-                            if (settings.auto_select_created_tags)
+                            if (settings.autoSelectCreatedTags)
                                 newTags.add(it)
                         },
                         onDone = {
@@ -558,13 +558,15 @@ fun main() = application {
                     )
                 }
 
-                Debug(
-                    imageStorage = imageStorage,
-                    imageLoader = imageLoader,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(biggerPadding),
-                )
+                if (settings.showDebug) {
+                    Debug(
+                        imageStorage = imageStorage,
+                        imageLoader = imageLoader,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(biggerPadding),
+                    )
+                }
             }
         }
     }
