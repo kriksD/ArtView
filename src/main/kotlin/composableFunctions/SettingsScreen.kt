@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
@@ -24,10 +23,13 @@ import biggerPadding
 import colorBackground
 import colorBackgroundLighter
 import colorText
+import colorTextSecond
+import corners
 import iconSize
 import normalText
 import padding
 import properties.Properties
+import properties.settings.TagControlsPosition
 import settings
 import smallCorners
 
@@ -38,6 +40,7 @@ fun SettingsScreen(
     Column(modifier = modifier) {
         TagSelectionByDefault(modifier = Modifier.fillMaxWidth())
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+            TagControlsPositionOptions(modifier = Modifier.fillMaxWidth())
             Options(modifier = Modifier.fillMaxWidth())
             TagsCategories(modifier = Modifier.fillMaxWidth())
         }
@@ -163,7 +166,6 @@ private fun TagCategoryCard(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun NewTagCategoryCard(
     nameValue: String,
@@ -260,4 +262,81 @@ private fun TagSelectionByDefault(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+@Composable
+private fun TagControlsPositionOptions(
+    modifier: Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text("Tag controls position:", color = colorText, fontSize = bigText)
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Add button:",
+                color = colorText,
+                fontSize = normalText,
+                modifier = Modifier
+            )
+
+            TagControlsPositionMenu(
+                value = settings.addTagButtonPosition,
+                onSelect = {
+                    settings.addTagButtonPosition = it
+                    Properties.saveSettings()
+                },
+                modifier = Modifier
+                    .padding(padding),
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Filter button:",
+                color = colorText,
+                fontSize = normalText,
+                modifier = Modifier
+            )
+
+            TagControlsPositionMenu(
+                value = settings.filterTagButtonPosition,
+                onSelect = {
+                    settings.filterTagButtonPosition = it
+                    Properties.saveSettings()
+                },
+                modifier = Modifier
+                    .padding(padding),
+            )
+        }
+    }
+}
+
+@Composable
+private fun TagControlsPositionMenu(
+    value: TagControlsPosition,
+    onSelect: (TagControlsPosition) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    Menu(
+        value,
+        TagControlsPosition.entries,
+        onSelect = { onSelect(it as TagControlsPosition) },
+        itemContent = { item, type ->
+            Text(
+                (item as TagControlsPosition).toString(),
+                color = if (type == MenuItemType.ListSelected) colorTextSecond else colorText,
+                fontSize = normalText,
+                modifier = Modifier
+                    .background(colorBackground, RoundedCornerShape(corners))
+                    .padding(padding),
+            )
+        },
+        modifier = modifier,
+    )
 }

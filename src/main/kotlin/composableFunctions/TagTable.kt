@@ -34,6 +34,8 @@ import normalAnimationDuration
 import normalText
 import padding
 import properties.Properties
+import properties.settings.TagControlsPosition
+import settings
 import smallCorners
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -263,6 +265,42 @@ private fun AllTags(
     var newTagText by remember { mutableStateOf<TextFieldValue?>(null) }
     var tagFilter by remember { mutableStateOf<TextFieldValue?>(null) }
 
+    if (controls) {
+        if (settings.addTagButtonPosition == TagControlsPosition.Right || settings.addTagButtonPosition == TagControlsPosition.Both) {
+            AppearDisappearAnimation(
+                newTagText != null,
+                normalAnimationDuration,
+            ) {
+                TagField(
+                    newTagText ?: TextFieldValue(),
+                    onValueChange = { newTagText = it },
+                    onFinish = {
+                        onNew(newTagText?.text ?: "")
+                        newTagText = null
+                    },
+                )
+            }
+
+            AddTag(onClick = { newTagText = TextFieldValue() })
+        }
+
+        if (settings.filterTagButtonPosition == TagControlsPosition.Right || settings.filterTagButtonPosition == TagControlsPosition.Both) {
+            AppearDisappearAnimation(
+                tagFilter != null,
+                normalAnimationDuration,
+            ) {
+                TagField(
+                    tagFilter ?: TextFieldValue(),
+                    onValueChange = { tagFilter = it },
+                    onFinish = { tagFilter = null },
+                    icon = Icons.Default.Close,
+                )
+            }
+
+            FilterTag(onClick = { tagFilter = TextFieldValue() })
+        }
+    }
+
     tags.filter { it.contains(tagFilter?.text.orEmpty(), true) }.forEach { tag ->
         Tag(
             text = tag,
@@ -277,34 +315,39 @@ private fun AllTags(
     }
 
     if (controls) {
-        AppearDisappearAnimation(
-            newTagText != null,
-            normalAnimationDuration,
-        ) {
-            TagField(
-                newTagText ?: TextFieldValue(),
-                onValueChange = { newTagText = it },
-                onFinish = {
-                    onNew(newTagText?.text ?: "")
-                    newTagText = null
-                },
-            )
+        if (settings.addTagButtonPosition == TagControlsPosition.Left || settings.addTagButtonPosition == TagControlsPosition.Both) {
+            AppearDisappearAnimation(
+                newTagText != null,
+                normalAnimationDuration,
+            ) {
+                TagField(
+                    newTagText ?: TextFieldValue(),
+                    onValueChange = { newTagText = it },
+                    onFinish = {
+                        onNew(newTagText?.text ?: "")
+                        newTagText = null
+                    },
+                )
+            }
+
+            AddTag(onClick = { newTagText = TextFieldValue() })
         }
 
-        AppearDisappearAnimation(
-            tagFilter != null,
-            normalAnimationDuration,
-        ) {
-            TagField(
-                tagFilter ?: TextFieldValue(),
-                onValueChange = { tagFilter = it },
-                onFinish = { tagFilter = null },
-                icon = Icons.Default.Close,
-            )
-        }
+        if (settings.filterTagButtonPosition == TagControlsPosition.Left || settings.filterTagButtonPosition == TagControlsPosition.Both) {
+            AppearDisappearAnimation(
+                tagFilter != null,
+                normalAnimationDuration,
+            ) {
+                TagField(
+                    tagFilter ?: TextFieldValue(),
+                    onValueChange = { tagFilter = it },
+                    onFinish = { tagFilter = null },
+                    icon = Icons.Default.Close,
+                )
+            }
 
-        AddTag(onClick = { newTagText = TextFieldValue() })
-        FilterTag(onClick = { tagFilter = TextFieldValue() })
+            FilterTag(onClick = { tagFilter = TextFieldValue() })
+        }
     }
 }
 

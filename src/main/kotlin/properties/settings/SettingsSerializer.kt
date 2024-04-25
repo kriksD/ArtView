@@ -40,7 +40,7 @@ class SettingsSerializer : KSerializer<Settings> {
                 4 -> settings.autoSelectCreatedTags = decodeBooleanElement(descriptor, 4)
                 5 -> settings.addTagsToCreatedGroups = decodeBooleanElement(descriptor, 5)
                 6 -> settings.addTagButtonPosition = decodeSerializableElement(descriptor, 6, TagControlsPosition.serializer())
-                7 -> settings.searchTagButtonPosition = decodeSerializableElement(descriptor, 7, TagControlsPosition.serializer())
+                7 -> settings.filterTagButtonPosition = decodeSerializableElement(descriptor, 7, TagControlsPosition.serializer())
                 8 -> settings.showDebug = decodeBooleanElement(descriptor, 8)
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -57,7 +57,7 @@ class SettingsSerializer : KSerializer<Settings> {
         encodeBooleanElement(descriptor, 4, value.autoSelectCreatedTags)
         encodeBooleanElement(descriptor, 5, value.addTagsToCreatedGroups)
         encodeSerializableElement(descriptor, 6, TagControlsPosition.serializer(), value.addTagButtonPosition)
-        encodeSerializableElement(descriptor, 7, TagControlsPosition.serializer(), value.searchTagButtonPosition)
+        encodeSerializableElement(descriptor, 7, TagControlsPosition.serializer(), value.filterTagButtonPosition)
         encodeBooleanElement(descriptor, 8, value.showDebug)
     }
 }

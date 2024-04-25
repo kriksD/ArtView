@@ -16,7 +16,7 @@ class Settings(
     addTagsToCreatedGroups: Boolean = false,
     showDebug: Boolean = false,
     addTagButtonPosition: TagControlsPosition = TagControlsPosition.Right,
-    searchTagButtonPosition: TagControlsPosition = TagControlsPosition.Right,
+    filterTagButtonPosition: TagControlsPosition = TagControlsPosition.Right,
 ) {
     var language by mutableStateOf(language)
     var background by mutableStateOf(background)
@@ -26,5 +26,5 @@ class Settings(
     var addTagsToCreatedGroups by mutableStateOf(addTagsToCreatedGroups)
     var showDebug by mutableStateOf(showDebug)
     var addTagButtonPosition by mutableStateOf(addTagButtonPosition)
-    var searchTagButtonPosition by mutableStateOf(searchTagButtonPosition)
+    var filterTagButtonPosition by mutableStateOf(filterTagButtonPosition)
 }
