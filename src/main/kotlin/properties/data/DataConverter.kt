@@ -32,6 +32,7 @@ class DataConverter(private val file: File) {
 
         return when (version) {
             "3.0" -> Json.decodeFromString(fileContent)
+            "3.1" -> Json.decodeFromString(fileContent)
             null -> tryToLoadData() ?: tryToLoadOldData()
             else -> null
         }

@@ -212,3 +212,9 @@ fun Map<String, *>.toStringList(): List<String> {
     forEach { (string, _) -> list.add(string) }
     return list
 }
+
+fun <T> MutableList<T>.swap(idx1: Int, idx2: Int): MutableList<T> = apply {
+    val t = this[idx1]
+    this[idx1] = this[idx2]
+    this[idx2] = t
+}

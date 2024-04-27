@@ -12,6 +12,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +34,7 @@ import properties.Properties
 import properties.settings.TagControlsPosition
 import settings
 import smallCorners
+import tinyIconSize
 
 @Composable
 fun SettingsScreen(
@@ -105,8 +108,20 @@ private fun TagsCategories(
                     onRemove = {
                         Properties.imagesData().removeCategory(category.name)
                         Properties.saveData()
-                        reload = true
+                        //reload = true
                     },
+                    onUp = {
+                        Properties.imagesData().moveCategoryUp(category.name)
+                        Properties.saveData()
+                        //reload = true
+                    },
+                    onDown = {
+                        Properties.imagesData().moveCategoryDown(category.name)
+                        Properties.saveData()
+                        //reload = true
+                    },
+                    upAvailable = tags.indexOf(category) > 0,
+                    downAvailable = tags.indexOf(category) < tags.lastIndex,
                     modifier = Modifier.fillMaxWidth(0.5F),
                 )
             }
@@ -120,8 +135,6 @@ private fun TagsCategories(
                 onCreate = {
                     Properties.imagesData().createCategory(newCategoryName)
                     Properties.saveData()
-
-                    reload = true
                 },
                 modifier = Modifier.fillMaxWidth(0.5F),
             )
@@ -136,7 +149,11 @@ private fun TagCategoryCard(
     name: String,
     tagsCount: Int,
     removable: Boolean = true,
-    onRemove: () -> Unit = {},
+    onRemove: () -> Unit,
+    onUp: () -> Unit,
+    onDown: () -> Unit,
+    upAvailable: Boolean,
+    downAvailable: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -152,16 +169,50 @@ private fun TagCategoryCard(
     ) {
         Text("$name - $tagsCount tags", color = colorText, fontSize = normalText)
 
-        if (removable) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = null,
-                tint = colorText,
-                modifier = Modifier
-                    .size(iconSize)
-                    .clickable(onClick = onRemove)
-                    .padding(horizontal = biggerPadding, vertical = padding),
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                if (upAvailable) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = "Up",
+                        tint = colorText,
+                        modifier = Modifier
+                            .size(tinyIconSize)
+                            .clickable { onUp() },
+                    )
+                }
+
+                if (downAvailable) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Down",
+                        tint = colorText,
+                        modifier = Modifier
+                            .size(tinyIconSize)
+                            .clickable { onDown() },
+                    )
+                }
+            }
+
+            if (removable) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = colorText,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .clickable(onClick = onRemove)
+                        .padding(horizontal = biggerPadding, vertical = padding),
+                )
+            } else {
+                Spacer(
+                    modifier = Modifier
+                        .size(iconSize)
+                        .padding(horizontal = biggerPadding, vertical = padding),
+                )
+            }
         }
     }
 }

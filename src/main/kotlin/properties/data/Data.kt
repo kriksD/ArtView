@@ -3,22 +3,28 @@ package properties.data
 import ImageGroup
 import ImageInfo
 import TagCategory
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import properties.Properties
 import saveWebPTo
+import swap
 import uniqueName
 import java.io.File
 
-@Serializable
-data class Data(
+@Serializable(with = DataSerializer::class)
+class Data(
     val meta: DataMeta = DataMeta(),
-    val tags: MutableList<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
-    val images: MutableList<ImageInfo> = mutableListOf(),
-    val imageGroups: MutableList<ImageGroup> = mutableListOf(),
+    tags: Collection<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
+    images: Collection<ImageInfo> = mutableListOf(),
+    imageGroups: Collection<ImageGroup> = mutableListOf(),
 ) {
+    val tags = tags.toMutableStateList()
+    val images = images.toMutableStateList()
+    val imageGroups = imageGroups.toMutableStateList()
+
     fun addImage(file: File): ImageInfo? {
         if (!file.exists()) return null
         val image = getImageBitmap(file) ?: return null
@@ -144,4 +150,14 @@ data class Data(
     fun countImageSize(): Long = images
         .filter { it.isLoaded }
         .sumOf { it.scaledDownImage!!.toPixelMap().buffer.size * 16L }
+
+    fun moveCategoryUp(name: String) {
+        val index = tags.indexOfFirst { it.name == name }
+        tags.swap(index, index - 1)
+    }
+
+    fun moveCategoryDown(name: String) {
+        val index = tags.indexOfFirst { it.name == name }
+        tags.swap(index, index + 1)
+    }
 }
