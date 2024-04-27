@@ -62,9 +62,9 @@ class ImageLoader {
                     }
                     image.load()
 
+                } else {
+                    delay(20)
                 }
-
-                delay(1)
             }
         }
     }
