@@ -49,7 +49,11 @@ fun LoadingImage(
                 Image(
                     imageInfo.scaledDownImage ?: ImageBitmap(imageInfo.width, imageInfo.height),
                     description,
-                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(smallCorners)).background(colorBackground),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .aspectRatio(imageInfo.calculateWeight())
+                        .clip(RoundedCornerShape(smallCorners))
+                        .background(colorBackground),
                 )
             }
         }

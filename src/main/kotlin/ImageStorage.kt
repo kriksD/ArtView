@@ -60,10 +60,10 @@ class ImageStorage {
     fun select(group: ImageGroup) = selectedGroups.add(group)
     fun deselect(group: ImageGroup) = selectedGroups.remove(group)
 
-    fun selectAll() = selectedImages.addAll(filteredImages)
+    fun selectAll() = selectedImages.also { it.clear() }.addAll(filteredImages)
     fun deselectAll() = selectedImages.clear()
 
-    fun selectAllGroups() = selectedGroups.addAll(filteredGroups)
+    fun selectAllGroups() = selectedGroups.also { it.clear() }.addAll(filteredGroups)
     fun deselectAllGroups() = selectedGroups.clear()
 
     fun open(image: ImageInfo) { opened = image }
