@@ -38,8 +38,15 @@ fun getImageBitmap(imagePath: String): ImageBitmap? = getImageBitmap(File(imageP
 
 fun getImageBitmap(imageBytes: ByteArray): ImageBitmap = Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
 
+fun ImageBitmap.savePngTo(file: File) {
+    val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.PNG, 100)
+    data?.let { file.writeBytes(it.bytes) }
+}
+
+fun ImageBitmap.savePngTo(path: String) = saveWebPTo(File(path))
+
 fun ImageBitmap.saveWebPTo(file: File) {
-    val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.WEBP, 95)
+    val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.PNG, 100)
     data?.let { file.writeBytes(it.bytes) }
 }
 

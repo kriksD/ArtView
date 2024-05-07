@@ -9,7 +9,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import properties.Properties
-import saveWebPTo
+import savePngTo
 import swap
 import uniqueName
 import java.io.File
@@ -48,8 +48,8 @@ class Data(
     fun addImage(path: String): ImageInfo? = addImage(File(path))
 
     fun addImage(image: ImageBitmap, name: String = "new_image"): ImageInfo {
-        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }, ".png", File("images"))}.png")
-        image.saveWebPTo(newFile)
+        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }, "png", File("images"))}.png")
+        image.savePngTo(newFile)
 
         return ImageInfo(
             newFile.path,
