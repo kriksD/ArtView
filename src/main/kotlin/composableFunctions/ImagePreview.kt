@@ -90,6 +90,7 @@ fun ImagePreview(
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
                         controls = false,
+                        clickableTags = false,
                         modifier = Modifier.fillMaxWidth(),
                     )
 

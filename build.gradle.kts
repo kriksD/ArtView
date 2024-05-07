@@ -15,12 +15,28 @@ repositories {
     google()
     mavenCentral()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "Ktor EAP"
+    }
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "Ktor EAP"
+    }
+    maven {
+        url = uri("https://maven.pkg.jetbrains.space/public/p/ktor/eap")
+        name = "Ktor EAP"
+    }
 }
 
 dependencies {
     implementation(compose.desktop.currentOs)
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+
+    implementation("io.ktor:ktor-client-core:3.0.0-beta-2-eap-884")
+    implementation("io.ktor:ktor-client-cio:3.0.0-beta-2-eap-884")
+    implementation("io.ktor:ktor-client-okhttp:3.0.0-beta-2-eap-884")
 }
 
 tasks.withType<KotlinCompile>() {

@@ -14,6 +14,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import composableFunctions.*
+import composableFunctions.window.*
 import properties.Properties
 import java.io.File
 import java.net.URI
@@ -37,6 +38,7 @@ fun main() = application {
     val antiSelectedTags = remember { mutableStateListOf<String>() }
 
     var isEditingGroup by remember { mutableStateOf(false) }
+    var isAddingImage by remember { mutableStateOf(false) }
 
     var isFirstTime by remember { mutableStateOf(true) }
     if (isFirstTime) {
@@ -95,8 +97,12 @@ fun main() = application {
             LeftSideMenu(
                 menuItem,
                 onOptionSelected = {
-                    menuItem = it
+                    if (it != MenuItem.Add) menuItem = it
                     when (it) {
+                        MenuItem.Add -> {
+                            isAddingImage = true
+                        }
+
                         MenuItem.Images -> {
                             imageStorage.setFilter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
                             imageStorage.withGroups = false
@@ -289,6 +295,7 @@ fun main() = application {
                             }
                         }
                         MenuItem.Settings -> { SettingsScreen(modifier = Modifier.fillMaxWidth()) }
+                        else -> {}
                     }
                 }
 
@@ -553,6 +560,52 @@ fun main() = application {
                         },
                         onCancel = {
                             isAddingImagesToGroup = false
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.65F)
+                            .heightIn(0.dp, (window.height * 0.8F).dp)
+                            .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
+                            .padding(padding),
+                    )
+                }
+
+                var addImageURL by remember { mutableStateOf<String?>(null) }
+                AppearDisappearAnimation(
+                    isAddingImage,
+                    normalAnimationDuration,
+                    Modifier.align(Alignment.Center),
+                ) {
+                    AddWindow(
+                        onUrl = { url ->
+                            addImageURL = url
+                            isAddingImage = false
+                        },
+                        onCancel = {
+                            isAddingImage = false
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(0.65F)
+                            .heightIn(0.dp, (window.height * 0.8F).dp)
+                            .background(colorBackground.copy(transparencySecond), RoundedCornerShape(corners))
+                            .padding(padding),
+                    )
+                }
+
+                AppearDisappearAnimation(
+                    addImageURL != null,
+                    normalAnimationDuration,
+                    Modifier.align(Alignment.Center),
+                ) {
+                    AddByURLWindow(
+                        url = addImageURL ?: "",
+                        onDone = {
+                            Properties.saveData()
+                            imageStorage.update()
+
+                            addImageURL = null
+                        },
+                        onCancel = {
+                            addImageURL = null
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.65F)

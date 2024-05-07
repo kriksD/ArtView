@@ -47,8 +47,8 @@ class Data(
 
     fun addImage(path: String): ImageInfo? = addImage(File(path))
 
-    fun addImage(image: ImageBitmap): ImageInfo {
-        val newFile = File("images/${uniqueName("new_image", ".png", File("images"))}.png")
+    fun addImage(image: ImageBitmap, name: String = "new_image"): ImageInfo {
+        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }, ".png", File("images"))}.png")
         image.saveWebPTo(newFile)
 
         return ImageInfo(

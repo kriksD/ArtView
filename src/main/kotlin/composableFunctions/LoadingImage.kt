@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import calculateWeight
 import colorBackground
+import emptyImageBitmap
 import iconSize
 import normalAnimationDuration
 import smallCorners
@@ -52,6 +53,44 @@ fun LoadingImage(
                     modifier = Modifier
                         .fillMaxSize()
                         .aspectRatio(imageInfo.calculateWeight())
+                        .clip(RoundedCornerShape(smallCorners))
+                        .background(colorBackground),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadingImage(
+    image: ImageBitmap?,
+    description: String = "",
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier) {
+        Crossfade(
+            image != null,
+            animationSpec = tween(normalAnimationDuration),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            if (!it) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .aspectRatio(image?.calculateWeight() ?: 1F)
+                        .clip(RoundedCornerShape(smallCorners))
+                        .background(colorBackground)
+                )
+                LoadingIcon(
+                    contentDescription = "loading an image",
+                    modifier = Modifier.size(iconSize).align(Alignment.Center)
+                )
+            } else {
+                Image(
+                    image ?: emptyImageBitmap,
+                    description,
+                    modifier = Modifier
+                        .fillMaxSize()
                         .clip(RoundedCornerShape(smallCorners))
                         .background(colorBackground),
                 )

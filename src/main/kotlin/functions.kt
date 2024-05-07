@@ -103,6 +103,8 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
 
 fun ImageInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 
+fun ImageBitmap.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
+
 // This code is from the comment https://stackoverflow.com/a/1560052 and auto converted to Kotlin ¯\_(ツ)_/¯
 fun getImageDimensions(file: File): Dimension? {
     ImageIO.createImageInputStream(file).use { `in` ->
@@ -217,6 +219,10 @@ fun String.toFileName(): String = this
     .replace("|", "")
     .replace("?", "")
     .replace("*", "")
+
+fun String.capitalizeEachWord(): String = this
+    .split(" ")
+    .joinToString(" ") { it.replaceFirstChar { char -> char.titlecase() } }
 
 fun <K, V> Map<K, V>.toState(): SnapshotStateMap<K, V> {
     val newList = mutableStateMapOf<K, V>()

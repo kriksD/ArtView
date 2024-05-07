@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -23,7 +24,7 @@ import runCommand
 import java.io.File
 
 enum class MenuItem {
-    Images, Favorites, Groups, Settings
+    Add, Images, Favorites, Groups, Settings
 }
 
 @Composable
@@ -37,6 +38,11 @@ fun LeftSideMenu(
             .background(colorBackground)
             .padding(vertical = biggerPadding)
     ) {
+        MenuOption(
+            icon = Icons.Default.Add,
+            selected = selected == MenuItem.Add,
+            onClick = { onOptionSelected(MenuItem.Add) }
+        )
         MenuOption(
             icon = painterResource("image.svg"),
             selected = selected == MenuItem.Images,

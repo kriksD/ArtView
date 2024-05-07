@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.window
 
 import ImageGroup
 import androidx.compose.foundation.*
@@ -12,6 +12,8 @@ import androidx.compose.ui.draw.clip
 import border
 import colorBackgroundSecond
 import colorText
+import composableFunctions.ButtonText
+import composableFunctions.LoadingImage
 import corners
 import normalText
 import padding
