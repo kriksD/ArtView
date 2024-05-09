@@ -261,6 +261,9 @@ fun main() = application {
                                         onOpen = {
                                             if (imageStorage.selectedGroups.isEmpty()) {
                                                 imageStorage.openGroup(it)
+                                                imageStorage.filter(
+                                                    Filter().tags(selectedTags).antiTags(antiSelectedTags).group(it)
+                                                )
                                             } else {
                                                 if (!imageStorage.selectedGroups.contains(it)) {
                                                     imageStorage.select(it)
@@ -274,7 +277,7 @@ fun main() = application {
                                 }
                             } else {
                                 ImageGroupPreview(
-                                    imageStorage.openedImageGroup!!,
+                                    imageStorage,
                                     imageLoader = imageLoader,
                                     onClose = {
                                         imageStorage.openedImageGroup?.getImageInfoList()?.forEach { imageLoader.unloadNext(it) }
@@ -284,12 +287,6 @@ fun main() = application {
                                     onDelete = {
                                         imageStorage.deleteGroups(listOfNotNull(imageStorage.openedImageGroup))
                                         imageStorage.closeGroup()
-                                    },
-                                    onSelectedUpdated = { newSelected ->
-                                        newSelected.forEach { imageStorage.select(it) }
-                                    },
-                                    onImageSelected = { img, _ ->
-                                        imageStorage.open(img)
                                     },
                                 )
                             }

@@ -1,8 +1,7 @@
 package composableFunctions
 
-import ImageGroup
-import ImageInfo
 import ImageLoader
+import ImageStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,23 +30,20 @@ import iconSize
 import normalText
 import padding
 import properties.Properties
-import toState
 import transparencySecond
 
 @Composable
 fun ImageGroupPreview(
-    imageGroup: ImageGroup,
+    imageStorage: ImageStorage,
     imageLoader: ImageLoader,
     onClose: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onImageSelected: (ImageInfo, List<ImageInfo>) -> Unit,
-    onSelectedUpdated: (List<ImageInfo>) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val images = remember { Properties.imagesData().images.filter { imageGroup.imagePaths.contains(it.path) }.toState() }
-    var filteredImages by remember { mutableStateOf(images.toList()) }
-    val selectedImages = remember { mutableStateListOf<ImageInfo>() }
+    //val images = remember { Properties.imagesData().images.filter { imageGroup.imagePaths.contains(it.path) }.toState() }
+    //var filteredImages by remember { mutableStateOf(images.toList()) }
+    //val selectedImages = remember { mutableStateListOf<ImageInfo>() }
 
     val selectedTags = remember { mutableStateListOf<String>() }
     val antiSelectedTags = remember { mutableStateListOf<String>() }
@@ -69,7 +65,7 @@ fun ImageGroupPreview(
                     .padding(horizontal = biggerPadding, vertical = padding)
             )
 
-            Text(imageGroup.name, color = colorText, fontSize = bigText, modifier = Modifier.weight(1F))
+            Text(imageStorage.openedImageGroup?.name ?: "<ERROR>", color = colorText, fontSize = bigText, modifier = Modifier.weight(1F))
 
             var toDelete by remember { mutableStateOf(false) }
             Icon(
@@ -131,7 +127,7 @@ fun ImageGroupPreview(
                     .clickable(onClick = onEdit)
             )
         }
-        Text(imageGroup.description, color = colorText, fontSize = normalText)
+        Text(imageStorage.openedImageGroup?.description ?: "<ERROR>", color = colorText, fontSize = normalText)
 
         var expanded by remember { mutableStateOf(false) }
         Column {
@@ -161,31 +157,24 @@ fun ImageGroupPreview(
             )
 
             ImageGrid(
-                images = images.filter { image ->
-                    val hasSelectedTags = selectedTags.all { tag -> image.tags.contains(tag) }
-                    val hasAntiSelectedTags = antiSelectedTags.none { tag -> image.tags.contains(tag) }
-                    hasSelectedTags && hasAntiSelectedTags
-
-                }.also { filteredImages = it },
+                images = imageStorage.filteredImages,
                 imageLoader = imageLoader,
-                checkedList = selectedImages,
+                checkedList = imageStorage.selectedImages,
                 onCheckedClick = { imgInfo, isSelected ->
                     if (isSelected) {
-                        selectedImages.add(imgInfo)
+                        imageStorage.select(imgInfo)
                     } else {
-                        selectedImages.remove(imgInfo)
+                        imageStorage.deselect(imgInfo)
                     }
-
-                    onSelectedUpdated(selectedImages)
                 },
                 onOpen = {
-                    if (selectedImages.isEmpty()) {
-                        onImageSelected(it, filteredImages)
+                    if (imageStorage.selectedImages.isEmpty()) {
+                        imageStorage.open(it)
                     } else {
-                        if (selectedImages.contains(it)) {
-                            selectedImages.remove(it)
+                        if (!imageStorage.selectedImages.contains(it)) {
+                            imageStorage.select(it)
                         } else {
-                            selectedImages.add(it)
+                            imageStorage.deselect(it)
                         }
                     }
                 },

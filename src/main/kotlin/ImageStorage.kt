@@ -90,8 +90,8 @@ class ImageStorage {
         update()
     }
 
-    fun deleteGroups(images: List<ImageGroup>) {
-        Properties.imagesData().deleteGroups(images)
+    fun deleteGroups(groups: List<ImageGroup>) {
+        Properties.imagesData().deleteGroups(groups)
         update()
     }
 
