@@ -269,46 +269,21 @@ private fun AllTags(
     onTagClick: (String) -> Unit = {},
     onNew: (String) -> Unit = {},
 ) {
-    var newTagText by remember { mutableStateOf<TextFieldValue?>(null) }
-    var tagFilter by remember { mutableStateOf<TextFieldValue?>(null) }
+    var newTagText by remember { mutableStateOf(TextFieldValue()) }
+    var tagFilter by remember { mutableStateOf(TextFieldValue()) }
 
     if (controls) {
-        if (settings.addTagButtonPosition == TagControlsPosition.Right || settings.addTagButtonPosition == TagControlsPosition.Both) {
-            AppearDisappearAnimation(
-                newTagText != null,
-                normalAnimationDuration,
-            ) {
-                TagField(
-                    newTagText ?: TextFieldValue(),
-                    onValueChange = { newTagText = it },
-                    onFinish = {
-                        onNew(newTagText?.text ?: "")
-                        newTagText = null
-                    },
-                )
-            }
-
-            AddTag(onClick = { newTagText = TextFieldValue() })
-        }
-
-        if (settings.filterTagButtonPosition == TagControlsPosition.Right || settings.filterTagButtonPosition == TagControlsPosition.Both) {
-            AppearDisappearAnimation(
-                tagFilter != null,
-                normalAnimationDuration,
-            ) {
-                TagField(
-                    tagFilter ?: TextFieldValue(),
-                    onValueChange = { tagFilter = it },
-                    onFinish = { tagFilter = null },
-                    icon = Icons.Default.Close,
-                )
-            }
-
-            FilterTag(onClick = { tagFilter = TextFieldValue() })
-        }
+        TagControls(
+            filterText = tagFilter,
+            newTag = newTagText,
+            onFilterChange = { tagFilter = it },
+            onNewTagChange = { newTagText = it },
+            onNew = onNew,
+            position = TagControlsPosition.Left,
+        )
     }
 
-    tags.filter { it.contains(tagFilter?.text.orEmpty(), true) }.forEach { tag ->
+    tags.filter { it.contains(tagFilter.text, true) }.forEach { tag ->
         Tag(
             text = tag,
             isSelected = tag in selectedTags,
@@ -322,39 +297,51 @@ private fun AllTags(
     }
 
     if (controls) {
-        if (settings.addTagButtonPosition == TagControlsPosition.Left || settings.addTagButtonPosition == TagControlsPosition.Both) {
-            AppearDisappearAnimation(
-                newTagText != null,
-                normalAnimationDuration,
-            ) {
-                TagField(
-                    newTagText ?: TextFieldValue(),
-                    onValueChange = { newTagText = it },
-                    onFinish = {
-                        onNew(newTagText?.text ?: "")
-                        newTagText = null
-                    },
-                )
-            }
+        TagControls(
+            filterText = tagFilter,
+            newTag = newTagText,
+            onFilterChange = { tagFilter = it },
+            onNewTagChange = { newTagText = it },
+            onNew = onNew,
+            position = TagControlsPosition.Right,
+        )
+    }
+}
 
-            AddTag(onClick = { newTagText = TextFieldValue() })
-        }
+@Composable
+private fun TagControls(
+    filterText: TextFieldValue,
+    newTag: TextFieldValue,
+    onFilterChange: (TextFieldValue) -> Unit = {},
+    onNewTagChange: (TextFieldValue) -> Unit = {},
+    onNew: (String) -> Unit = {},
+    position: TagControlsPosition,
+) {
+    if (settings.addTagButtonPosition == position || settings.addTagButtonPosition == TagControlsPosition.Both) {
+        TagFieldWithButton(
+            buttonIcon = Icons.Default.Add,
+            fieldIcon = Icons.Default.Check,
+            contentDescription = "Add new tag",
+            fieldValue = newTag,
+            onValueChange = { onNewTagChange(it) },
+            onOpen = { onNewTagChange(TextFieldValue()) },
+            onFinish = {
+                onNew(newTag.text)
+                onNewTagChange(TextFieldValue())
+            },
+        )
+    }
 
-        if (settings.filterTagButtonPosition == TagControlsPosition.Left || settings.filterTagButtonPosition == TagControlsPosition.Both) {
-            AppearDisappearAnimation(
-                tagFilter != null,
-                normalAnimationDuration,
-            ) {
-                TagField(
-                    tagFilter ?: TextFieldValue(),
-                    onValueChange = { tagFilter = it },
-                    onFinish = { tagFilter = null },
-                    icon = Icons.Default.Close,
-                )
-            }
-
-            FilterTag(onClick = { tagFilter = TextFieldValue() })
-        }
+    if (settings.filterTagButtonPosition == position || settings.filterTagButtonPosition == TagControlsPosition.Both) {
+        TagFieldWithButton(
+            buttonIcon = Icons.Default.Search,
+            fieldIcon = Icons.Default.Close,
+            contentDescription = "Filter tags",
+            fieldValue = filterText,
+            onValueChange = { onFilterChange(it) },
+            onOpen = { onFilterChange(TextFieldValue()) },
+            onFinish = { onFilterChange(TextFieldValue()) },
+        )
     }
 }
 
@@ -406,11 +393,48 @@ private fun Tag(
 }
 
 @Composable
+private fun TagFieldWithButton(
+    buttonIcon: ImageVector = Icons.Default.Add,
+    fieldIcon: ImageVector = Icons.Default.Check,
+    contentDescription: String?,
+    fieldValue: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    onOpen: () -> Unit,
+    onFinish: () -> Unit,
+) {
+    var opened by remember { mutableStateOf(false) }
+
+    AppearDisappearAnimation(
+        opened,
+        normalAnimationDuration,
+    ) {
+        TagField(
+            fieldValue,
+            onValueChange = onValueChange,
+            onFinish = {
+                opened = false
+                onFinish()
+            },
+            icon = fieldIcon,
+        )
+    }
+
+    TagButton(
+        icon = buttonIcon,
+        contentDescription = contentDescription,
+        onClick = {
+            opened = true
+            onOpen()
+        },
+    )
+}
+
+@Composable
 private fun TagField(
     fieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     onFinish: () -> Unit,
-    icon: ImageVector = Icons.Default.Check
+    icon: ImageVector,
 ) {
     Row(
         modifier = Modifier
@@ -453,7 +477,9 @@ private fun TagField(
 }
 
 @Composable
-private fun AddTag(
+private fun TagButton(
+    icon: ImageVector,
+    contentDescription: String?,
     onClick: () -> Unit,
 ) {
     Box(
@@ -467,30 +493,8 @@ private fun AddTag(
             .padding(padding)
     ) {
         Icon(
-            Icons.Default.Add,
-            "add new tag",
-            tint = colorText,
-        )
-    }
-}
-
-@Composable
-private fun FilterTag(
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .clickable(onClick = onClick)
-            .padding(padding)
-            .background(
-                color = colorBackground,
-                shape = RoundedCornerShape(smallCorners)
-            )
-            .padding(padding)
-    ) {
-        Icon(
-            Icons.Default.Search,
-            "filter tags",
+            icon,
+            contentDescription,
             tint = colorText,
         )
     }

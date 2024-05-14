@@ -4,13 +4,9 @@ class Filter {
     private var imageGroup: ImageGroup? = null
     private var filterFavorite: Boolean = false
 
-    fun tags(filterTags: List<String>): Filter {
-        this.filterTags = filterTags
-        return this
-    }
-
-    fun antiTags(filterAntiTags: List<String>): Filter {
-        this.filterAntiTags = filterAntiTags
+    fun tags(tagStorage: TagStorage): Filter {
+        this.filterTags = tagStorage.selectedTags
+        this.filterAntiTags = tagStorage.selectedAntiTags
         return this
     }
 

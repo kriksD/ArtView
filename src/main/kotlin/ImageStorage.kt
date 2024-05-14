@@ -18,8 +18,8 @@ class ImageStorage {
         lastFilter = filter
     }
 
-    fun updateFilterTags(tags: List<String>, antiTags: List<String>) {
-        filter(lastFilter.antiTags(antiTags).tags(tags))
+    fun updateFilterTags(tagStorage: TagStorage) {
+        filter(lastFilter.tags(tagStorage))
     }
 
     fun filter(filter: Filter) {

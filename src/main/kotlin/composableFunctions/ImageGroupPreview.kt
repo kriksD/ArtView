@@ -2,6 +2,7 @@ package composableFunctions
 
 import ImageLoader
 import ImageStorage
+import TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,6 +35,7 @@ import transparencySecond
 
 @Composable
 fun ImageGroupPreview(
+    tagStorage: TagStorage,
     imageStorage: ImageStorage,
     imageLoader: ImageLoader,
     onClose: () -> Unit,
@@ -41,13 +43,6 @@ fun ImageGroupPreview(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    //val images = remember { Properties.imagesData().images.filter { imageGroup.imagePaths.contains(it.path) }.toState() }
-    //var filteredImages by remember { mutableStateOf(images.toList()) }
-    //val selectedImages = remember { mutableStateListOf<ImageInfo>() }
-
-    val selectedTags = remember { mutableStateListOf<String>() }
-    val antiSelectedTags = remember { mutableStateListOf<String>() }
-
     Column(
         modifier = modifier,
     ) {
@@ -133,21 +128,12 @@ fun ImageGroupPreview(
         Column {
             TagTableWithCategories(
                 tags = Properties.imagesData().tags,
-                selectedTags = selectedTags,
-                antiSelectedTags = antiSelectedTags,
+                selectedTags = tagStorage.selectedTags,
+                antiSelectedTags = tagStorage.selectedAntiTags,
                 onTagClick = {
-                    if (selectedTags.contains(it)) {
-                        selectedTags.remove(it)
-                        antiSelectedTags.add(it)
-
-                    } else if (antiSelectedTags.contains(it)) {
-                        selectedTags.remove(it)
-                        antiSelectedTags.remove(it)
-
-                    } else {
-                        selectedTags.add(it)
-                        antiSelectedTags.remove(it)
-                    }
+                    tagStorage.changeSelectStatus(it)
+                    imageStorage.updateFilterTags(tagStorage)
+                    imageStorage.update()
                 },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },

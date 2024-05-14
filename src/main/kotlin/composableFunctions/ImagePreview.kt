@@ -35,7 +35,7 @@ import transparencySecond
 
 @Composable
 fun ImagePreview(
-    selectedImage: ImageInfo?,
+    openedImage: ImageInfo?,
     onClose: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
@@ -44,7 +44,7 @@ fun ImagePreview(
     modifier: Modifier = Modifier,
 ) {
     Crossfade(
-        selectedImage,
+        openedImage,
         animationSpec = tween(normalAnimationDuration),
         modifier = modifier,
     ) { imgData ->

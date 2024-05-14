@@ -34,8 +34,7 @@ fun main() = application {
     val imageStorage by remember { mutableStateOf(ImageStorage()) }
     var imageLoader by remember { mutableStateOf(ImageLoader()) }
 
-    val selectedTags = remember { mutableStateListOf<String>() }
-    val antiSelectedTags = remember { mutableStateListOf<String>() }
+    val tagStorage by remember { mutableStateOf(TagStorage()) }
 
     var isEditingGroup by remember { mutableStateOf(false) }
     var isAddingImage by remember { mutableStateOf(false) }
@@ -45,10 +44,9 @@ fun main() = application {
         isFirstTime = false
 
         File("images").mkdir()
-        antiSelectedTags.addAll(settings.antiSelectedTagsByDefault)
-        selectedTags.addAll(settings.selectedTagsByDefault)
 
-        imageStorage.filter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
+        tagStorage.filter()
+        imageStorage.filter(Filter().tags(tagStorage))
     }
 
     LaunchedEffect(imageLoader) {
@@ -104,7 +102,7 @@ fun main() = application {
                         }
 
                         MenuItem.Images -> {
-                            imageStorage.setFilter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.setFilter(Filter().tags(tagStorage))
                             imageStorage.withGroups = false
                             imageStorage.update()
                             imageLoader.cancel()
@@ -113,7 +111,7 @@ fun main() = application {
 
                         MenuItem.Favorites -> {
                             imageStorage.setFilter(
-                                Filter().tags(selectedTags).antiTags(antiSelectedTags).favorite()
+                                Filter().tags(tagStorage).favorite()
                             )
                             imageStorage.withGroups = false
                             imageStorage.update()
@@ -122,7 +120,7 @@ fun main() = application {
                         }
 
                         MenuItem.Groups -> {
-                            imageStorage.setFilter(Filter().tags(selectedTags).antiTags(antiSelectedTags))
+                            imageStorage.setFilter(Filter().tags(tagStorage))
                             imageStorage.withGroups = true
                             imageStorage.update()
                             imageLoader.cancel()
@@ -152,23 +150,11 @@ fun main() = application {
                         Column {
                             TagTableWithCategories(
                                 tags = Properties.imagesData().tags,
-                                selectedTags = selectedTags,
-                                antiSelectedTags = antiSelectedTags,
+                                selectedTags = tagStorage.selectedTags,
+                                antiSelectedTags = tagStorage.selectedAntiTags,
                                 onTagClick = {
-                                    if (selectedTags.contains(it)) {
-                                        selectedTags.remove(it)
-                                        antiSelectedTags.add(it)
-
-                                    } else if (antiSelectedTags.contains(it)) {
-                                        selectedTags.remove(it)
-                                        antiSelectedTags.remove(it)
-
-                                    } else {
-                                        selectedTags.add(it)
-                                        antiSelectedTags.remove(it)
-                                    }
-
-                                    imageStorage.updateFilterTags(selectedTags, antiSelectedTags)
+                                    tagStorage.changeSelectStatus(it)
+                                    imageStorage.updateFilterTags(tagStorage)
                                     imageStorage.update()
                                     imageLoader.cancel()
                                     imageLoader = ImageLoader()
@@ -220,23 +206,11 @@ fun main() = application {
                                 Column {
                                     TagTableWithCategories(
                                         tags = Properties.imagesData().tags,
-                                        selectedTags = selectedTags,
-                                        antiSelectedTags = antiSelectedTags,
+                                        selectedTags = tagStorage.selectedTags,
+                                        antiSelectedTags = tagStorage.selectedAntiTags,
                                         onTagClick = {
-                                            if (selectedTags.contains(it)) {
-                                                selectedTags.remove(it)
-                                                antiSelectedTags.add(it)
-
-                                            } else if (antiSelectedTags.contains(it)) {
-                                                selectedTags.remove(it)
-                                                antiSelectedTags.remove(it)
-
-                                            } else {
-                                                selectedTags.add(it)
-                                                antiSelectedTags.remove(it)
-                                            }
-
-                                            imageStorage.updateFilterTags(selectedTags, antiSelectedTags)
+                                            tagStorage.changeSelectStatus(it)
+                                            imageStorage.updateFilterTags(tagStorage)
                                             imageStorage.update()
                                             imageLoader.cancel()
                                             imageLoader = ImageLoader()
@@ -262,7 +236,7 @@ fun main() = application {
                                             if (imageStorage.selectedGroups.isEmpty()) {
                                                 imageStorage.openGroup(it)
                                                 imageStorage.filter(
-                                                    Filter().tags(selectedTags).antiTags(antiSelectedTags).group(it)
+                                                    Filter().tags(tagStorage).group(it)
                                                 )
                                             } else {
                                                 if (!imageStorage.selectedGroups.contains(it)) {
@@ -277,7 +251,8 @@ fun main() = application {
                                 }
                             } else {
                                 ImageGroupPreview(
-                                    imageStorage,
+                                    tagStorage = tagStorage,
+                                    imageStorage = imageStorage,
                                     imageLoader = imageLoader,
                                     onClose = {
                                         imageStorage.openedImageGroup?.getImageInfoList()?.forEach { imageLoader.unloadNext(it) }
@@ -298,7 +273,7 @@ fun main() = application {
 
                 var isEditing by remember { mutableStateOf(false) }
                 ImagePreview(
-                    imageStorage.openedImage,
+                    openedImage = imageStorage.openedImage,
                     onClose = {
                         imageStorage.close()
                         isEditing = false
