@@ -1,6 +1,6 @@
 package properties.data.oldData
 
-import ImageGroup
+import info.ImageGroup
 import TagCategory
 import kotlinx.serialization.Serializable
 

@@ -1,3 +1,4 @@
+import info.ImageInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

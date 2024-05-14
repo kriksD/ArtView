@@ -1,7 +1,8 @@
 package properties.data
 
-import ImageGroup
-import ImageInfo
+import HasID
+import info.ImageGroup
+import info.ImageInfo
 import TagCategory
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -13,6 +14,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
+import uniqueId
 
 class DataSerializer : KSerializer<Data> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Data") {
@@ -39,12 +41,41 @@ class DataSerializer : KSerializer<Data> {
             }
         }
 
+        images = checkMissingIDsInImageInfo(images ?: listOf())
+        imageGroups = checkMissingIDsInImageGroup(imageGroups ?: listOf())
+
         return@decodeStructure Data(
             meta = meta ?: DataMeta(),
             tags = tags ?: listOf(),
-            images = images ?: listOf(),
-            imageGroups = imageGroups ?: listOf(),
+            images = images,
+            imageGroups = imageGroups,
         )
+    }
+
+    private fun checkMissingIDsInImageInfo(list: List<ImageInfo>): List<ImageInfo> {
+        if (list.none { it.id == -1 }) return list
+
+        val newList = list.toMutableList()
+        newList.forEachIndexed { index, hasID ->
+            if (hasID.id == -1) {
+                newList[index] = hasID.copy(id = newList.uniqueId())
+            }
+        }
+
+        return newList
+    }
+
+    private fun checkMissingIDsInImageGroup(list: List<ImageGroup>): List<ImageGroup> {
+        if (list.none { it.id == -1 }) return list
+
+        val newList = list.toMutableList()
+        newList.forEachIndexed { index, hasID ->
+            if (hasID.id == -1) {
+                newList[index] = hasID.copy(id = newList.uniqueId())
+            }
+        }
+
+        return newList
     }
 
     override fun serialize(encoder: Encoder, value: Data) = encoder.encodeStructure(descriptor) {

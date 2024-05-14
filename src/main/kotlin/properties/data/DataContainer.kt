@@ -1,11 +1,13 @@
 package properties.data
 
-import ImageInfo
+import info.ImageInfo
 import TagCategory
 import getImageDimensions
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import properties.Properties
+import uniqueId
 import java.io.File
 
 
@@ -48,7 +50,7 @@ class DataContainer {
             data.images.none { it.path == f.path }
         }?.forEach {
             val dimensions = getImageDimensions(it.path) ?: return@forEach
-            data.images.add(0, ImageInfo(it.path, dimensions.width, dimensions.height, it.name))
+            data.images.add(0, ImageInfo(data.images.uniqueId(), it.path, dimensions.width, dimensions.height, it.name))
         }
     }
 
@@ -63,6 +65,7 @@ class DataContainer {
     }
 
     fun save() {
+        data.meta.version = Properties.dataVersion
         file.writeText(json.encodeToString(data))
     }
 }

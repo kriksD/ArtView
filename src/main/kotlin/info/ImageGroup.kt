@@ -1,15 +1,19 @@
+package info
+
+import HasID
 import kotlinx.serialization.Serializable
 import properties.Properties
 import java.io.File
 
-@Serializable
+@Serializable(with = ImageGroupSerializer::class)
 data class ImageGroup(
+    override val id: Int,
     val imagePaths: MutableList<String> = mutableListOf(),
     var name: String = "",
     var description: String = "",
     var favorite: Boolean = false,
     val tags: MutableList<String> = mutableListOf(),
-) {
+) : HasID {
 
     fun getImageInfo(index: Int): ImageInfo? {
         if (imagePaths.isEmpty()) return null

@@ -1,6 +1,6 @@
 package properties.data
 
-import ImageInfo
+import info.ImageInfo
 import TagCategory
 import getImageBitmap
 import getImageDimensions
@@ -8,8 +8,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import properties.Properties
 import properties.data.oldData.Data2d0
 import properties.data.oldData.Data1d0
+import uniqueId
 import java.awt.Dimension
 import java.io.File
 
@@ -33,6 +35,7 @@ class DataConverter(private val file: File) {
         return when (version) {
             "3.0" -> Json.decodeFromString(fileContent)
             "3.1" -> Json.decodeFromString(fileContent)
+            "3.2" -> Json.decodeFromString(fileContent)
             null -> tryToLoadData() ?: tryToLoadOldData()
             else -> null
         }
@@ -54,6 +57,7 @@ class DataConverter(private val file: File) {
                         ?: run { println("Failed to convert: ${it.path}"); return@mapNotNull null }
 
                     ImageInfo(
+                        Properties.imagesData().images.uniqueId(),
                         it.path,
                         dimensions.width,
                         dimensions.height,

@@ -1,6 +1,6 @@
 package composableFunctions
 
-import ImageGroup
+import info.ImageGroup
 import ImageLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween

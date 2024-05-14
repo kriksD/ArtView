@@ -1,6 +1,6 @@
 package composableFunctions
 
-import ImageInfo
+import info.ImageInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi

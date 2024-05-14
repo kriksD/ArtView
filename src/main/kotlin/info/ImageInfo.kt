@@ -1,15 +1,20 @@
+package info
+
+import HasID
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import getImageBitmap
 import kotlinx.serialization.Serializable
 import java.awt.image.BufferedImage
 import java.io.File
 
-@Serializable
+@Serializable(with = ImageInfoSerializer::class)
 data class ImageInfo(
+    override val id: Int,
     val path: String,
     val width: Int,
     val height: Int,
@@ -17,7 +22,7 @@ data class ImageInfo(
     var description: String = "",
     var favorite: Boolean = false,
     val tags: MutableList<String> = mutableListOf(),
-) {
+) : HasID {
     var scaledDownImage: ImageBitmap? by mutableStateOf(null)
     val isLoaded get() = scaledDownImage != null
 

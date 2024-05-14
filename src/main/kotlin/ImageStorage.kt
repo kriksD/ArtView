@@ -1,4 +1,6 @@
 import androidx.compose.runtime.*
+import info.ImageGroup
+import info.ImageInfo
 import properties.Properties
 import java.io.File
 
@@ -115,6 +117,7 @@ class ImageStorage {
         }
 
         val newGroup = ImageGroup(
+            id = Properties.imagesData().imageGroups.uniqueId(),
             imagePaths = selectedImages.map { it.path }.toMutableList(),
             tags = tags,
         )

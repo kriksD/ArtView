@@ -1,7 +1,7 @@
 package composableFunctions.window
 
-import ImageGroup
-import ImageInfo
+import info.ImageGroup
+import info.ImageInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -105,6 +105,7 @@ fun EditImageWindow(
                 onClick = {
                     onDone(
                         ImageInfo(
+                            id = imageInfo.id,
                             path = imageInfo.path,
                             width = imageInfo.width,
                             height = imageInfo.height,
@@ -202,6 +203,7 @@ fun EditImageGroupWindow(
                 onClick = {
                     onDone(
                         ImageGroup(
+                            id = imageGroup.id,
                             imagePaths = imageGroup.imagePaths,
                             name = name.text,
                             description = description.text,

@@ -1,6 +1,6 @@
 package properties.data.oldData
 
-import ImageInfo
+import info.ImageInfo
 import kotlinx.serialization.Serializable
 
 @Serializable

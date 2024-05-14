@@ -1,7 +1,7 @@
 package properties.data
 
-import ImageGroup
-import ImageInfo
+import info.ImageGroup
+import info.ImageInfo
 import TagCategory
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import properties.Properties
 import savePngTo
 import swap
+import uniqueId
 import uniqueName
 import java.io.File
 
@@ -36,6 +37,7 @@ class Data(
         file.copyTo(newFile)
 
         return ImageInfo(
+            images.uniqueId(),
             newFile.path,
             image.width,
             image.height,
@@ -52,6 +54,7 @@ class Data(
         image.savePngTo(newFile)
 
         return ImageInfo(
+            images.uniqueId(),
             newFile.path,
             image.width,
             image.height,

@@ -1,3 +1,6 @@
+import info.ImageGroup
+import info.ImageInfo
+
 class Filter {
     private var filterTags: List<String>? = null
     private var filterAntiTags: List<String>? = null

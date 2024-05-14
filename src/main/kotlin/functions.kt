@@ -3,6 +3,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.*
+import info.ImageInfo
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.toImage
 import properties.*
