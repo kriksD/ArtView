@@ -1,6 +1,5 @@
 package properties.data
 
-import HasID
 import info.ImageGroup
 import info.ImageInfo
 import TagCategory

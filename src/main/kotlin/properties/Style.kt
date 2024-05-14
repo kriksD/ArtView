@@ -1,7 +1,6 @@
 package properties
 
 import androidx.compose.ui.graphics.Color
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -65,7 +65,7 @@ class DataContainer {
     }
 
     fun save() {
-        data.meta.version = Properties.dataVersion
+        data.meta.version = Properties.DATA_VERSION
         file.writeText(json.encodeToString(data))
     }
 }

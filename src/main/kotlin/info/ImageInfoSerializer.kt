@@ -11,8 +11,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import properties.Properties
-import uniqueId
 
 class ImageInfoSerializer : KSerializer<ImageInfo> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ImageInfo") {

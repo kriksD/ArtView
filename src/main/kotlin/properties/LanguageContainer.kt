@@ -6,7 +6,10 @@ import java.io.File
 
 class LanguageContainer {
     lateinit var language: Language
-    val json = Json { prettyPrint = true }
+    private val json = Json {
+        prettyPrint = true
+        ignoreUnknownKeys = true
+    }
 
     fun load(lang: String = "en") {
         val file = File("data/language/${lang}.json")

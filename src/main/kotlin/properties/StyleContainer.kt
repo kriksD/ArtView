@@ -8,9 +8,10 @@ import java.io.File
 class StyleContainer {
     lateinit var style: Style
 
-    val json = Json {
+    private val json = Json {
         prettyPrint = true
         encodeDefaults = true
+        ignoreUnknownKeys = true
     }
     private val file = File("data/style.json")
 

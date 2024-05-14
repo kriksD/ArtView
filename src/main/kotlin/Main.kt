@@ -62,7 +62,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         state = windowState,
-        title = "Art View ${Properties.version} 🎨🎀💝💖",
+        title = "Art View ${Properties.VERSION} 🎨🎀💝💖",
     ) {
         var menuItem by remember { mutableStateOf(MenuItem.Images) }
         var isDroppable by remember { mutableStateOf(false) }

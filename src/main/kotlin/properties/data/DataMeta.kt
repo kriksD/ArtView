@@ -5,5 +5,5 @@ import properties.Properties
 
 @Serializable
 data class DataMeta(
-    var version: String = Properties.dataVersion,
+    var version: String = Properties.DATA_VERSION,
 )
