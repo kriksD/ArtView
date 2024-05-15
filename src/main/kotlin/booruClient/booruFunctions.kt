@@ -1,4 +1,4 @@
-package danbooruClient
+package booruClient
 
 import capitalizeEachWord
 

@@ -14,8 +14,8 @@ import colorText
 import colorTextError
 import composableFunctions.*
 import containsAtLeastOne
-import danbooruClient.clients.BooruClient
-import danbooruClient.BooruPost
+import booruClient.clients.BooruClient
+import booruClient.BooruPost
 import emptyImageBitmap
 import normalText
 import padding

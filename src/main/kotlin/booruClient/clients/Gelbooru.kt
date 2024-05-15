@@ -1,8 +1,8 @@
-package danbooruClient.clients
+package booruClient.clients
 
-import danbooruClient.BooruPost
-import danbooruClient.parser.BooruPostJSONParser
-import danbooruClient.parser.GelbooruPostJSONParser
+import booruClient.BooruPost
+import booruClient.parser.BooruPostJSONParser
+import booruClient.parser.GelbooruPostJSONParser
 import io.ktor.client.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*

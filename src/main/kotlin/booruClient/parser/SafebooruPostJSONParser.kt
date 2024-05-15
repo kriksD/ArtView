@@ -1,16 +1,19 @@
-package danbooruClient.parser
+package booruClient.parser
 
-import danbooruClient.BooruPost
-import danbooruClient.ImageLoaderClient
-import danbooruClient.splitTags
+import booruClient.BooruPost
+import booruClient.ImageLoaderClient
+import booruClient.splitTags
 import kotlinx.serialization.json.*
 
-class Rule34PostJSONParser : BooruPostJSONParser {
+class SafebooruPostJSONParser : BooruPostJSONParser {
     override suspend fun parseJson(json: String, link: String): BooruPost? {
         val decodedJson = Json.parseToJsonElement(json).jsonArray
         val jsonMap = decodedJson.firstOrNull()?.jsonObject?.toMap() ?: return null
 
-        val imageUrl = jsonMap["file_url"]?.jsonPrimitive?.content ?: return null
+        val imageName = jsonMap["image"]?.jsonPrimitive?.content ?: return null
+        val imageDirectory = jsonMap["directory"]?.jsonPrimitive?.content ?: return null
+        val baseUrl = link.substringBefore("/index.php?")
+        val imageUrl = "$baseUrl//images/$imageDirectory/$imageName"
         val image = ImageLoaderClient().loadImageBitmap(imageUrl) ?: return null
 
         val imageWidth = jsonMap["width"]?.jsonPrimitive?.intOrNull ?: image.width

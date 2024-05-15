@@ -1,4 +1,4 @@
-package danbooruClient
+package booruClient
 
 import androidx.compose.ui.graphics.ImageBitmap
 import getImageBitmap

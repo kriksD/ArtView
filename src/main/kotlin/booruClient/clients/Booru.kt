@@ -1,7 +1,7 @@
-package danbooruClient.clients
+package booruClient.clients
 
-import danbooruClient.BooruPost
-import danbooruClient.parser.BooruPostJSONParser
+import booruClient.BooruPost
+import booruClient.parser.BooruPostJSONParser
 import io.ktor.client.*
 
 abstract class Booru {

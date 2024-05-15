@@ -1,8 +1,8 @@
-package danbooruClient.parser
+package booruClient.parser
 
-import danbooruClient.BooruPost
-import danbooruClient.ImageLoaderClient
-import danbooruClient.splitTags
+import booruClient.BooruPost
+import booruClient.ImageLoaderClient
+import booruClient.splitTags
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject

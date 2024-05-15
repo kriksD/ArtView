@@ -1,6 +1,6 @@
-package danbooruClient.parser
+package booruClient.parser
 
-import danbooruClient.BooruPost
+import booruClient.BooruPost
 
 interface BooruPostJSONParser {
     suspend fun parseJson(json: String, link: String): BooruPost?
