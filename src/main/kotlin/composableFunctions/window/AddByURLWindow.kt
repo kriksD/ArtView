@@ -52,7 +52,18 @@ fun AddByURLWindow(
             }
 
             booruPost?.let { post ->
-                booruPost?.title?.let { name = TextFieldValue(it) }
+                post.title?.let { name = TextFieldValue(post.title) }
+
+                post.rating?.let {
+                    if (
+                        !selectedTags.contains("NSFW")
+                        && Properties.imagesData().containsTag("NSFW")
+                        && it.lowercase() != "g"
+                        && it.lowercase() != "general"
+                    ) {
+                        selectedTags.add("NSFW")
+                    }
+                }
 
                 if (post.tags.isNotEmpty()) {
                     val new = post.tags.filter { tag -> !Properties.imagesData().containsTag(tag) }
@@ -265,6 +276,7 @@ fun AddByURLWindow(
                         imageInfo.name = name.text
                         imageInfo.description = description.text
                         post.source?.let { imageInfo.source = it }
+                        post.rating?.let { imageInfo.rating = it }
 
                         onDone()
                     }

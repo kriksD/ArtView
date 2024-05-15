@@ -21,6 +21,8 @@ class DataConverter(private val file: File) {
         encodeDefaults = true
     }
 
+    private val version3 = listOf("3.0", "3.1", "3.2", "3.3", "3.4")
+
     fun loadAndConvert(): Data? {
         if (!file.exists()) return null
 
@@ -32,12 +34,14 @@ class DataConverter(private val file: File) {
             ?.jsonPrimitive
             ?.content
 
-        return when (version) {
-            "3.0" -> Json.decodeFromString(fileContent)
-            "3.1" -> Json.decodeFromString(fileContent)
-            "3.2" -> Json.decodeFromString(fileContent)
-            null -> tryToLoadData() ?: tryToLoadOldData()
-            else -> null
+        return if (version3.contains(version)) {
+            Json.decodeFromString(fileContent)
+
+        } else if (version == null) {
+            tryToLoadData() ?: tryToLoadOldData()
+
+        } else {
+            null
         }
     }
 

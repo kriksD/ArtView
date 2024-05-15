@@ -25,6 +25,7 @@ data class ImageInfo(
     var favorite: Boolean = false,
     val tags: MutableList<String> = mutableListOf(),
     var source: String? = null,
+    var rating: String? = null,
 ) : HasID {
     var scaledDownImage: ImageBitmap? by mutableStateOf(null)
     val isLoaded get() = scaledDownImage != null

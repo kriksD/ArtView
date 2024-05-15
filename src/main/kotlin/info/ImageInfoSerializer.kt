@@ -24,6 +24,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         element<Boolean>("favorite")
         element<List<String>>("tags")
         element<String?>("source")
+        element<String?>("rating")
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -37,6 +38,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         var favorite: Boolean? = null
         var tags: List<String>? = null
         var source: String? = null
+        var rating: String? = null
 
         while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -50,6 +52,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
                 6 -> favorite = decodeBooleanElement(descriptor, index)
                 7 -> tags = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
                 8 -> source = decodeNullableSerializableElement(descriptor, index, String.serializer())
+                9 -> rating = decodeNullableSerializableElement(descriptor, index, String.serializer())
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -74,6 +77,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
             favorite = favorite,
             tags = tags.toMutableList(),
             source = source,
+            rating = rating,
         )
     }
 
@@ -88,5 +92,6 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         encodeBooleanElement(descriptor, 6, value.favorite)
         encodeSerializableElement(descriptor, 7, ListSerializer(String.serializer()), value.tags)
         encodeNullableSerializableElement(descriptor, 8, String.serializer(), value.source)
+        encodeNullableSerializableElement(descriptor, 9, String.serializer(), value.rating)
     }
 }
