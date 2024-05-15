@@ -58,10 +58,6 @@ class DataContainer {
         if (!data.containsTagCategory("Other")) {
             data.tags.add(TagCategory("Other", mutableListOf("NSFW")))
         }
-
-        if (!data.containsTag("NSFW")) {
-            data.findTagCategory("Other")?.tags?.add("NSFW")
-        }
     }
 
     fun save() {

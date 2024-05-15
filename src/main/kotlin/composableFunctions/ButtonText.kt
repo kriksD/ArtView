@@ -13,10 +13,12 @@ import normalText
 fun ButtonText(
     text: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
         modifier = modifier,
     ) {

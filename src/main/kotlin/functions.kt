@@ -257,3 +257,10 @@ fun <T> MutableList<T>.swap(idx1: Int, idx2: Int): MutableList<T> = apply {
     this[idx1] = this[idx2]
     this[idx2] = t
 }
+
+fun <T> Collection<T>.containsAtLeastOne(elements: Collection<T>): Boolean {
+    for (element in elements) {
+        if (this.contains(element)) return true
+    }
+    return false
+}

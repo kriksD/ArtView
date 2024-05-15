@@ -11,9 +11,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import calculateWeight
 import colorText
+import colorTextError
 import composableFunctions.*
-import danbooruClient.DanbooruClient
-import danbooruClient.DanbooruPost
+import containsAtLeastOne
+import danbooruClient.clients.BooruClient
+import danbooruClient.BooruPost
 import emptyImageBitmap
 import normalText
 import padding
@@ -37,51 +39,70 @@ fun AddByURLWindow(
         val newCharacters = remember { mutableStateListOf<String>() }
         val newCopyrights = remember { mutableStateListOf<String>() }
         val newArtists = remember { mutableStateListOf<String>() }
+        val newMeta = remember { mutableStateListOf<String>() }
         val selectedNewTags = remember { mutableStateListOf<String>() }
 
-        var danbooruPost by remember { mutableStateOf<DanbooruPost?>(null) }
+        var booruPost by remember { mutableStateOf<BooruPost?>(null) }
+        var failedToLoad by remember { mutableStateOf(false) }
 
         LaunchedEffect(true) {
-            danbooruPost = DanbooruClient.loadPost(url)
+            booruPost = BooruClient.loadPost(url)
+            if (booruPost == null) {
+                failedToLoad = true
+            }
 
-            danbooruPost?.let {
-                if (it.tags.isNotEmpty()) {
-                    val new = it.tags.filter { tag -> !Properties.imagesData().containsTag(tag) }
+            booruPost?.let { post ->
+                booruPost?.title?.let { name = TextFieldValue(it) }
+
+                if (post.tags.isNotEmpty()) {
+                    val new = post.tags.filter { tag -> !Properties.imagesData().containsTag(tag) }
                     newTags.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
-                if (it.character.isNotEmpty()) {
-                    val new = it.character.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                if (post.character.isNotEmpty()) {
+                    val new = post.character.filter { tag -> !Properties.imagesData().containsTag(tag) }
                     newCharacters.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
-                if (it.copyright.isNotEmpty()) {
-                    val new = it.copyright.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                if (post.copyright.isNotEmpty()) {
+                    val new = post.copyright.filter { tag -> !Properties.imagesData().containsTag(tag) }
                     newCopyrights.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
-                if (it.artist.isNotEmpty()) {
-                    val new = it.artist.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                if (post.artist.isNotEmpty()) {
+                    val new = post.artist.filter { tag -> !Properties.imagesData().containsTag(tag) }
                     newArtists.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
-                val tagsCombined = it.tags + it.character + it.copyright + it.artist
+                if (post.meta.isNotEmpty()) {
+                    val new = post.meta.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    newMeta.addAll(new)
+                    selectedNewTags.addAll(new)
+                }
+
+                val tagsCombined = post.tags + post.character + post.copyright + post.artist + post.meta
                 val existingTags = tagsCombined.filter { tag -> Properties.imagesData().containsTag(tag) }
                 selectedTags.addAll(existingTags)
             }
         }
 
-        LoadingImage(
-            danbooruPost?.image ?: emptyImageBitmap,
-            name.text,
-            modifier = Modifier
-                .fillMaxHeight(0.2F)
-                .aspectRatio(danbooruPost?.image?.calculateWeight() ?: 1F),
-        )
+        Row {
+            LoadingImage(
+                booruPost?.image ?: emptyImageBitmap,
+                name.text,
+                modifier = Modifier
+                    .fillMaxHeight(0.2F)
+                    .aspectRatio(booruPost?.image?.calculateWeight() ?: 1F),
+            )
+
+            if (failedToLoad) {
+                Text("Failed to load", color = colorTextError, fontSize = normalText)
+            }
+        }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -154,6 +175,13 @@ fun AddByURLWindow(
             onTagClick = onTagClick,
         )
 
+        NewTagsTable(
+            name = "New meta:",
+            tags = newMeta,
+            selectedTags = selectedNewTags,
+            onTagClick = onTagClick,
+        )
+
         Text("Tags:", color = colorText, fontSize = normalText)
         TagTableWithCategories(
             tags = Properties.imagesData().tags,
@@ -186,43 +214,52 @@ fun AddByURLWindow(
 
             ButtonText(
                 "Save",
+                enabled = booruPost != null,
                 onClick = {
-                    danbooruPost?.let {
+                    booruPost?.let { post ->
                         val data = Properties.imagesData()
 
-                        if (newTags.isNotEmpty()) {
+                        if (newTags.isNotEmpty() && selectedNewTags.containsAtLeastOne(newTags)) {
                             if (!data.containsTagCategory("Booru Tags")) {
                                 data.createCategory("Booru Tags")
                             }
 
-                            data.addAllTags(newTags, "Booru Tags")
+                            data.addAllTags(newTags.filter { selectedNewTags.contains(it) }, "Booru Tags")
                         }
 
-                        if (newCharacters.isNotEmpty()) {
+                        if (newCharacters.isNotEmpty() && selectedNewTags.containsAtLeastOne(newCharacters)) {
                             if (!data.containsTagCategory("Character")) {
                                 data.createCategory("Character")
                             }
 
-                            data.addAllTags(newCharacters, "Character")
+                            data.addAllTags(newCharacters.filter { selectedNewTags.contains(it) }, "Character")
                         }
 
-                        if (newCopyrights.isNotEmpty()) {
+                        if (newCopyrights.isNotEmpty() && selectedNewTags.containsAtLeastOne(newCopyrights)) {
                             if (!data.containsTagCategory("Copyright")) {
                                 data.createCategory("Copyright")
                             }
 
-                            data.addAllTags(newCopyrights, "Copyright")
+                            data.addAllTags(newCopyrights.filter { selectedNewTags.contains(it) }, "Copyright")
                         }
 
-                        if (newArtists.isNotEmpty()) {
+                        if (newArtists.isNotEmpty() && selectedNewTags.containsAtLeastOne(newArtists)) {
                             if (!data.containsTagCategory("Artist")) {
                                 data.createCategory("Artist")
                             }
 
-                            data.addAllTags(newArtists, "Artist")
+                            data.addAllTags(newArtists.filter { selectedNewTags.contains(it) }, "Artist")
                         }
 
-                        val imageInfo = data.addImage(it.image, name.text)
+                        if (newMeta.isNotEmpty() && selectedNewTags.containsAtLeastOne(newMeta)) {
+                            if (!data.containsTagCategory("Meta")) {
+                                data.createCategory("Meta")
+                            }
+
+                            data.addAllTags(newMeta.filter { selectedNewTags.contains(it) }, "Meta")
+                        }
+
+                        val imageInfo = data.addImage(post.image, name.text)
                         imageInfo.tags.addAll(selectedTags + selectedNewTags)
                         imageInfo.name = name.text
                         imageInfo.description = description.text

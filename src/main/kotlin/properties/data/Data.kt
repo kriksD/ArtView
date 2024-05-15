@@ -105,7 +105,6 @@ class Data(
     }
 
     fun removeTag(tag: String) {
-        if (tag == "NSFW") return
         tags.forEach { it.tags.remove(tag) }
     }
 
