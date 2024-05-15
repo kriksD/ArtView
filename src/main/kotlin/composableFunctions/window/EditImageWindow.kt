@@ -150,6 +150,7 @@ fun EditImageGroupWindow(
                     fontSize = normalText,
                 ),
                 cursorBrush = SolidColor(colorText),
+                modifier = Modifier.weight(1F),
             )
         }
 
@@ -165,7 +166,7 @@ fun EditImageGroupWindow(
                     fontSize = normalText,
                 ),
                 cursorBrush = SolidColor(colorText),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1F),
             )
         }
 

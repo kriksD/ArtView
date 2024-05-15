@@ -42,6 +42,7 @@ fun AddWindow(
                     fontSize = normalText,
                 ),
                 cursorBrush = SolidColor(colorText),
+                modifier = Modifier.weight(1F),
             )
         }
 

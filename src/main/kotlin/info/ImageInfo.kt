@@ -9,8 +9,10 @@ import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import getImageBitmap
 import kotlinx.serialization.Serializable
+import openWebpage
 import java.awt.image.BufferedImage
 import java.io.File
+import java.net.URL
 
 @Serializable(with = ImageInfoSerializer::class)
 data class ImageInfo(
@@ -22,6 +24,7 @@ data class ImageInfo(
     var description: String = "",
     var favorite: Boolean = false,
     val tags: MutableList<String> = mutableListOf(),
+    var source: String? = null,
 ) : HasID {
     var scaledDownImage: ImageBitmap? by mutableStateOf(null)
     val isLoaded get() = scaledDownImage != null
@@ -101,6 +104,11 @@ data class ImageInfo(
     }
 
     fun saveFileTo(path: String) = saveFileTo(File(path))
+
+    fun openSource() {
+        if (source == null) return
+        openWebpage(URL(source))
+    }
 
     fun delete() { File(path).delete() }
 }

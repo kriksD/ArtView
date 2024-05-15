@@ -107,6 +107,17 @@ fun ImagePreview(
                             modifier = Modifier.weight(1F)
                         )
 
+                        if (imgData.source != null) {
+                            Icon(
+                                painter = painterResource("public.svg"),
+                                contentDescription = "open source in browser",
+                                tint = colorText,
+                                modifier = Modifier
+                                    .size(iconSize)
+                                    .clickable { imgData.openSource() }
+                            )
+                        }
+
                         var favorite by remember { mutableStateOf(imgData.favorite) }
                         Crossfade(
                             favorite,

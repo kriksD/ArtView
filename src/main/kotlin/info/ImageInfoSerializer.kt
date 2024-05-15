@@ -1,5 +1,6 @@
 package info
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
@@ -22,8 +23,10 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         element<String>("description")
         element<Boolean>("favorite")
         element<List<String>>("tags")
+        element<String?>("source")
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): ImageInfo = decoder.decodeStructure(descriptor) {
         var id: Int? = null
         var path: String? = null
@@ -33,6 +36,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         var description: String? = null
         var favorite: Boolean? = null
         var tags: List<String>? = null
+        var source: String? = null
 
         while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -45,6 +49,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
                 5 -> description = decodeStringElement(descriptor, index)
                 6 -> favorite = decodeBooleanElement(descriptor, index)
                 7 -> tags = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
+                8 -> source = decodeNullableSerializableElement(descriptor, index, String.serializer())
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -68,9 +73,11 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
             description = description,
             favorite = favorite,
             tags = tags.toMutableList(),
+            source = source,
         )
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override fun serialize(encoder: Encoder, value: ImageInfo) = encoder.encodeStructure(descriptor) {
         encodeIntElement(descriptor, 0, value.id)
         encodeStringElement(descriptor, 1, value.path)
@@ -80,5 +87,6 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
         encodeStringElement(descriptor, 5, value.description)
         encodeBooleanElement(descriptor, 6, value.favorite)
         encodeSerializableElement(descriptor, 7, ListSerializer(String.serializer()), value.tags)
+        encodeNullableSerializableElement(descriptor, 8, String.serializer(), value.source)
     }
 }

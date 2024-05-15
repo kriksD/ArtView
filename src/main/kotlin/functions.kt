@@ -9,10 +9,14 @@ import org.jetbrains.skiko.toImage
 import properties.*
 import properties.Properties
 import properties.settings.Settings
+import java.awt.Desktop
 import java.awt.Dimension
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
+import java.net.URI
+import java.net.URISyntaxException
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.imageio.ImageIO
@@ -231,6 +235,28 @@ fun String.toFileName(): String = this
 fun String.capitalizeEachWord(): String = this
     .split(" ")
     .joinToString(" ") { it.replaceFirstChar { char -> char.titlecase() } }
+
+fun openWebpage(uri: URI?): Boolean {
+    val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null
+    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+        try {
+            desktop.browse(uri)
+            return true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    return false
+}
+
+fun openWebpage(url: URL): Boolean {
+    try {
+        return openWebpage(url.toURI())
+    } catch (e: URISyntaxException) {
+        e.printStackTrace()
+    }
+    return false
+}
 
 fun <K, V> Map<K, V>.toState(): SnapshotStateMap<K, V> {
     val newList = mutableStateMapOf<K, V>()

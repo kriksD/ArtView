@@ -119,6 +119,7 @@ fun AddByURLWindow(
                     fontSize = normalText,
                 ),
                 cursorBrush = SolidColor(colorText),
+                modifier = Modifier.weight(1F),
             )
         }
 
@@ -134,7 +135,7 @@ fun AddByURLWindow(
                     fontSize = normalText,
                 ),
                 cursorBrush = SolidColor(colorText),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1F),
             )
         }
 
@@ -263,6 +264,7 @@ fun AddByURLWindow(
                         imageInfo.tags.addAll(selectedTags + selectedNewTags)
                         imageInfo.name = name.text
                         imageInfo.description = description.text
+                        post.source?.let { imageInfo.source = it }
 
                         onDone()
                     }
