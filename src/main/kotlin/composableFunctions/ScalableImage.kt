@@ -48,7 +48,7 @@ fun ScalableImage(
                 event.changes.firstOrNull()?.scrollDelta?.y?.let {
                     val scaleFactor = if (it >= 2) sqrt(scale / 16F) else sqrt(scale / 32F)
                     val scaleChange = it * 4 * scaleFactor
-                    onScaleChange(max(0.5F, min(6F, scale - scaleChange)))
+                    onScaleChange(max(0.5F, min(8F, scale - scaleChange)))
                 }
             }
             .onDrag {
