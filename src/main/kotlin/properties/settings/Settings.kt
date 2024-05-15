@@ -17,6 +17,11 @@ class Settings(
     showDebug: Boolean = false,
     addTagButtonPosition: TagControlsPosition = TagControlsPosition.Right,
     filterTagButtonPosition: TagControlsPosition = TagControlsPosition.Right,
+    booruTagsCategoryName: String = "Booru Tags",
+    characterTagsCategoryName: String = "Character",
+    copyrightTagsCategoryName: String = "Copyright",
+    artistTagsCategoryName: String = "Artist",
+    metaTagsCategoryName: String = "Meta",
 ) {
     var language by mutableStateOf(language)
     var background by mutableStateOf(background)
@@ -27,4 +32,10 @@ class Settings(
     var showDebug by mutableStateOf(showDebug)
     var addTagButtonPosition by mutableStateOf(addTagButtonPosition)
     var filterTagButtonPosition by mutableStateOf(filterTagButtonPosition)
+
+    var booruTagsCategoryName by mutableStateOf(booruTagsCategoryName)
+    var characterTagsCategoryName by mutableStateOf(characterTagsCategoryName)
+    var copyrightTagsCategoryName by mutableStateOf(copyrightTagsCategoryName)
+    var artistTagsCategoryName by mutableStateOf(artistTagsCategoryName)
+    var metaTagsCategoryName by mutableStateOf(metaTagsCategoryName)
 }

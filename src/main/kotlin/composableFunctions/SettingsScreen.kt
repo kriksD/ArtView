@@ -46,6 +46,7 @@ fun SettingsScreen(
             TagControlsPositionOptions(modifier = Modifier.fillMaxWidth())
             Options(modifier = Modifier.fillMaxWidth())
             TagsCategories(modifier = Modifier.fillMaxWidth())
+            BooruTagsCategories(modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -390,4 +391,108 @@ private fun TagControlsPositionMenu(
         },
         modifier = modifier,
     )
+}
+
+@Composable
+private fun BooruTagsCategories(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        Text("Booru tags categories:", color = colorText, fontSize = bigText)
+
+        TextAndTextField(
+            name = "Booru tags category:",
+            value = settings.booruTagsCategoryName,
+            onValueChange = {
+                settings.booruTagsCategoryName = it
+                Properties.saveSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding),
+        )
+
+        TextAndTextField(
+            name = "Characters category:",
+            value = settings.characterTagsCategoryName,
+            onValueChange = {
+                settings.characterTagsCategoryName = it
+                Properties.saveSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding),
+        )
+
+        TextAndTextField(
+            name = "Copyrights category:",
+            value = settings.copyrightTagsCategoryName,
+            onValueChange = {
+                settings.copyrightTagsCategoryName = it
+                Properties.saveSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding),
+        )
+
+        TextAndTextField(
+            name = "Artists category:",
+            value = settings.artistTagsCategoryName,
+            onValueChange = {
+                settings.artistTagsCategoryName = it
+                Properties.saveSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding),
+        )
+
+        TextAndTextField(
+            name = "Meta category:",
+            value = settings.metaTagsCategoryName,
+            onValueChange = {
+                settings.metaTagsCategoryName = it
+                Properties.saveSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding),
+        )
+    }
+}
+
+@Composable
+private fun TextAndTextField(
+    name: String,
+    value: String,
+    onValueChange: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier,
+    ) {
+        Text(name, color = colorText, fontSize = normalText)
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            textStyle = TextStyle(
+                color = colorText,
+                fontSize = normalText,
+            ),
+            cursorBrush = SolidColor(colorText),
+            singleLine = true,
+            maxLines = 1,
+            modifier = Modifier
+                .padding(padding)
+                .background(
+                    color = colorBackground,
+                    shape = RoundedCornerShape(smallCorners)
+                )
+                .padding(padding),
+        )
+    }
 }

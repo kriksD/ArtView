@@ -23,6 +23,12 @@ class SettingsSerializer : KSerializer<Settings> {
         element<TagControlsPosition>("add_tag_button_position")
         element<TagControlsPosition>("search_tag_button_position")
         element<Boolean>("show_debug")
+
+        element<String>("booru_tags_category_name")
+        element<String>("character_tags_category_name")
+        element<String>("copyright_tags_category_name")
+        element<String>("artist_tags_category_name")
+        element<String>("meta_tags_category_name")
     }
 
     private val listSerializer = ListSerializer(String.serializer())
@@ -42,6 +48,12 @@ class SettingsSerializer : KSerializer<Settings> {
                 6 -> settings.addTagButtonPosition = decodeSerializableElement(descriptor, 6, TagControlsPosition.serializer())
                 7 -> settings.filterTagButtonPosition = decodeSerializableElement(descriptor, 7, TagControlsPosition.serializer())
                 8 -> settings.showDebug = decodeBooleanElement(descriptor, 8)
+
+                9 -> settings.booruTagsCategoryName = decodeStringElement(descriptor, 9)
+                10 -> settings.characterTagsCategoryName = decodeStringElement(descriptor, 10)
+                11 -> settings.copyrightTagsCategoryName = decodeStringElement(descriptor, 11)
+                12 -> settings.artistTagsCategoryName = decodeStringElement(descriptor, 12)
+                13 -> settings.metaTagsCategoryName = decodeStringElement(descriptor, 13)
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -59,5 +71,11 @@ class SettingsSerializer : KSerializer<Settings> {
         encodeSerializableElement(descriptor, 6, TagControlsPosition.serializer(), value.addTagButtonPosition)
         encodeSerializableElement(descriptor, 7, TagControlsPosition.serializer(), value.filterTagButtonPosition)
         encodeBooleanElement(descriptor, 8, value.showDebug)
+
+        encodeStringElement(descriptor, 9, value.booruTagsCategoryName)
+        encodeStringElement(descriptor, 10, value.characterTagsCategoryName)
+        encodeStringElement(descriptor, 11, value.copyrightTagsCategoryName)
+        encodeStringElement(descriptor, 12, value.artistTagsCategoryName)
+        encodeStringElement(descriptor, 13, value.metaTagsCategoryName)
     }
 }

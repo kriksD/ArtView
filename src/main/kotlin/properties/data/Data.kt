@@ -6,11 +6,13 @@ import TagCategory
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
+import containsAtLeastOne
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import properties.Properties
 import savePngTo
 import swap
+import toFileName
 import uniqueId
 import uniqueName
 import java.io.File
@@ -50,7 +52,7 @@ class Data(
     fun addImage(path: String): ImageInfo? = addImage(File(path))
 
     fun addImage(image: ImageBitmap, name: String = "new_image"): ImageInfo {
-        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }, "png", File("images"))}.png")
+        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }.toFileName(), "png", File("images"))}.png")
         image.savePngTo(newFile)
 
         return ImageInfo(
@@ -95,6 +97,20 @@ class Data(
         val tagsList = tags.find { it.name == category }?.tags
         tagsList?.addAll(list.filter { !tagsList.contains(it) })
         tagsList?.sort()
+    }
+
+    fun addNewTags(
+        tags: List<String>,
+        selectedTags: List<String>,
+        categoryName: String?,
+    ) {
+        if (tags.isEmpty() || !selectedTags.containsAtLeastOne(tags) || categoryName == null) return
+
+        if (!containsTagCategory(categoryName)) {
+            createCategory(categoryName)
+        }
+
+        addAllTags(tags.filter { selectedTags.contains(it) }, categoryName)
     }
 
     fun moveTag(tag: String, category: String) {

@@ -13,7 +13,6 @@ import calculateWeight
 import colorText
 import colorTextError
 import composableFunctions.*
-import containsAtLeastOne
 import booruClient.clients.BooruClient
 import booruClient.BooruPost
 import emptyImageBitmap
@@ -231,45 +230,11 @@ fun AddByURLWindow(
                     booruPost?.let { post ->
                         val data = Properties.imagesData()
 
-                        if (newTags.isNotEmpty() && selectedNewTags.containsAtLeastOne(newTags)) {
-                            if (!data.containsTagCategory("Booru Tags")) {
-                                data.createCategory("Booru Tags")
-                            }
-
-                            data.addAllTags(newTags.filter { selectedNewTags.contains(it) }, "Booru Tags")
-                        }
-
-                        if (newCharacters.isNotEmpty() && selectedNewTags.containsAtLeastOne(newCharacters)) {
-                            if (!data.containsTagCategory("Character")) {
-                                data.createCategory("Character")
-                            }
-
-                            data.addAllTags(newCharacters.filter { selectedNewTags.contains(it) }, "Character")
-                        }
-
-                        if (newCopyrights.isNotEmpty() && selectedNewTags.containsAtLeastOne(newCopyrights)) {
-                            if (!data.containsTagCategory("Copyright")) {
-                                data.createCategory("Copyright")
-                            }
-
-                            data.addAllTags(newCopyrights.filter { selectedNewTags.contains(it) }, "Copyright")
-                        }
-
-                        if (newArtists.isNotEmpty() && selectedNewTags.containsAtLeastOne(newArtists)) {
-                            if (!data.containsTagCategory("Artist")) {
-                                data.createCategory("Artist")
-                            }
-
-                            data.addAllTags(newArtists.filter { selectedNewTags.contains(it) }, "Artist")
-                        }
-
-                        if (newMeta.isNotEmpty() && selectedNewTags.containsAtLeastOne(newMeta)) {
-                            if (!data.containsTagCategory("Meta")) {
-                                data.createCategory("Meta")
-                            }
-
-                            data.addAllTags(newMeta.filter { selectedNewTags.contains(it) }, "Meta")
-                        }
+                        data.addNewTags(newTags, selectedNewTags, settings.booruTagsCategoryName)
+                        data.addNewTags(newCharacters, selectedNewTags, settings.characterTagsCategoryName)
+                        data.addNewTags(newCopyrights, selectedNewTags, settings.copyrightTagsCategoryName)
+                        data.addNewTags(newArtists, selectedNewTags, settings.artistTagsCategoryName)
+                        data.addNewTags(newMeta, selectedNewTags, settings.metaTagsCategoryName)
 
                         val imageInfo = data.addImage(post.image, name.text)
                         imageInfo.tags.addAll(selectedTags + selectedNewTags)
