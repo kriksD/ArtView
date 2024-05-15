@@ -45,7 +45,7 @@ fun main() = application {
 
         File("images").mkdir()
 
-        tagStorage.filter()
+        tagStorage.reset()
         imageStorage.filter(Filter().tags(tagStorage))
     }
 

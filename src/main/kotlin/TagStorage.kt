@@ -47,7 +47,9 @@ class TagStorage {
 
     fun reset() {
         selectedTags.clear()
+        selectedTags.addAll(settings.selectedTagsByDefault)
         selectedAntiTags.clear()
+        selectedAntiTags.addAll(settings.antiSelectedTagsByDefault)
         filteredTags.clear()
         Properties.imagesData().tags.forEach { filteredTags[it.name] = it.tags }
     }
