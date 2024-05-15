@@ -30,6 +30,7 @@ import padding
 import tinyText
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -45,7 +46,9 @@ fun ScalableImage(
         modifier = modifier
             .onPointerEvent(PointerEventType.Scroll) { event ->
                 event.changes.firstOrNull()?.scrollDelta?.y?.let {
-                    onScaleChange(max(0.5F, min(4F, scale - it / 8F)))
+                    val scaleFactor = if (it >= 2) sqrt(scale / 16F) else sqrt(scale / 32F)
+                    val scaleChange = it * 4 * scaleFactor
+                    onScaleChange(max(0.5F, min(6F, scale - scaleChange)))
                 }
             }
             .onDrag {
