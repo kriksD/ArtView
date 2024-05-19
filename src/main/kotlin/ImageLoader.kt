@@ -20,6 +20,7 @@ class ImageLoader {
             mutex.withLock {
                 if (loadRequests.contains(image)) return@withLock
                 if (unloadRequests.contains(image)) unloadRequests.remove(image)
+                if (image.isLoaded) return@withLock
 
                 loadRequests.add(image)
             }
@@ -31,6 +32,7 @@ class ImageLoader {
             mutex.withLock {
                 if (unloadRequests.contains(image)) return@withLock
                 if (loadRequests.contains(image)) loadRequests.remove(image)
+                if (!image.isLoaded) return@withLock
 
                 unloadRequests.add(image)
             }

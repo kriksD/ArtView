@@ -7,6 +7,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -18,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import border
@@ -39,7 +41,6 @@ import smallCorners
 import style
 import transparencyLight
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImageGrid(
     images: List<ImageInfo>,
@@ -49,19 +50,29 @@ fun ImageGrid(
     onOpen: (ImageInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val windowSize = LocalWindowInfo.current.containerSize
-
     var imagesPerRow by remember { mutableStateOf(4) }
     val splitImages = images.chunked(imagesPerRow).toMutableStateList()
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
+
+    LaunchedEffect(scrollState.layoutInfo.visibleItemsInfo) {
+        splitImages.forEachIndexed { index, row ->
+            val isVisible = scrollState.layoutInfo.visibleItemsInfo.find { it.index == index } != null
+
+            if (isVisible) {
+                row.forEach { imageLoader.loadNext(it) }
+            } else {
+                row.forEach { imageLoader.unloadNext(it) }
+            }
+        }
+    }
 
     Row(
         modifier = modifier,
     ) {
-        Column(
+        LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .weight(1F)
-                .verticalScroll(scrollState)
                 .onSizeChanged {
                     val previousImagesPerRow = imagesPerRow
                     imagesPerRow = it.width / style.image_width
@@ -70,16 +81,14 @@ fun ImageGrid(
                         splitImages.clear()
                         splitImages.addAll(images.chunked(imagesPerRow))
                     }
-                }
+                },
         ) {
-            splitImages.forEach { row ->
+            items(splitImages) { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     row.forEach { imgInfo ->
-                        var isOnScreen by remember { mutableStateOf(false) }
-
                         ImageGridItem(
                             imageInfo = imgInfo,
                             checked = checkedList.contains(imgInfo),
@@ -88,22 +97,7 @@ fun ImageGrid(
                             modifier = Modifier
                                 .weight(imgInfo.calculateWeight())
                                 .padding(padding)
-                                .clip(RoundedCornerShape(smallCorners))
-                                .onGloballyPositioned { c ->
-                                    val top = c.positionInWindow().y
-                                    val bottom = c.positionInWindow().y + c.size.height
-
-                                    val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
-                                    if (newValue != isOnScreen || (newValue && !imgInfo.isLoaded)) {
-                                        isOnScreen = newValue
-
-                                        if (isOnScreen) {
-                                            imageLoader.loadNext(imgInfo)
-                                        } else {
-                                            imageLoader.unloadNext(imgInfo)
-                                        }
-                                    }
-                                },
+                                .clip(RoundedCornerShape(smallCorners)),
                         )
                     }
 
