@@ -44,7 +44,6 @@ import smallCorners
 import style
 import transparencyLight
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ImageGroupGrid(
     imageGroups: List<ImageGroup>,

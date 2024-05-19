@@ -29,6 +29,7 @@ fun main() = application {
         Properties.loadSettings()
         Properties.loadLanguage(settings.language)
         Properties.loadData()
+        Properties.backup.load()
     }
 
     val imageStorage by remember { mutableStateOf(ImageStorage()) }

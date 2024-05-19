@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import bigText
 import biggerPadding
@@ -28,25 +29,39 @@ import colorText
 import colorTextSecond
 import corners
 import iconSize
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import normalText
 import padding
 import properties.Properties
+import properties.data.backup.BackupInfo
 import properties.settings.TagControlsPosition
+import runCommand
 import settings
 import smallCorners
 import tinyIconSize
+import toTimeString
+import java.io.File
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .padding(padding),
+    ) {
         TagSelectionByDefault(modifier = Modifier.fillMaxWidth())
         Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
+            UsualDivider(modifier = Modifier.fillMaxWidth())
             TagControlsPositionOptions(modifier = Modifier.fillMaxWidth())
             Options(modifier = Modifier.fillMaxWidth())
+            UsualDivider(modifier = Modifier.fillMaxWidth())
             TagsCategories(modifier = Modifier.fillMaxWidth())
+            UsualDivider(modifier = Modifier.fillMaxWidth())
             BooruTagsCategories(modifier = Modifier.fillMaxWidth())
+            UsualDivider(modifier = Modifier.fillMaxWidth())
+            Backup(modifier = Modifier.fillMaxWidth())
         }
     }
 }
@@ -494,5 +509,152 @@ private fun TextAndTextField(
                 )
                 .padding(padding),
         )
+    }
+}
+
+@Composable
+private fun Backup(
+    modifier: Modifier = Modifier,
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    Column(
+        modifier = modifier,
+    ) {
+        var creatingBackup by remember { mutableStateOf(false) }
+        var deletingBackup by remember { mutableStateOf(false) }
+
+        Text("Backup:", color = colorText, fontSize = bigText)
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ButtonText(
+                text = "Create backup",
+                onClick = {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        creatingBackup = true
+                        Properties.backup.createBackup()
+                        creatingBackup = false
+                    }
+                },
+                enabled = !creatingBackup && !deletingBackup,
+                modifier = Modifier.padding(padding),
+            )
+
+            Text(
+                text = "Backup limit:",
+                color = colorText,
+                fontSize = normalText,
+                modifier = Modifier.padding(padding),
+            )
+
+            Menu(
+                selectedItem = settings.backupLimit,
+                items = listOf(1, 2, 5, 10, 25),
+                onSelect = {
+                    settings.backupLimit = it as Int
+                    Properties.saveSettings()
+                    Properties.backup.limitUpdated(settings.backupLimit)
+                },
+                itemContent = { item, type ->
+                    Text(
+                        (item as Int).toString(),
+                        color = if (type == MenuItemType.ListSelected) colorTextSecond else colorText,
+                        fontSize = normalText,
+                        modifier = Modifier
+                            .background(colorBackground, RoundedCornerShape(corners))
+                            .padding(padding),
+                    )
+                },
+                modifier = Modifier.padding(padding),
+            )
+
+            if (creatingBackup) {
+                Text(
+                    text = "Creating backup...",
+                    color = colorText,
+                    fontSize = normalText,
+                    modifier = Modifier.padding(padding),
+                )
+            }
+
+            if (deletingBackup) {
+                Text(
+                    text = "Deleting backup...",
+                    color = colorText,
+                    fontSize = normalText,
+                    modifier = Modifier.padding(padding),
+                )
+            }
+        }
+
+        if (Properties.backup.backups.isEmpty()) {
+            Text(
+                text = "No backups found",
+                color = colorText,
+                fontSize = normalText,
+                modifier = Modifier.padding(padding),
+            )
+        }
+
+        Properties.backup.backups.forEach { info ->
+            BackupInfoCard(
+                info = info,
+                onRemove = {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        deletingBackup = true
+                        Properties.backup.removeBackup(info)
+                        deletingBackup = false
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth(0.5F)
+                    .padding(padding),
+            )
+        }
+    }
+}
+
+@Composable
+private fun BackupInfoCard(
+    info: BackupInfo,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .padding(padding)
+            .background(
+                color = colorBackground,
+                shape = RoundedCornerShape(smallCorners)
+            )
+            .padding(padding),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text("id: ${info.id} | ${info.date.toTimeString()} | image count: ${info.imageCount}", color = colorText, fontSize = normalText)
+
+        Row {
+            Icon(
+                painter = painterResource("folder_open.svg"),
+                contentDescription = null,
+                tint = colorText,
+                modifier = Modifier
+                    .size(iconSize)
+                    .clickable { "explorer \"${File(info.folderPath).absolutePath}\\\"".runCommand(File(".")) }
+                    .padding(horizontal = biggerPadding, vertical = padding),
+            )
+
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                tint = colorText,
+                modifier = Modifier
+                    .size(iconSize)
+                    .clickable(onClick = onRemove)
+                    .padding(horizontal = biggerPadding, vertical = padding),
+            )
+        }
     }
 }

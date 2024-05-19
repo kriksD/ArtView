@@ -22,6 +22,7 @@ class Settings(
     copyrightTagsCategoryName: String = "Copyright",
     artistTagsCategoryName: String = "Artist",
     metaTagsCategoryName: String = "Meta",
+    backupLimit: Int = 5,
 ) {
     var language by mutableStateOf(language)
     var background by mutableStateOf(background)
@@ -38,4 +39,6 @@ class Settings(
     var copyrightTagsCategoryName by mutableStateOf(copyrightTagsCategoryName)
     var artistTagsCategoryName by mutableStateOf(artistTagsCategoryName)
     var metaTagsCategoryName by mutableStateOf(metaTagsCategoryName)
+
+    var backupLimit by mutableStateOf(backupLimit)
 }

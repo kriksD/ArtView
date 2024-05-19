@@ -5,6 +5,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import colorBackgroundSecond
 import colorBackgroundSecondLighter
 import colorText
 import normalText
@@ -19,7 +20,7 @@ fun ButtonText(
     Button(
         onClick = onClick,
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter),
+        colors = ButtonDefaults.buttonColors(backgroundColor = colorBackgroundSecondLighter, disabledBackgroundColor = colorBackgroundSecond),
         modifier = modifier,
     ) {
         Text(text, color = colorText, fontSize = normalText)

@@ -29,6 +29,8 @@ class SettingsSerializer : KSerializer<Settings> {
         element<String>("copyright_tags_category_name")
         element<String>("artist_tags_category_name")
         element<String>("meta_tags_category_name")
+
+        element<Int>("backup_limit")
     }
 
     private val listSerializer = ListSerializer(String.serializer())
@@ -54,6 +56,8 @@ class SettingsSerializer : KSerializer<Settings> {
                 11 -> settings.copyrightTagsCategoryName = decodeStringElement(descriptor, 11)
                 12 -> settings.artistTagsCategoryName = decodeStringElement(descriptor, 12)
                 13 -> settings.metaTagsCategoryName = decodeStringElement(descriptor, 13)
+
+                14 -> settings.backupLimit = decodeIntElement(descriptor, 14)
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -77,5 +81,7 @@ class SettingsSerializer : KSerializer<Settings> {
         encodeStringElement(descriptor, 11, value.copyrightTagsCategoryName)
         encodeStringElement(descriptor, 12, value.artistTagsCategoryName)
         encodeStringElement(descriptor, 13, value.metaTagsCategoryName)
+
+        encodeIntElement(descriptor, 14, value.backupLimit)
     }
 }

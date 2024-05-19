@@ -2,6 +2,7 @@ package properties
 
 import properties.data.Data
 import properties.data.DataContainer
+import properties.data.backup.BackupManager
 import properties.settings.Settings
 import properties.settings.SettingsContainer
 
@@ -27,4 +28,6 @@ object Properties {
     fun imagesData(): Data = dataContainer.data
     fun loadData() { dataContainer.load() }
     fun saveData() { dataContainer.save() }
+
+    val backup = BackupManager()
 }
