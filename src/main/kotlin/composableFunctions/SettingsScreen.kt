@@ -36,6 +36,7 @@ import padding
 import properties.Properties
 import properties.data.backup.BackupInfo
 import properties.settings.TagControlsPosition
+import roundPlaces
 import runCommand
 import settings
 import smallCorners
@@ -633,7 +634,12 @@ private fun BackupInfoCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text("id: ${info.id} | ${info.date.toTimeString()} | image count: ${info.imageCount}", color = colorText, fontSize = normalText)
+        Row {
+            Text("id: ${info.id} | ", color = colorText, fontSize = normalText)
+            Text("${info.date.toTimeString()} | ", color = colorText, fontSize = normalText)
+            Text("${info.imageCount} images | ", color = colorText, fontSize = normalText)
+            Text("${(info.spaceUsed / 1024.0 / 1024.0).roundPlaces(2)} MB", color = colorText, fontSize = normalText)
+        }
 
         Row {
             Icon(

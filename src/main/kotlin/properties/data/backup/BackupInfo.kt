@@ -8,6 +8,7 @@ data class BackupInfo(
     override val id: Int,
     val date: Long,
     val imageCount: Int,
+    val spaceUsed: Long,
 ): HasID {
     val folderPath = "data/backup/$id"
 }

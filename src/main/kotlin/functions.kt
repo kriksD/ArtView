@@ -147,6 +147,8 @@ fun Int.roundToStep(step: Int): Int {
     return (steps + if (lastStep > centerOfStep) 1 else 0) * step
 }
 
+fun Double.roundPlaces(places: Int): Double = "%.${places}f".format(this).toDouble()
+
 fun Long.toTimeString(): String {
     val date = Date(this)
     val format = SimpleDateFormat("hh:mma dd/MM/yyyy")
@@ -289,4 +291,21 @@ fun <T> Collection<T>.containsAtLeastOne(elements: Collection<T>): Boolean {
         if (this.contains(element)) return true
     }
     return false
+}
+
+fun File.getDirectorySize(): Long {
+    var size: Long = 0
+    if (exists()) {
+        val files = listFiles()
+        if (files != null) {
+            for (file in files) {
+                size += if (file.isDirectory) {
+                    file.getDirectorySize()
+                } else {
+                    file.length()
+                }
+            }
+        }
+    }
+    return size
 }
