@@ -55,15 +55,15 @@ class ImageLoader {
             while(isRunning) {
                 if (unloadRequests.isNotEmpty()) {
                     val image = mutex.withLock {
-                        unloadRequests.removeFirst()
+                        unloadRequests.removeFirstOrNull()
                     }
-                    image.unload()
+                    image?.unload()
 
                 } else if (loadRequests.isNotEmpty()) {
                     val image = mutex.withLock {
-                        loadRequests.removeFirst()
+                        loadRequests.removeFirstOrNull()
                     }
-                    image.load()
+                    image?.load()
 
                 } else {
                     delay(20)

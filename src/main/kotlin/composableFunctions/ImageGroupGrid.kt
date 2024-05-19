@@ -6,6 +6,9 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CheckboxDefaults
@@ -19,10 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import bigText
@@ -54,19 +54,35 @@ fun ImageGroupGrid(
     onOpen: (ImageGroup) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val windowSize = LocalWindowInfo.current.containerSize
-
     var imagesPerRow by remember { mutableStateOf(4) }
     val splitImages = imageGroups.chunked(imagesPerRow).toMutableStateList()
-    val scrollState = rememberScrollState()
+    val scrollState = rememberLazyListState()
+
+    LaunchedEffect(scrollState.layoutInfo.visibleItemsInfo) {
+        splitImages.forEachIndexed { index, row ->
+            val isVisible = scrollState.layoutInfo.visibleItemsInfo.find { it.index == index } != null
+
+            if (isVisible) {
+                row.forEach { imgGroup ->
+                    imgGroup.getImageInfo(0)?.let { imageLoader.loadNext(it) }
+                    imgGroup.getImageInfo(1)?.let { imageLoader.loadNext(it) }
+                }
+            } else {
+                row.forEach { imgGroup ->
+                    imgGroup.getImageInfo(0)?.let { imageLoader.unloadNext(it) }
+                    imgGroup.getImageInfo(1)?.let { imageLoader.unloadNext(it) }
+                }
+            }
+        }
+    }
 
     Row(
         modifier = modifier,
     ) {
-        Column(
+        LazyColumn(
+            state = scrollState,
             modifier = Modifier
                 .weight(1F)
-                .verticalScroll(scrollState)
                 .onSizeChanged {
                     val previousImagesPerRow = imagesPerRow
                     imagesPerRow = it.width / style.image_width
@@ -75,16 +91,14 @@ fun ImageGroupGrid(
                         splitImages.clear()
                         splitImages.addAll(imageGroups.chunked(imagesPerRow))
                     }
-                }
+                },
         ) {
-            splitImages.forEach { row ->
+            items(splitImages) { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     row.forEach { imgGroup ->
-                        var isOnScreen by remember { mutableStateOf(false) }
-
                         ImageGroupGridItem(
                             imageGroup = imgGroup,
                             checked = checkedList.contains(imgGroup),
@@ -93,26 +107,7 @@ fun ImageGroupGrid(
                             modifier = Modifier
                                 .weight(imgGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
                                 .padding(padding)
-                                .clip(RoundedCornerShape(smallCorners))
-                                .onGloballyPositioned { c ->
-                                    val top = c.positionInWindow().y
-                                    val bottom = c.positionInWindow().y + c.size.height
-
-                                    val newValue = top >= 0 - c.size.height && bottom <= windowSize.height + c.size.height
-                                    val firstImage = imgGroup.getImageInfo(0)
-                                    val secondImage = imgGroup.getImageInfo(1)
-                                    if (newValue != isOnScreen || (newValue && (firstImage?.isLoaded == false || secondImage?.isLoaded == false))) {
-                                        isOnScreen = newValue
-
-                                        if (isOnScreen) {
-                                            firstImage?.let { imageLoader.loadNext(it) }
-                                            secondImage?.let { imageLoader.loadNext(it) }
-                                        } else {
-                                            firstImage?.let { imageLoader.unloadNext(it) }
-                                            secondImage?.let { imageLoader.unloadNext(it) }
-                                        }
-                                    }
-                                },
+                                .clip(RoundedCornerShape(smallCorners)),
                         )
                     }
 
