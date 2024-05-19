@@ -36,7 +36,7 @@ data class ImageInfo(
         val newImage = image
 
         scaledDownImage = try {
-            val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 300, 300) }
+            val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
             newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
 
         } catch (e: Exception) { newImage }
