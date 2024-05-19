@@ -36,5 +36,8 @@ class Danbooru(override val client: HttpClient) : Booru() {
         }
     }
 
-    override fun createLink(link: String) = if (link.endsWith(".json")) link else "$link.json"
+    override fun createLink(link: String): String {
+        val newLink = link.substringBefore("?").substringBefore("&")
+        return if (newLink.endsWith(".json")) newLink else "$newLink.json"
+    }
 }
