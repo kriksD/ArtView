@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import openWebpage
+import savePngTo
 import java.awt.image.BufferedImage
 import java.io.File
 import java.net.URL
@@ -33,13 +34,38 @@ data class ImageInfo(
     fun load() {
         if (scaledDownImage != null) return
 
+        val imageFromCache = loadFromCache()
+        if (imageFromCache != null) {
+            scaledDownImage = imageFromCache
+            return
+        }
+
         val newImage = image
 
         scaledDownImage = try {
             val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
-            newSize?.let { newImage.scaleAndCropImage(it.first, it.second) }
+            newSize?.let { size ->
+                newImage.scaleAndCropImage(size.first, size.second).also { saveToCache(it) }
+            }
 
         } catch (e: Exception) { newImage }
+    }
+
+    private val cacheDir = File("data/cache/images")
+
+    private fun loadFromCache(): ImageBitmap? {
+        cacheDir.mkdirs()
+
+        return if (File(cacheDir, "$id.png").exists()) {
+            getImageBitmap(File(cacheDir, "$id.png"))
+        } else {
+            null
+        }
+    }
+
+    private fun saveToCache(image: ImageBitmap?) {
+        cacheDir.mkdirs()
+        image?.savePngTo(File(cacheDir, "$id.png"))
     }
 
     fun unload() {
@@ -111,6 +137,11 @@ data class ImageInfo(
         openWebpage(URL(source))
     }
 
-    fun delete() { File(path).delete() }
+    fun delete() {
+        if (File(path).exists()) File(path).delete()
+
+        val cacheFile = File(cacheDir, "$id.png")
+        if (cacheFile.exists()) cacheFile.delete()
+    }
 }
 

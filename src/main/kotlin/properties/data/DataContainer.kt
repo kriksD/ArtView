@@ -41,7 +41,12 @@ class DataContainer {
     }
 
     private fun removeNonexistentImages() {
-        data.images.removeIf { !File(it.path).exists() }
+        data.images.forEach {
+            if (!File(it.path).exists()) {
+                it.delete()
+                data.images.remove(it)
+            }
+        }
     }
 
     private fun checkForNewImageFiles() {
