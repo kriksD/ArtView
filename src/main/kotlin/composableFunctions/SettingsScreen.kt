@@ -26,11 +26,13 @@ import biggerPadding
 import colorBackground
 import colorBackgroundLighter
 import colorText
+import colorTextError
 import colorTextSecond
 import corners
 import iconSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import normalAnimationDuration
 import normalText
 import padding
 import properties.Properties
@@ -102,6 +104,43 @@ private fun Options(
                 Properties.saveSettings()
             },
         )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier,
+        ) {
+            val previousValue by remember { mutableStateOf(settings.imageLoadingThreads) }
+            Menu(
+                selectedItem = settings.imageLoadingThreads,
+                items = listOf(1, 2, 3, 4, 5, 6),
+                onSelect = {
+                    settings.imageLoadingThreads = it as Int
+                    Properties.saveSettings()
+                },
+                itemContent = { item, type ->
+                    Text(
+                        (item as Int).toString(),
+                        color = if (type == MenuItemType.ListSelected) colorTextSecond else colorText,
+                        fontSize = normalText,
+                        modifier = Modifier
+                            .background(colorBackground, RoundedCornerShape(corners))
+                            .padding(top = padding, bottom = padding, start = biggerPadding, end = biggerPadding),
+                    )
+                },
+                modifier = Modifier.padding(padding),
+            )
+
+            AppearDisappearAnimation(
+                visible = previousValue != settings.imageLoadingThreads,
+                duration = normalAnimationDuration,
+            ) {
+                Text(
+                    text = "Relaunch the app to apply this change!",
+                    color = colorTextError,
+                    fontSize = normalText,
+                )
+            }
+        }
     }
 }
 
@@ -402,7 +441,7 @@ private fun TagControlsPositionMenu(
                 fontSize = normalText,
                 modifier = Modifier
                     .background(colorBackground, RoundedCornerShape(corners))
-                    .padding(padding),
+                    .padding(top = padding, bottom = padding, start = biggerPadding, end = biggerPadding),
             )
         },
         modifier = modifier,
@@ -565,7 +604,7 @@ private fun Backup(
                         fontSize = normalText,
                         modifier = Modifier
                             .background(colorBackground, RoundedCornerShape(corners))
-                            .padding(padding),
+                            .padding(top = padding, bottom = padding, start = biggerPadding, end = biggerPadding),
                     )
                 },
                 modifier = Modifier.padding(padding),

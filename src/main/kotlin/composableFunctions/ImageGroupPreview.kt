@@ -1,6 +1,6 @@
 package composableFunctions
 
-import ImageLoader
+import loader.ImageLoader
 import ImageStorage
 import TagStorage
 import androidx.compose.foundation.background

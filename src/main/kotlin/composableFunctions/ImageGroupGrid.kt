@@ -1,7 +1,7 @@
 package composableFunctions
 
 import info.ImageGroup
-import ImageLoader
+import loader.ImageLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*

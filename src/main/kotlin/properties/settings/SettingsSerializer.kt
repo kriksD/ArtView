@@ -31,6 +31,7 @@ class SettingsSerializer : KSerializer<Settings> {
         element<String>("meta_tags_category_name")
 
         element<Int>("backup_limit")
+        element<Int>("image_loading_threads")
     }
 
     private val listSerializer = ListSerializer(String.serializer())
@@ -58,6 +59,8 @@ class SettingsSerializer : KSerializer<Settings> {
                 13 -> settings.metaTagsCategoryName = decodeStringElement(descriptor, 13)
 
                 14 -> settings.backupLimit = decodeIntElement(descriptor, 14)
+                15 -> settings.imageLoadingThreads = decodeIntElement(descriptor, 15)
+
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -83,5 +86,6 @@ class SettingsSerializer : KSerializer<Settings> {
         encodeStringElement(descriptor, 13, value.metaTagsCategoryName)
 
         encodeIntElement(descriptor, 14, value.backupLimit)
+        encodeIntElement(descriptor, 15, value.imageLoadingThreads)
     }
 }

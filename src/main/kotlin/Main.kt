@@ -15,12 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import composableFunctions.*
 import composableFunctions.window.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import loader.ImageLoader
 import properties.Properties
 import java.io.File
 import java.net.URI
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
+    val coroutineScope = rememberCoroutineScope()
+
     var isFirstTime1 by remember { mutableStateOf(true) }
     if (isFirstTime1) {
         isFirstTime1 = false
@@ -106,8 +111,10 @@ fun main() = application {
                             imageStorage.setFilter(Filter().tags(tagStorage))
                             imageStorage.withGroups = false
                             imageStorage.update()
-                            imageLoader.cancel()
-                            imageLoader = ImageLoader()
+                            coroutineScope.launch {
+                                delay(normalAnimationDuration.toLong() + 100L)
+                                imageLoader.reset()
+                            }
                         }
 
                         MenuItem.Favorites -> {
@@ -116,22 +123,28 @@ fun main() = application {
                             )
                             imageStorage.withGroups = false
                             imageStorage.update()
-                            imageLoader.cancel()
-                            imageLoader = ImageLoader()
+                            coroutineScope.launch {
+                                delay(normalAnimationDuration.toLong() + 100L)
+                                imageLoader.reset()
+                            }
                         }
 
                         MenuItem.Groups -> {
                             imageStorage.setFilter(Filter().tags(tagStorage))
                             imageStorage.withGroups = true
                             imageStorage.update()
-                            imageLoader.cancel()
-                            imageLoader = ImageLoader()
+                            coroutineScope.launch {
+                                delay(normalAnimationDuration.toLong() + 100L)
+                                imageLoader.reset()
+                            }
                         }
 
                         MenuItem.Settings -> {
                             imageStorage.reset()
-                            imageLoader.cancel()
-                            imageLoader = ImageLoader()
+                            coroutineScope.launch {
+                                delay(normalAnimationDuration.toLong() + 100L)
+                                imageLoader.reset()
+                            }
                         }
                     }
                 },
@@ -655,6 +668,11 @@ private fun Debug(
             )
             Text(
                 "Loading requests: ${imageLoader.requestAmount}",
+                color = colorText,
+                fontSize = normalText,
+            )
+            Text(
+                "Threads used: ${imageLoader.threadCount}",
                 color = colorText,
                 fontSize = normalText,
             )
