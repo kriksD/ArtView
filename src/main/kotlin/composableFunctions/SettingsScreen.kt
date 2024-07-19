@@ -109,6 +109,12 @@ private fun Options(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier,
         ) {
+            Text(
+                text = "Image loading threads:",
+                color = colorText,
+                fontSize = normalText,
+            )
+
             val previousValue by remember { mutableStateOf(settings.imageLoadingThreads) }
             Menu(
                 selectedItem = settings.imageLoadingThreads,
