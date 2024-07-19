@@ -97,8 +97,8 @@ class ImageStorage {
         update()
     }
 
-    fun saveImageFilesTo(folder: File = File("images_filtered")) {
-        folder.mkdir()
+    fun saveImageFilesTo(folder: File = File("data/images_filtered")) {
+        folder.mkdirs()
         folder.listFiles()?.forEach { it.delete() }
 
         if (selectedImages.isNotEmpty()) {

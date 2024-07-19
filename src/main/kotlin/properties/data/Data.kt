@@ -32,8 +32,8 @@ class Data(
         if (!file.exists()) return null
         val image = getImageBitmap(file) ?: return null
 
-        val newFile = File("images/${
-            uniqueName(file.nameWithoutExtension, file.extension, File("images"))
+        val newFile = File("data/images/${
+            uniqueName(file.nameWithoutExtension, file.extension, File("data/images"))
         }.${file.extension}")
 
         file.copyTo(newFile)
@@ -52,7 +52,7 @@ class Data(
     fun addImage(path: String): ImageInfo? = addImage(File(path))
 
     fun addImage(image: ImageBitmap, name: String = "new_image"): ImageInfo {
-        val newFile = File("images/${uniqueName(name.ifBlank { "new_image" }.toFileName(), "png", File("images"))}.png")
+        val newFile = File("data/images/${uniqueName(name.ifBlank { "new_image" }.toFileName(), "png", File("data/images"))}.png")
         image.savePngTo(newFile)
 
         return ImageInfo(
@@ -177,5 +177,19 @@ class Data(
     fun moveCategoryDown(name: String) {
         val index = tags.indexOfFirst { it.name == name }
         tags.swap(index, index + 1)
+    }
+
+    fun copy(
+        meta: DataMeta = this.meta,
+        tags: Collection<TagCategory> = this.tags,
+        images: Collection<ImageInfo> = this.images,
+        imageGroups: Collection<ImageGroup> = this.imageGroups,
+    ): Data {
+        return Data(
+            meta,
+            tags.toMutableList(),
+            images.toMutableList(),
+            imageGroups.toMutableList(),
+        )
     }
 }

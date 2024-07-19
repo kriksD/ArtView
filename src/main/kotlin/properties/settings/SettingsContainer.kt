@@ -10,7 +10,7 @@ class SettingsContainer {
         prettyPrint = true
         encodeDefaults = true
     }
-    private val file = File("settings.json")
+    private val file = File("data/settings.json")
 
     fun load() {
         settings = if (file.exists()) {

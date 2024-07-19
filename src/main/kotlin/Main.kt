@@ -49,7 +49,7 @@ fun main() = application {
     if (isFirstTime) {
         isFirstTime = false
 
-        File("images").mkdir()
+        File("data/images").mkdirs()
 
         tagStorage.reset()
         imageStorage.filter(Filter().tags(tagStorage))

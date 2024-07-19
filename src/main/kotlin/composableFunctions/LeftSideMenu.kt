@@ -66,7 +66,7 @@ fun LeftSideMenu(
         MenuOption(
             icon = painterResource("folder_open.svg"),
             selected = false,
-            onClick = { "explorer \"${File(".").absolutePath}\\\"".runCommand(File(".")) }
+            onClick = { "explorer \"${File("./data").absolutePath}\\\"".runCommand(File(".")) }
         )
     }
 }

@@ -106,9 +106,10 @@ data class ImageInfo(
         }
 
     fun saveFileTo(folder: File) {
-        File(path).copyTo(
-            File("${folder.path}${File.separator}${path.substringAfterLast("\\").substringAfterLast("/")}")
-        )
+        val newFile = File("${folder.path}${File.separator}${path.substringAfterLast("\\").substringAfterLast("/")}")
+        if (newFile.exists()) return
+
+        File(path).copyTo(newFile)
     }
 
     fun saveFileTo(path: String) = saveFileTo(File(path))

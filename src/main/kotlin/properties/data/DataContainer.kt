@@ -18,10 +18,12 @@ class DataContainer {
         prettyPrint = true
         encodeDefaults = true
     }
-    private val file = File("imagesData.json")
+    private val file = File("data/images_data.json")
+    private val imagesFolder = File("data/images")
 
     fun load() {
         loadFromJsonFile()
+        checkAndFixPaths()
         removeNonexistentImages()
         checkForNewImageFiles()
         ensureDefaultTagsExist()
@@ -40,6 +42,35 @@ class DataContainer {
         }
     }
 
+    private fun checkAndFixPaths() {
+        val wrongPathRegex = Regex("^images[/\\\\].+\\..+$")
+        if (
+            data.images.any { it.path.contains(wrongPathRegex) }
+            || data.imageGroups.any { g -> g.imagePaths.any { it.contains(wrongPathRegex) } }
+        ) {
+            val newImages = data.images.map {
+                if (it.path.contains(wrongPathRegex)) {
+                    it.copy(path = "data${File.separator}${it.path}")
+                } else {
+                    it
+                }
+            }
+
+            val newGroups = data.imageGroups.map {
+                val newPaths = it.imagePaths.map { path ->
+                    if (path.contains(wrongPathRegex)) {
+                        "data${File.separator}${path}"
+                    } else {
+                        path
+                    }
+                }
+                it.copy(imagePaths = newPaths.toMutableList())
+            }
+
+            data = data.copy(images = newImages, imageGroups = newGroups)
+        }
+    }
+
     private fun removeNonexistentImages() {
         data.images.forEach {
             if (!File(it.path).exists()) {
@@ -50,7 +81,7 @@ class DataContainer {
     }
 
     private fun checkForNewImageFiles() {
-        val allFiles = File("images").listFiles()
+        val allFiles = imagesFolder.listFiles()
         allFiles?.filter { f ->
             data.images.none { it.path == f.path }
         }?.forEach {

@@ -37,15 +37,15 @@ class BackupManager {
     fun createBackup() {
         val id = backups.uniqueId()
 
-        val imagesFolder = File("images")
-        val imagesDataFile = File("imagesData.json")
-        val settingsFile = File("settings.json")
+        val imagesFolder = File("data/images")
+        val imagesDataFile = File("data/images_data.json")
+        val settingsFile = File("data/settings.json")
 
         val backupFolder = File(folder, id.toString())
         backupFolder.mkdirs()
 
         imagesFolder.copyRecursively(File(backupFolder, "images"))
-        imagesDataFile.copyTo(File(backupFolder, "imagesData.json"))
+        imagesDataFile.copyTo(File(backupFolder, "images_data.json"))
         settingsFile.copyTo(File(backupFolder, "settings.json"))
 
         val info = BackupInfo(

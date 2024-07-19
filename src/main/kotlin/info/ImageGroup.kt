@@ -26,9 +26,10 @@ data class ImageGroup(
 
     fun saveImageFilesTo(folder: File) {
         imagePaths.forEach {
-            File(it).copyTo(
-                File("${folder.path}${File.separator}${it.substringAfterLast("\\").substringAfterLast("/")}")
-            )
+            val newFile = File("${folder.path}${File.separator}${it.substringAfterLast("\\").substringAfterLast("/")}")
+            if (newFile.exists()) return
+
+            File(it).copyTo(newFile)
         }
     }
 }
