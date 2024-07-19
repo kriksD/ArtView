@@ -32,14 +32,7 @@ class DataContainer {
 
     private fun loadFromJsonFile() {
         if (!file.exists()) return
-
-        try {
-            data = json.decodeFromString(file.readText())
-
-        } catch (e: Exception) {
-            val converter = DataConverter(file)
-            data = converter.loadAndConvert() ?: Data()
-        }
+        data = try { json.decodeFromString(file.readText()) } catch (e: Exception) { Data() }
     }
 
     private fun checkAndFixPaths() {
