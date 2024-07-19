@@ -11,6 +11,7 @@ import getImageBitmap
 import kotlinx.serialization.Serializable
 import openWebpage
 import savePngTo
+import java.awt.Image.SCALE_SMOOTH
 import java.awt.image.BufferedImage
 import java.io.File
 import java.net.URL
@@ -45,7 +46,7 @@ data class ImageInfo(
         scaledDownImage = try {
             val newSize = newImage?.let { img -> calculateScaledDownSize(img.width, img.height, 400, 400) }
             newSize?.let { size ->
-                newImage.scaleAndCropImage(size.first, size.second).also { saveToCache(it) }
+                newImage.scaleImage(size.first, size.second).also { saveToCache(it) }
             }
 
         } catch (e: Exception) { newImage }
@@ -72,33 +73,13 @@ data class ImageInfo(
         scaledDownImage = null
     }
 
-    private fun ImageBitmap.scaleAndCropImage(width: Int, height: Int): ImageBitmap {
-        val bufferedImage = this.toAwtImage()
-
-        val outputImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
-        val scaleX = width.toDouble() / bufferedImage.width.toDouble()
-        val scaleY = height.toDouble() / bufferedImage.height.toDouble()
-        val scale = kotlin.math.max(scaleX, scaleY)
-
-        val scaledWidth = (bufferedImage.width * scale).toInt()
-        val scaledHeight = (bufferedImage.height * scale).toInt()
-
-        val scaledImage = BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB)
-        val g2d = scaledImage.createGraphics()
-        g2d.drawImage(bufferedImage, 0, 0, scaledWidth, scaledHeight, null)
+    private fun ImageBitmap.scaleImage(width: Int, height: Int): ImageBitmap {
+        val image = this.toAwtImage().getScaledInstance(width, height, SCALE_SMOOTH)
+        val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+        val g2d = bufferedImage.createGraphics()
+        g2d.drawImage(image, 0, 0, null)
         g2d.dispose()
-
-        val x = (scaledWidth - width) / 2
-        val y = (scaledHeight - height) / 2
-
-        val croppedImage = scaledImage.getSubimage(x, y, width, height)
-
-        val g2dOut = outputImage.createGraphics()
-        g2dOut.drawImage(croppedImage, 0, 0, null)
-        g2dOut.dispose()
-
-        return outputImage.toComposeImageBitmap()
+        return bufferedImage.toComposeImageBitmap()
     }
 
     private fun calculateScaledDownSize(originalWidth: Int, originalHeight: Int, maxWidth: Int, maxHeight: Int): Pair<Int, Int> {
