@@ -7,6 +7,7 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toPixelMap
 import containsAtLeastOne
+import getFirstFrame
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import properties.Properties
@@ -30,7 +31,7 @@ class Data(
 
     fun addImage(file: File): ImageInfo? {
         if (!file.exists()) return null
-        val image = getImageBitmap(file) ?: return null
+        val image = getImageBitmap(file) ?: getFirstFrame(file) ?: return null
 
         val newFile = File("data/images/${
             uniqueName(file.nameWithoutExtension, file.extension, File("data/images"))

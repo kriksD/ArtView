@@ -1,6 +1,5 @@
-package composableFunctions
+package composableFunctions.views
 
-import info.ImageInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -21,18 +20,22 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import colorText
-import composableFunctions.views.LoadingIcon
 import emptyImageBitmap
 import iconSize
+import info.ImageInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import normalAnimationDuration
+import org.jetbrains.compose.animatedimage.AnimatedImage
+import org.jetbrains.compose.animatedimage.animate
+import org.jetbrains.compose.animatedimage.loadAnimatedImage
 import padding
 import settings
 import tinyText
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -79,15 +82,32 @@ fun ScalableImage(
             modifier = Modifier.fillMaxSize(),
         ) {
             if (it) {
-                Image(
-                    loadedImage ?: emptyImageBitmap,
-                    imageInfo.name,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .scale(scale)
-                        .offset(offset.x.dp, offset.y.dp)
-                        .align(Alignment.Center),
-                )
+                if (imageInfo.path.endsWith(".gif")) {
+                    var gif by remember { mutableStateOf<AnimatedImage?>(null) }
+                    LaunchedEffect(Unit) { gif = loadAnimatedImage(imageInfo.path) }
+                    gif?.let { g ->
+                        Image(
+                            bitmap = g.animate(),
+                            contentDescription = imageInfo.name,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .scale(scale)
+                                .offset(offset.x.dp, offset.y.dp)
+                                .align(Alignment.Center),
+                        )
+                    }
+
+                } else {
+                    Image(
+                        bitmap = loadedImage ?: emptyImageBitmap,
+                        contentDescription = imageInfo.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .scale(scale)
+                            .offset(offset.x.dp, offset.y.dp)
+                            .align(Alignment.Center),
+                    )
+                }
 
             } else {
                 Box(modifier = Modifier.fillMaxSize())

@@ -31,3 +31,6 @@ val hugeText get() = style.huge_text.sp
 var shortAnimationDuration: Int = style.shortAnimationDuration
 var normalAnimationDuration: Int = style.normalAnimationDuration
 var longAnimationDuration: Int = style.longAnimationDuration
+
+val gifFormats = listOf("gif")
+val videoFormats = listOf("mp4", "mov")

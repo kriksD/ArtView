@@ -25,15 +25,19 @@ import colorBackground
 import colorBackgroundLighter
 import colorBackgroundSecondLighter
 import colorText
+import composableFunctions.views.ButtonText
+import composableFunctions.views.ScalableImage
 import corners
 import iconSize
 import normalAnimationDuration
 import normalText
+import openVideoFile
 import padding
 import properties.Properties
 import shortAnimationDuration
 import transparency
 import transparencySecond
+import videoFormats
 
 @Composable
 fun ImagePreview(
@@ -85,6 +89,14 @@ fun ImagePreview(
                             .fillMaxWidth()
                             .weight(1F),
                     )
+
+                    if (videoFormats.any { openedImage?.path?.endsWith(it) == true }) {
+                        ButtonText(
+                            "Open this video in a media player",
+                            onClick = { openVideoFile(imgData.path) },
+                            modifier = Modifier,
+                        )
+                    }
 
                     var expanded by remember { mutableStateOf(false) }
                     TagGrid(

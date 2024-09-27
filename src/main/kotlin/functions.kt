@@ -4,6 +4,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.*
 import info.ImageInfo
+import org.jcodec.api.FrameGrab
+import org.jcodec.scale.AWTUtil
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.toImage
 import properties.*
@@ -34,7 +36,11 @@ val emptyImageBitmap: ImageBitmap = ImageBitmap(1, 1)
 
 fun getImageBitmap(imageFile: File): ImageBitmap? {
     return if (imageFile.exists())
-        Image.makeFromEncoded(imageFile.readBytes()).toComposeImageBitmap()
+        try {
+            Image.makeFromEncoded(imageFile.readBytes()).toComposeImageBitmap()
+        } catch (e: Exception) {
+            null
+        }
     else
         null
 }
@@ -42,6 +48,20 @@ fun getImageBitmap(imageFile: File): ImageBitmap? {
 fun getImageBitmap(imagePath: String): ImageBitmap? = getImageBitmap(File(imagePath))
 
 fun getImageBitmap(imageBytes: ByteArray): ImageBitmap = Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
+
+fun getFirstFrame(file: File): ImageBitmap? {
+    try {
+        val picture = FrameGrab.getFrameFromFile(file, 0)
+        val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
+        return bufferedImage.toComposeImageBitmap()
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getFirstFrame(path: String): ImageBitmap? = getFirstFrame(File(path))
 
 fun ImageBitmap.savePngTo(file: File) {
     val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.PNG, 100)
@@ -136,6 +156,35 @@ fun getImageDimensions(file: File): Dimension? {
 }
 
 fun getImageDimensions(path: String): Dimension? = getImageDimensions(File(path))
+
+fun getVideoDimensions(file: File): Dimension? {
+    try {
+        val picture = FrameGrab.getFrameFromFile(file, 0)
+        val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
+        return Dimension(bufferedImage.width, bufferedImage.height)
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getVideoDimensions(path: String): Dimension? = getVideoDimensions(File(path))
+
+fun openVideoFile(videoFilePath: String) {
+    val videoFile = File(videoFilePath)
+
+    if (Desktop.isDesktopSupported()) {
+        val desktop = Desktop.getDesktop()
+        if (videoFile.exists()) {
+            desktop.open(videoFile) // Opens the file with the default media player
+        } else {
+            println("The file does not exist.")
+        }
+    } else {
+        println("Desktop operations are not supported on this system.")
+    }
+}
 
 
 /* -= additional functions =- */

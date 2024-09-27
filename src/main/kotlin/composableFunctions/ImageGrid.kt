@@ -23,6 +23,7 @@ import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import border
 import calculateWeight
 import colorBackground
@@ -31,6 +32,7 @@ import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
 import composableFunctions.views.LoadingImage
+import gifFormats
 import iconSize
 import normalAnimationDuration
 import normalText
@@ -41,6 +43,7 @@ import shortAnimationDuration
 import smallCorners
 import style
 import transparencyLight
+import videoFormats
 
 @Composable
 fun ImageGrid(
@@ -158,6 +161,37 @@ private fun ImageGridItem(
                 .fillMaxSize()
                 .clip(RoundedCornerShape(smallCorners))
         )
+
+        val iconMediaType by remember {
+            mutableStateOf<String?>(
+                if (gifFormats.any { imageInfo.path.endsWith(it) }) {
+                    "gif_box.svg"
+
+                } else if (videoFormats.any { imageInfo.path.endsWith(it) }) {
+                    "smart_display.svg"
+
+                } else {
+                    null
+                }
+            )
+        }
+
+        iconMediaType?.let {
+            AppearDisappearAnimation(
+                !showInfo,
+                normalAnimationDuration,
+            ) {
+                Icon(
+                    painter = painterResource(it),
+                    contentDescription = null,
+                    tint = colorText,
+                    modifier = Modifier
+                        .size(iconSize)
+                        .padding(2.dp)
+                        .background(colorBackground.copy(alpha = transparencyLight), RoundedCornerShape(smallCorners)),
+                )
+            }
+        }
 
         AppearDisappearAnimation(
             showInfo,

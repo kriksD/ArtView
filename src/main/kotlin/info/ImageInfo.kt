@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toAwtImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import getFirstFrame
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import openWebpage
@@ -99,7 +100,7 @@ data class ImageInfo(
             if (!file.exists()) return null
 
             return try {
-                val newImage = getImageBitmap(file)
+                val newImage = getImageBitmap(file) ?: getFirstFrame(file)
                 newImage
 
             } catch (e: Exception) { null }
@@ -122,7 +123,7 @@ data class ImageInfo(
     fun delete() {
         if (File(path).exists()) File(path).delete()
 
-        val cacheFile = File(cacheDir, "$id.png")
+        val cacheFile = File(cacheDir, "$id.ic")
         if (cacheFile.exists()) cacheFile.delete()
     }
 }

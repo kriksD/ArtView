@@ -1,11 +1,13 @@
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.24"
+    kotlin("jvm") version "2.0.20"
     id("org.jetbrains.compose") version "1.6.11"
-    kotlin("plugin.serialization") version "1.9.23"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.20"
+    kotlin("plugin.serialization") version "2.0.20"
 }
 
 group = "me.longi"
@@ -32,7 +34,14 @@ repositories {
 dependencies {
     implementation(compose.desktop.currentOs)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+
+    @OptIn(ExperimentalComposeLibrary::class)
+    implementation(compose.desktop.components.animatedImage)
+
+    //implementation("network.chaintech:compose-multiplatform-media-player:1.0.21")
+    implementation("org.jcodec:jcodec:0.2.5")
+    implementation("org.jcodec:jcodec-javase:0.2.2")
 
     implementation("io.ktor:ktor-client-core:3.0.0-beta-2-eap-884")
     implementation("io.ktor:ktor-client-cio:3.0.0-beta-2-eap-884")
