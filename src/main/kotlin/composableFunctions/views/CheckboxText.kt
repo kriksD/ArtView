@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.Checkbox

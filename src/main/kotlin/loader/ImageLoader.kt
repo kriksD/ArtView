@@ -11,7 +11,7 @@ class ImageLoader {
     private val loadRequests = MutableList(settings.imageLoadingThreads) { mutableListOf<ImageInfo>() }
     private val unloadRequests = MutableList(settings.imageLoadingThreads) { mutableListOf<ImageInfo>() }
 
-    val isLoading get() = loadRequests.isNotEmpty() || unloadRequests.isNotEmpty()
+    val isLoading get() = loadRequests.flatten().isNotEmpty() || unloadRequests.flatten().isNotEmpty()
     val requestAmount get() = loadRequests.sumOf { it.size } + unloadRequests.sumOf { it.size }
     val threadCount get() = loadRequests.size
 

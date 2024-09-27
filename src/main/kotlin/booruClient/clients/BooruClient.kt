@@ -44,8 +44,7 @@ object BooruClient {
         parsers.forEach { parser ->
             val timeStart = System.currentTimeMillis()
 
-            boorus.forEach { (name, booru) ->
-                println(name)
+            boorus.forEach { (_, booru) ->
                 val post = booru.loadPost(link, parser, true)
                 if (post != null) return post
             }

@@ -15,8 +15,8 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import colorText
-import composableFunctions.ButtonText
-import composableFunctions.TagTableWithCategories
+import composableFunctions.views.ButtonText
+import composableFunctions.TagGridWithCategories
 import normalText
 import padding
 import properties.Properties
@@ -71,7 +71,7 @@ fun EditImageWindow(
             )
         }
 
-        TagTableWithCategories(
+        TagGridWithCategories(
             tags = Properties.imagesData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
@@ -170,7 +170,7 @@ fun EditImageGroupWindow(
             )
         }
 
-        TagTableWithCategories(
+        TagGridWithCategories(
             tags = Properties.imagesData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
@@ -231,7 +231,7 @@ fun EditImageTagsWindow(
     Column(
         modifier = modifier,
     ) {
-        TagTableWithCategories(
+        TagGridWithCategories(
             tags = Properties.imagesData().tags,
             selectedTags = newTags,
             antiSelectedTags = removeTags,

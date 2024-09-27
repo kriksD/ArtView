@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable

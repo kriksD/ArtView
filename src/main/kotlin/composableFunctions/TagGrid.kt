@@ -40,7 +40,7 @@ import smallCorners
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun TagTableWithCategories(
+fun TagGridWithCategories(
     tags: List<TagCategory>,
     selectedTags: List<String> = emptyList(),
     antiSelectedTags: List<String> = emptyList(),
@@ -82,7 +82,7 @@ fun TagTableWithCategories(
                             }
                     ) {
                         Text("${category.name}:", color = colorText, fontSize = normalText)
-                        TagTable(
+                        TagGrid(
                             category.tags,
                             selectedTags,
                             antiSelectedTags,
@@ -171,7 +171,7 @@ fun TagTableWithCategories(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TagTable(
+fun TagGrid(
     tags: List<String>,
     selectedTags: List<String> = emptyList(),
     antiSelectedTags: List<String> = emptyList(),

@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import getImageBitmap
 import kotlinx.serialization.Serializable
 import openWebpage
-import savePngTo
+import saveWebPTo
 import java.awt.Image.SCALE_SMOOTH
 import java.awt.image.BufferedImage
 import java.io.File
@@ -57,8 +57,8 @@ data class ImageInfo(
     private fun loadFromCache(): ImageBitmap? {
         cacheDir.mkdirs()
 
-        return if (File(cacheDir, "$id.png").exists()) {
-            getImageBitmap(File(cacheDir, "$id.png"))
+        return if (File(cacheDir, "$id.ic").exists()) {
+            getImageBitmap(File(cacheDir, "$id.ic"))
         } else {
             null
         }
@@ -66,7 +66,7 @@ data class ImageInfo(
 
     private fun saveToCache(image: ImageBitmap?) {
         cacheDir.mkdirs()
-        image?.savePngTo(File(cacheDir, "$id.png"))
+        image?.saveWebPTo(File(cacheDir, "$id.ic"))
     }
 
     fun unload() {

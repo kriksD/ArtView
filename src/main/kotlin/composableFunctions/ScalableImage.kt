@@ -21,12 +21,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import colorText
+import composableFunctions.views.LoadingIcon
 import emptyImageBitmap
 import iconSize
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import normalAnimationDuration
 import padding
+import settings
 import tinyText
 import kotlin.math.max
 import kotlin.math.min
@@ -98,7 +100,7 @@ fun ScalableImage(
             }
         }
 
-        if (scale != 1F || offset != IntOffset(0, 0)) {
+        if (settings.showDebug && (scale != 1F || offset != IntOffset(0, 0))) {
             Text(
                 "Scale: $scale\nOffset: $offset",
                 color = colorText,

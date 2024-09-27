@@ -15,6 +15,8 @@ import colorTextError
 import composableFunctions.*
 import booruClient.clients.BooruClient
 import booruClient.BooruPost
+import composableFunctions.views.ButtonText
+import composableFunctions.views.LoadingImage
 import emptyImageBitmap
 import normalText
 import padding
@@ -102,7 +104,7 @@ fun AddByURLWindow(
 
         Row {
             LoadingImage(
-                booruPost?.image ?: emptyImageBitmap,
+                if (failedToLoad) emptyImageBitmap else booruPost?.image,
                 name.text,
                 modifier = Modifier
                     .fillMaxHeight(0.2F)
@@ -110,7 +112,7 @@ fun AddByURLWindow(
             )
 
             if (failedToLoad) {
-                Text("Failed to load", color = colorTextError, fontSize = normalText)
+                Text("Failed to load :(", color = colorTextError, fontSize = normalText)
             }
         }
 
@@ -194,7 +196,7 @@ fun AddByURLWindow(
         )
 
         Text("Tags:", color = colorText, fontSize = normalText)
-        TagTableWithCategories(
+        TagGridWithCategories(
             tags = Properties.imagesData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
@@ -266,7 +268,7 @@ private fun NewTagsTable(
         modifier = modifier,
     ) {
         Text(name, color = colorText, fontSize = normalText)
-        TagTable(
+        TagGrid(
             tags = tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),

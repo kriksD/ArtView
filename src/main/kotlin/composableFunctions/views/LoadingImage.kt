@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import info.ImageInfo
 import androidx.compose.animation.Crossfade

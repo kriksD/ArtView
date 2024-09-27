@@ -14,6 +14,10 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import composableFunctions.*
+import composableFunctions.screens.GroupGridScreen
+import composableFunctions.screens.ImageGridScreen
+import composableFunctions.screens.SettingsScreen
+import composableFunctions.views.ButtonText
 import composableFunctions.window.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,7 +42,7 @@ fun main() = application {
     }
 
     val imageStorage by remember { mutableStateOf(ImageStorage()) }
-    var imageLoader by remember { mutableStateOf(ImageLoader()) }
+    val imageLoader by remember { mutableStateOf(ImageLoader()) }
 
     val tagStorage by remember { mutableStateOf(TagStorage()) }
 
@@ -157,128 +161,28 @@ fun main() = application {
                     animationSpec = tween(normalAnimationDuration),
                     modifier = Modifier.fillMaxSize(),
                 ) { item ->
-
-                    @Composable
-                    fun ImageTableView() {
-                        var expanded by remember { mutableStateOf(false) }
-                        Column {
-                            TagTableWithCategories(
-                                tags = Properties.imagesData().tags,
-                                selectedTags = tagStorage.selectedTags,
-                                antiSelectedTags = tagStorage.selectedAntiTags,
-                                onTagClick = {
-                                    tagStorage.changeSelectStatus(it)
-                                    imageStorage.updateFilterTags(tagStorage)
-                                    imageStorage.update()
-                                    imageLoader.cancel()
-                                    imageLoader = ImageLoader()
-                                },
-                                expanded = expanded,
-                                onExpandedChange = { expanded = it },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(colorBackgroundLighter),
-                            )
-
-                            ImageGrid(
-                                images = imageStorage.filteredImages,
-                                imageLoader = imageLoader,
-                                checkedList = imageStorage.selectedImages,
-                                onCheckedClick = { imgInfo, isSelected ->
-                                    if (isSelected) {
-                                        imageStorage.select(imgInfo)
-                                    } else {
-                                        imageStorage.deselect(imgInfo)
-                                    }
-                                },
-                                onOpen = {
-                                    if (imageStorage.selectedImages.isEmpty()) {
-                                        imageStorage.open(it)
-                                    } else {
-                                        if (!imageStorage.selectedImages.contains(it)) {
-                                            imageStorage.select(it)
-                                        } else {
-                                            imageStorage.deselect(it)
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.weight(1F),
-                            )
-                        }
-                    }
-
                     when (item) {
                         MenuItem.Images -> {
-                            ImageTableView()
+                            ImageGridScreen(
+                                imageLoader = imageLoader,
+                                imageStorage = imageStorage,
+                                tagStorage = tagStorage,
+                            )
                         }
                         MenuItem.Favorites -> {
-                            ImageTableView()
+                            ImageGridScreen(
+                                imageLoader = imageLoader,
+                                imageStorage = imageStorage,
+                                tagStorage = tagStorage,
+                            )
                         }
                         MenuItem.Groups -> {
-                            if (imageStorage.openedImageGroup == null) {
-                                var expanded by remember { mutableStateOf(false) }
-                                Column {
-                                    TagTableWithCategories(
-                                        tags = Properties.imagesData().tags,
-                                        selectedTags = tagStorage.selectedTags,
-                                        antiSelectedTags = tagStorage.selectedAntiTags,
-                                        onTagClick = {
-                                            tagStorage.changeSelectStatus(it)
-                                            imageStorage.updateFilterTags(tagStorage)
-                                            imageStorage.update()
-                                            imageLoader.cancel()
-                                            imageLoader = ImageLoader()
-                                        },
-                                        expanded = expanded,
-                                        onExpandedChange = { expanded = it },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(colorBackgroundLighter),
-                                    )
-                                    ImageGroupGrid(
-                                        imageGroups = imageStorage.filteredGroups,
-                                        imageLoader = imageLoader,
-                                        checkedList = imageStorage.selectedGroups,
-                                        onCheckedClick = { imgGroup, isSelected ->
-                                            if (isSelected) {
-                                                imageStorage.select(imgGroup)
-                                            } else {
-                                                imageStorage.deselect(imgGroup)
-                                            }
-                                        },
-                                        onOpen = {
-                                            if (imageStorage.selectedGroups.isEmpty()) {
-                                                imageStorage.openGroup(it)
-                                                imageStorage.filter(
-                                                    Filter().tags(tagStorage).group(it)
-                                                )
-                                            } else {
-                                                if (!imageStorage.selectedGroups.contains(it)) {
-                                                    imageStorage.select(it)
-                                                } else {
-                                                    imageStorage.deselect(it)
-                                                }
-                                            }
-                                        },
-                                        modifier = Modifier.weight(1F),
-                                    )
-                                }
-                            } else {
-                                ImageGroupPreview(
-                                    tagStorage = tagStorage,
-                                    imageStorage = imageStorage,
-                                    imageLoader = imageLoader,
-                                    onClose = {
-                                        imageStorage.openedImageGroup?.getImageInfoList()?.forEach { imageLoader.unloadNext(it) }
-                                        imageStorage.closeGroup()
-                                    },
-                                    onEdit = { isEditingGroup = true },
-                                    onDelete = {
-                                        imageStorage.deleteGroups(listOfNotNull(imageStorage.openedImageGroup))
-                                        imageStorage.closeGroup()
-                                    },
-                                )
-                            }
+                            GroupGridScreen(
+                                imageLoader = imageLoader,
+                                imageStorage = imageStorage,
+                                tagStorage = tagStorage,
+                                onGroupEdit = { isEditingGroup = true }
+                            )
                         }
                         MenuItem.Settings -> { SettingsScreen(modifier = Modifier.fillMaxWidth()) }
                         else -> {}

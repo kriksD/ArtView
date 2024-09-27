@@ -33,6 +33,7 @@ import colorBackgroundSecond
 import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
+import composableFunctions.views.LoadingImage
 import iconSize
 import normalAnimationDuration
 import normalText

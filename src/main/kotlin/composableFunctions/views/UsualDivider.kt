@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth

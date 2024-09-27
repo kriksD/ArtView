@@ -12,8 +12,8 @@ import androidx.compose.ui.draw.clip
 import border
 import colorBackgroundSecond
 import colorText
-import composableFunctions.ButtonText
-import composableFunctions.LoadingImage
+import composableFunctions.views.ButtonText
+import composableFunctions.views.LoadingImage
 import corners
 import normalText
 import padding

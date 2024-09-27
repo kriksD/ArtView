@@ -51,7 +51,7 @@ fun ImageBitmap.savePngTo(file: File) {
 fun ImageBitmap.savePngTo(path: String) = saveWebPTo(File(path))
 
 fun ImageBitmap.saveWebPTo(file: File) {
-    val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.PNG, 100)
+    val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.WEBP, 93)
     data?.let { file.writeBytes(it.bytes) }
 }
 

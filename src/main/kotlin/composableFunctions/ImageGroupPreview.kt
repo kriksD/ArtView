@@ -12,7 +12,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.*
@@ -51,7 +51,7 @@ fun ImageGroupPreview(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = null,
                 tint = colorText,
                 modifier = Modifier
@@ -126,7 +126,7 @@ fun ImageGroupPreview(
 
         var expanded by remember { mutableStateOf(false) }
         Column {
-            TagTableWithCategories(
+            TagGridWithCategories(
                 tags = Properties.imagesData().tags,
                 selectedTags = tagStorage.selectedTags,
                 antiSelectedTags = tagStorage.selectedAntiTags,

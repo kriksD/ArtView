@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults

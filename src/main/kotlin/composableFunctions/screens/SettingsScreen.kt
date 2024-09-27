@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +28,8 @@ import colorBackgroundLighter
 import colorText
 import colorTextError
 import colorTextSecond
+import composableFunctions.*
+import composableFunctions.views.*
 import corners
 import iconSize
 import kotlinx.coroutines.Dispatchers
@@ -350,7 +352,7 @@ private fun TagSelectionByDefault(
     Column(modifier = modifier) {
         Text("Tag selection by default:", color = colorText, fontSize = bigText)
 
-        TagTableWithCategories(
+        TagGridWithCategories(
             Properties.imagesData().tags,
             settings.selectedTagsByDefault,
             settings.antiSelectedTagsByDefault,

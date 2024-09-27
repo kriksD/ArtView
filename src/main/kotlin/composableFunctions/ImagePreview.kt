@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -85,7 +87,7 @@ fun ImagePreview(
                     )
 
                     var expanded by remember { mutableStateOf(false) }
-                    TagTable(
+                    TagGrid(
                         tags = imgData.tags,
                         expanded = expanded,
                         onExpandedChange = { expanded = it },
@@ -223,7 +225,7 @@ fun ImagePreview(
                 )
 
                 Icon(
-                    Icons.Default.KeyboardArrowRight,
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "next image",
                     tint = colorText,
                     modifier = Modifier
@@ -233,7 +235,7 @@ fun ImagePreview(
                 )
 
                 Icon(
-                    Icons.Default.KeyboardArrowLeft,
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription = "previous image",
                     tint = colorText,
                     modifier = Modifier

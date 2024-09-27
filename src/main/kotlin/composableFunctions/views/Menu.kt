@@ -1,4 +1,4 @@
-package composableFunctions
+package composableFunctions.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
