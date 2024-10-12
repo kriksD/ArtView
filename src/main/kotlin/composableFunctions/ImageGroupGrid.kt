@@ -1,7 +1,7 @@
 package composableFunctions
 
-import info.ImageGroup
-import loader.ImageLoader
+import info.MediaGroup
+import loader.MediaLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -47,30 +47,30 @@ import transparencyLight
 
 @Composable
 fun ImageGroupGrid(
-    imageGroups: List<ImageGroup>,
-    imageLoader: ImageLoader,
-    checkedList: List<ImageGroup> = listOf(),
-    onCheckedClick: (ImageGroup, Boolean) -> Unit = { _, _ -> },
-    onOpen: (ImageGroup) -> Unit = {},
+    mediaGroups: List<MediaGroup>,
+    mediaLoader: MediaLoader,
+    checkedList: List<MediaGroup> = listOf(),
+    onCheckedClick: (MediaGroup, Boolean) -> Unit = { _, _ -> },
+    onOpen: (MediaGroup) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var imagesPerRow by remember { mutableStateOf(4) }
-    val splitImages = imageGroups.chunked(imagesPerRow).toMutableStateList()
+    var mediaPerRow by remember { mutableStateOf(4) }
+    val splitMedia = mediaGroups.chunked(mediaPerRow).toMutableStateList()
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(scrollState.layoutInfo.visibleItemsInfo) {
-        splitImages.forEachIndexed { index, row ->
+        splitMedia.forEachIndexed { index, row ->
             val isVisible = scrollState.layoutInfo.visibleItemsInfo.find { it.index == index } != null
 
             if (isVisible) {
                 row.forEach { imgGroup ->
-                    imgGroup.getImageInfo(0)?.let { imageLoader.loadNext(it) }
-                    imgGroup.getImageInfo(1)?.let { imageLoader.loadNext(it) }
+                    imgGroup.getImageInfo(0)?.let { mediaLoader.loadNext(it) }
+                    imgGroup.getImageInfo(1)?.let { mediaLoader.loadNext(it) }
                 }
             } else {
                 row.forEach { imgGroup ->
-                    imgGroup.getImageInfo(0)?.let { imageLoader.unloadNext(it) }
-                    imgGroup.getImageInfo(1)?.let { imageLoader.unloadNext(it) }
+                    imgGroup.getImageInfo(0)?.let { mediaLoader.unloadNext(it) }
+                    imgGroup.getImageInfo(1)?.let { mediaLoader.unloadNext(it) }
                 }
             }
         }
@@ -84,34 +84,34 @@ fun ImageGroupGrid(
             modifier = Modifier
                 .weight(1F)
                 .onSizeChanged {
-                    val previousImagesPerRow = imagesPerRow
-                    imagesPerRow = it.width / style.image_width
+                    val previousMediaPerRow = mediaPerRow
+                    mediaPerRow = it.width / style.image_width
 
-                    if (imagesPerRow != previousImagesPerRow) {
-                        splitImages.clear()
-                        splitImages.addAll(imageGroups.chunked(imagesPerRow))
+                    if (mediaPerRow != previousMediaPerRow) {
+                        splitMedia.clear()
+                        splitMedia.addAll(mediaGroups.chunked(mediaPerRow))
                     }
                 },
         ) {
-            items(splitImages) { row ->
+            items(splitMedia) { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    row.forEach { imgGroup ->
+                    row.forEach { mediaGroup ->
                         ImageGroupGridItem(
-                            imageGroup = imgGroup,
-                            checked = checkedList.contains(imgGroup),
-                            onCheckedChange = { onCheckedClick(imgGroup, it) },
-                            onOpen = { onOpen(imgGroup) },
+                            mediaGroup = mediaGroup,
+                            checked = checkedList.contains(mediaGroup),
+                            onCheckedChange = { onCheckedClick(mediaGroup, it) },
+                            onOpen = { onOpen(mediaGroup) },
                             modifier = Modifier
-                                .weight(imgGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
+                                .weight(mediaGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners)),
                         )
                     }
 
-                    repeat(imagesPerRow - row.size) {
+                    repeat(mediaPerRow - row.size) {
                         Spacer(
                             modifier = Modifier
                                 .weight(1F)
@@ -137,19 +137,19 @@ fun ImageGroupGrid(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ImageGroupGridItem(
-    imageGroup: ImageGroup,
+    mediaGroup: MediaGroup,
     checked: Boolean = false,
     onCheckedChange: (Boolean) -> Unit = {},
     onOpen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showInfo by remember { mutableStateOf(false) }
-    var favorite by remember { mutableStateOf(imageGroup.favorite) }
+    var favorite by remember { mutableStateOf(mediaGroup.favorite) }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .aspectRatio(imageGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
+            .aspectRatio(mediaGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
             .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {
@@ -162,10 +162,10 @@ private fun ImageGroupGridItem(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            imageGroup.getImageInfo(1)?.let {
+            mediaGroup.getImageInfo(1)?.let {
                 LoadingImage(
                     it,
-                    imageGroup.name,
+                    mediaGroup.name,
                     modifier = Modifier
                         .fillMaxSize(0.7F)
                         .align(Alignment.CenterEnd)
@@ -173,10 +173,10 @@ private fun ImageGroupGridItem(
                 )
             }
 
-            imageGroup.getImageInfo(0)?.let {
+            mediaGroup.getImageInfo(0)?.let {
                 LoadingImage(
                     it,
-                    imageGroup.name,
+                    mediaGroup.name,
                     modifier = Modifier
                         .fillMaxSize(0.9F)
                         .align(Alignment.CenterStart)
@@ -191,7 +191,7 @@ private fun ImageGroupGridItem(
         ) {
             Column {
                 Text(
-                    imageGroup.name,
+                    mediaGroup.name,
                     color = colorText,
                     fontSize = bigText,
                     modifier = Modifier
@@ -207,7 +207,7 @@ private fun ImageGroupGridItem(
                         .padding(padding),
                 ) {
                     Text(
-                        imageGroup.description,
+                        mediaGroup.description,
                         color = colorText,
                         fontSize = normalText,
                         maxLines = 2,
@@ -227,7 +227,7 @@ private fun ImageGroupGridItem(
                                 .size(iconSize)
                                 .clickable {
                                     favorite = !favorite
-                                    imageGroup.favorite = favorite
+                                    mediaGroup.favorite = favorite
                                     Properties.saveData()
                                 }
                         )

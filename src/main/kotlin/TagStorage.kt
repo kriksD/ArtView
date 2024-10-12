@@ -10,16 +10,16 @@ class TagStorage {
     fun filter(filterString: String = "", categoryName: String? = null) {
         if (filterString.isEmpty()) {
             filteredTags.clear()
-            Properties.imagesData().tags.forEach { filteredTags[it.name] = it.tags }
+            Properties.mediaData().tags.forEach { filteredTags[it.name] = it.tags }
             return
         }
 
         if (categoryName != null) {
-            val category = Properties.imagesData().findTagCategory(categoryName) ?: return
+            val category = Properties.mediaData().findTagCategory(categoryName) ?: return
             filteredTags[categoryName] = category.tags.filter { it.contains(filterString) }
 
         } else {
-            val allTags = Properties.imagesData().tags
+            val allTags = Properties.mediaData().tags
             allTags.forEach { category ->
                 filteredTags[category.name] = category.tags.filter { it.contains(filterString) }
             }
@@ -51,6 +51,6 @@ class TagStorage {
         selectedAntiTags.clear()
         selectedAntiTags.addAll(settings.antiSelectedTagsByDefault)
         filteredTags.clear()
-        Properties.imagesData().tags.forEach { filteredTags[it.name] = it.tags }
+        Properties.mediaData().tags.forEach { filteredTags[it.name] = it.tags }
     }
 }

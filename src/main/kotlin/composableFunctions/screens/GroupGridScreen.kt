@@ -1,7 +1,7 @@
 package composableFunctions.screens
 
 import Filter
-import ImageStorage
+import MediaStorage
 import TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -12,31 +12,31 @@ import colorBackgroundLighter
 import composableFunctions.ImageGroupGrid
 import composableFunctions.ImageGroupPreview
 import composableFunctions.TagGridWithCategories
-import loader.ImageLoader
+import loader.MediaLoader
 import properties.Properties
 
 @Composable
 fun GroupGridScreen(
-    imageLoader: ImageLoader,
-    imageStorage: ImageStorage,
+    mediaLoader: MediaLoader,
+    mediaStorage: MediaStorage,
     tagStorage: TagStorage,
     onGroupEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (imageStorage.openedImageGroup == null) {
+    if (mediaStorage.openedMediaGroup == null) {
         var expanded by remember { mutableStateOf(false) }
         Column(
             modifier = modifier,
         ) {
             TagGridWithCategories(
-                tags = Properties.imagesData().tags,
+                tags = Properties.mediaData().tags,
                 selectedTags = tagStorage.selectedTags,
                 antiSelectedTags = tagStorage.selectedAntiTags,
                 onTagClick = {
                     tagStorage.changeSelectStatus(it)
-                    imageStorage.updateFilterTags(tagStorage)
-                    imageStorage.update()
-                    imageLoader.reset()
+                    mediaStorage.updateFilterTags(tagStorage)
+                    mediaStorage.update()
+                    mediaLoader.reset()
                 },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
@@ -45,27 +45,27 @@ fun GroupGridScreen(
                     .background(colorBackgroundLighter),
             )
             ImageGroupGrid(
-                imageGroups = imageStorage.filteredGroups,
-                imageLoader = imageLoader,
-                checkedList = imageStorage.selectedGroups,
+                mediaGroups = mediaStorage.filteredGroups,
+                mediaLoader = mediaLoader,
+                checkedList = mediaStorage.selectedGroups,
                 onCheckedClick = { imgGroup, isSelected ->
                     if (isSelected) {
-                        imageStorage.select(imgGroup)
+                        mediaStorage.select(imgGroup)
                     } else {
-                        imageStorage.deselect(imgGroup)
+                        mediaStorage.deselect(imgGroup)
                     }
                 },
                 onOpen = {
-                    if (imageStorage.selectedGroups.isEmpty()) {
-                        imageStorage.openGroup(it)
-                        imageStorage.filter(
+                    if (mediaStorage.selectedGroups.isEmpty()) {
+                        mediaStorage.openGroup(it)
+                        mediaStorage.filter(
                             Filter().tags(tagStorage).group(it)
                         )
                     } else {
-                        if (!imageStorage.selectedGroups.contains(it)) {
-                            imageStorage.select(it)
+                        if (!mediaStorage.selectedGroups.contains(it)) {
+                            mediaStorage.select(it)
                         } else {
-                            imageStorage.deselect(it)
+                            mediaStorage.deselect(it)
                         }
                     }
                 },
@@ -75,16 +75,16 @@ fun GroupGridScreen(
     } else {
         ImageGroupPreview(
             tagStorage = tagStorage,
-            imageStorage = imageStorage,
-            imageLoader = imageLoader,
+            imageStorage = mediaStorage,
+            mediaLoader = mediaLoader,
             onClose = {
-                imageStorage.openedImageGroup?.getImageInfoList()?.forEach { imageLoader.unloadNext(it) }
-                imageStorage.closeGroup()
+                mediaStorage.openedMediaGroup?.getImageInfoList()?.forEach { mediaLoader.unloadNext(it) }
+                mediaStorage.closeGroup()
             },
             onEdit = { onGroupEdit() },
             onDelete = {
-                imageStorage.deleteGroups(listOfNotNull(imageStorage.openedImageGroup))
-                imageStorage.closeGroup()
+                mediaStorage.deleteGroups(listOfNotNull(mediaStorage.openedMediaGroup))
+                mediaStorage.closeGroup()
             },
             modifier = modifier,
         )

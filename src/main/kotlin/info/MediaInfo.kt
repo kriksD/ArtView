@@ -17,8 +17,8 @@ import java.awt.image.BufferedImage
 import java.io.File
 import java.net.URL
 
-@Serializable(with = ImageInfoSerializer::class)
-data class ImageInfo(
+@Serializable(with = MediaInfoSerializer::class)
+data class MediaInfo(
     override val id: Int,
     val path: String,
     val width: Int,

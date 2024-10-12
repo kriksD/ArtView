@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import colorText
 import emptyImageBitmap
 import iconSize
-import info.ImageInfo
+import info.MediaInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import normalAnimationDuration
@@ -40,7 +40,7 @@ import kotlin.math.sqrt
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ScalableImage(
-    imageInfo: ImageInfo,
+    mediaInfo: MediaInfo,
     scale: Float,
     onScaleChange: (Float) -> Unit,
     offset: IntOffset,
@@ -72,7 +72,7 @@ fun ScalableImage(
 
         LaunchedEffect(true) {
             launch(Dispatchers.Default) {
-                loadedImage = imageInfo.image
+                loadedImage = mediaInfo.image
             }
         }
 
@@ -82,13 +82,13 @@ fun ScalableImage(
             modifier = Modifier.fillMaxSize(),
         ) {
             if (it) {
-                if (imageInfo.path.endsWith(".gif")) {
+                if (mediaInfo.path.endsWith(".gif")) {
                     var gif by remember { mutableStateOf<AnimatedImage?>(null) }
-                    LaunchedEffect(Unit) { gif = loadAnimatedImage(imageInfo.path) }
+                    LaunchedEffect(Unit) { gif = loadAnimatedImage(mediaInfo.path) }
                     gif?.let { g ->
                         Image(
                             bitmap = g.animate(),
-                            contentDescription = imageInfo.name,
+                            contentDescription = mediaInfo.name,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .scale(scale)
@@ -100,7 +100,7 @@ fun ScalableImage(
                 } else {
                     Image(
                         bitmap = loadedImage ?: emptyImageBitmap,
-                        contentDescription = imageInfo.name,
+                        contentDescription = mediaInfo.name,
                         modifier = Modifier
                             .fillMaxSize()
                             .scale(scale)

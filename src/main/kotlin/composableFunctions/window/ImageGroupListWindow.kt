@@ -1,6 +1,6 @@
 package composableFunctions.window
 
-import info.ImageGroup
+import info.MediaGroup
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,21 +22,21 @@ import smallCorners
 
 @Composable
 fun ImageGroupListWindow(
-    onDone: (ImageGroup) -> Unit,
+    onDone: (MediaGroup) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier
     ) {
-        var selectedGroup by remember { mutableStateOf<ImageGroup?>(null) }
+        var selectedGroup by remember { mutableStateOf<MediaGroup?>(null) }
 
         Column(
             modifier = Modifier.weight(1F).verticalScroll(rememberScrollState()),
         ) {
-            Properties.imagesData().imageGroups.forEach { imageGroup ->
+            Properties.mediaData().mediaGroups.forEach { imageGroup ->
                 ImageGroupListItem(
-                    imageGroup = imageGroup,
+                    mediaGroup = imageGroup,
                     modifier = Modifier
                         .fillMaxWidth()
                         .border(
@@ -70,7 +70,7 @@ fun ImageGroupListWindow(
 
 @Composable
 private fun ImageGroupListItem(
-    imageGroup: ImageGroup,
+    mediaGroup: MediaGroup,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -79,10 +79,10 @@ private fun ImageGroupListItem(
         Box(
             modifier = Modifier.fillMaxWidth(0.2F).aspectRatio(1F),
         ) {
-            imageGroup.getImageInfo(0)?.let {
+            mediaGroup.getImageInfo(0)?.let {
                 LoadingImage(
                     it,
-                    imageGroup.name,
+                    mediaGroup.name,
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(smallCorners)),
@@ -91,8 +91,8 @@ private fun ImageGroupListItem(
         }
 
         Column {
-            Text(imageGroup.name, color = colorText, fontSize = normalText)
-            Text(imageGroup.description, color = colorText, fontSize = normalText)
+            Text(mediaGroup.name, color = colorText, fontSize = normalText)
+            Text(mediaGroup.description, color = colorText, fontSize = normalText)
         }
     }
 }

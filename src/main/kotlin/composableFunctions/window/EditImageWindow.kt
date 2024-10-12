@@ -1,7 +1,7 @@
 package composableFunctions.window
 
-import info.ImageGroup
-import info.ImageInfo
+import info.MediaGroup
+import info.MediaInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,17 +25,17 @@ import toState
 
 @Composable
 fun EditImageWindow(
-    imageInfo: ImageInfo,
-    onDone: (ImageInfo) -> Unit = {},
+    mediaInfo: MediaInfo,
+    onDone: (MediaInfo) -> Unit = {},
     onCancel: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
     ) {
-        var name by remember { mutableStateOf(TextFieldValue(imageInfo.name)) }
-        var description by remember { mutableStateOf(TextFieldValue(imageInfo.description)) }
-        val selectedTags = remember { imageInfo.tags.toState() }
+        var name by remember { mutableStateOf(TextFieldValue(mediaInfo.name)) }
+        var description by remember { mutableStateOf(TextFieldValue(mediaInfo.description)) }
+        val selectedTags = remember { mediaInfo.tags.toState() }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -72,7 +72,7 @@ fun EditImageWindow(
         }
 
         TagGridWithCategories(
-            tags = Properties.imagesData().tags,
+            tags = Properties.mediaData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -104,14 +104,14 @@ fun EditImageWindow(
                 "Save",
                 onClick = {
                     onDone(
-                        ImageInfo(
-                            id = imageInfo.id,
-                            path = imageInfo.path,
-                            width = imageInfo.width,
-                            height = imageInfo.height,
+                        MediaInfo(
+                            id = mediaInfo.id,
+                            path = mediaInfo.path,
+                            width = mediaInfo.width,
+                            height = mediaInfo.height,
                             name = name.text,
                             description = description.text,
-                            favorite = imageInfo.favorite,
+                            favorite = mediaInfo.favorite,
                             tags = selectedTags,
                         )
                     )
@@ -123,17 +123,17 @@ fun EditImageWindow(
 
 @Composable
 fun EditImageGroupWindow(
-    imageGroup: ImageGroup,
-    onDone: (ImageGroup) -> Unit = {},
+    mediaGroup: MediaGroup,
+    onDone: (MediaGroup) -> Unit = {},
     onCancel: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
     ) {
-        var name by remember { mutableStateOf(TextFieldValue(imageGroup.name)) }
-        var description by remember { mutableStateOf(TextFieldValue(imageGroup.description)) }
-        val selectedTags = remember { imageGroup.tags.toState() }
+        var name by remember { mutableStateOf(TextFieldValue(mediaGroup.name)) }
+        var description by remember { mutableStateOf(TextFieldValue(mediaGroup.description)) }
+        val selectedTags = remember { mediaGroup.tags.toState() }
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -171,7 +171,7 @@ fun EditImageGroupWindow(
         }
 
         TagGridWithCategories(
-            tags = Properties.imagesData().tags,
+            tags = Properties.mediaData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -203,12 +203,12 @@ fun EditImageGroupWindow(
                 "Save",
                 onClick = {
                     onDone(
-                        ImageGroup(
-                            id = imageGroup.id,
-                            imagePaths = imageGroup.imagePaths,
+                        MediaGroup(
+                            id = mediaGroup.id,
+                            paths = mediaGroup.paths,
                             name = name.text,
                             description = description.text,
-                            favorite = imageGroup.favorite,
+                            favorite = mediaGroup.favorite,
                             tags = selectedTags,
                         )
                     )
@@ -232,7 +232,7 @@ fun EditImageTagsWindow(
         modifier = modifier,
     ) {
         TagGridWithCategories(
-            tags = Properties.imagesData().tags,
+            tags = Properties.mediaData().tags,
             selectedTags = newTags,
             antiSelectedTags = removeTags,
             expandable = false,

@@ -1,6 +1,6 @@
 package properties.data
 
-import info.ImageInfo
+import info.MediaInfo
 import TagCategory
 import getImageDimensions
 import getVideoDimensions
@@ -38,10 +38,10 @@ class DataContainer {
     private fun checkAndFixPaths() {
         val wrongPathRegex = Regex("^images[/\\\\].+\\..+$")
         if (
-            data.images.any { it.path.contains(wrongPathRegex) }
-            || data.imageGroups.any { g -> g.imagePaths.any { it.contains(wrongPathRegex) } }
+            data.mediaList.any { it.path.contains(wrongPathRegex) }
+            || data.mediaGroups.any { g -> g.paths.any { it.contains(wrongPathRegex) } }
         ) {
-            val newImages = data.images.map {
+            val newImages = data.mediaList.map {
                 if (it.path.contains(wrongPathRegex)) {
                     it.copy(path = "data${File.separator}${it.path}")
                 } else {
@@ -49,26 +49,26 @@ class DataContainer {
                 }
             }
 
-            val newGroups = data.imageGroups.map {
-                val newPaths = it.imagePaths.map { path ->
+            val newGroups = data.mediaGroups.map {
+                val newPaths = it.paths.map { path ->
                     if (path.contains(wrongPathRegex)) {
                         "data${File.separator}${path}"
                     } else {
                         path
                     }
                 }
-                it.copy(imagePaths = newPaths.toMutableList())
+                it.copy(paths = newPaths.toMutableList())
             }
 
-            data = data.copy(images = newImages, imageGroups = newGroups)
+            data = data.copy(mediaList = newImages, mediaGroups = newGroups)
         }
     }
 
     private fun removeNonexistentImages() {
-        data.images.forEach {
+        data.mediaList.forEach {
             if (!File(it.path).exists()) {
                 it.delete()
-                data.images.remove(it)
+                data.mediaList.remove(it)
             }
         }
     }
@@ -76,10 +76,10 @@ class DataContainer {
     private fun checkForNewImageFiles() {
         val allFiles = imagesFolder.listFiles()
         allFiles?.filter { f ->
-            data.images.none { it.path == f.path }
+            data.mediaList.none { it.path == f.path }
         }?.forEach {
             val dimensions = getImageDimensions(it.path) ?: getVideoDimensions(it.path) ?: return@forEach
-            data.images.add(0, ImageInfo(data.images.uniqueId(), it.path, dimensions.width, dimensions.height, it.name))
+            data.mediaList.add(0, MediaInfo(data.mediaList.uniqueId(), it.path, dimensions.width, dimensions.height, it.name))
         }
     }
 

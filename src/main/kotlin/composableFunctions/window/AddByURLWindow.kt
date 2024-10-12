@@ -58,7 +58,7 @@ fun AddByURLWindow(
                 post.rating?.let {
                     if (
                         !selectedTags.contains("NSFW")
-                        && Properties.imagesData().containsTag("NSFW")
+                        && Properties.mediaData().containsTag("NSFW")
                         && it.lowercase() != "g"
                         && it.lowercase() != "general"
                     ) {
@@ -67,37 +67,37 @@ fun AddByURLWindow(
                 }
 
                 if (post.tags.isNotEmpty()) {
-                    val new = post.tags.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    val new = post.tags.filter { tag -> !Properties.mediaData().containsTag(tag) }
                     newTags.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.character.isNotEmpty()) {
-                    val new = post.character.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    val new = post.character.filter { tag -> !Properties.mediaData().containsTag(tag) }
                     newCharacters.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.copyright.isNotEmpty()) {
-                    val new = post.copyright.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    val new = post.copyright.filter { tag -> !Properties.mediaData().containsTag(tag) }
                     newCopyrights.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.artist.isNotEmpty()) {
-                    val new = post.artist.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    val new = post.artist.filter { tag -> !Properties.mediaData().containsTag(tag) }
                     newArtists.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.meta.isNotEmpty()) {
-                    val new = post.meta.filter { tag -> !Properties.imagesData().containsTag(tag) }
+                    val new = post.meta.filter { tag -> !Properties.mediaData().containsTag(tag) }
                     newMeta.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 val tagsCombined = post.tags + post.character + post.copyright + post.artist + post.meta
-                val existingTags = tagsCombined.filter { tag -> Properties.imagesData().containsTag(tag) }
+                val existingTags = tagsCombined.filter { tag -> Properties.mediaData().containsTag(tag) }
                 selectedTags.addAll(existingTags)
             }
         }
@@ -160,35 +160,35 @@ fun AddByURLWindow(
             }
         }
 
-        NewTagsTable(
+        NewTagsGrid(
             name = "New tags:",
             tags = newTags,
             selectedTags = selectedNewTags,
             onTagClick = onTagClick,
         )
 
-        NewTagsTable(
+        NewTagsGrid(
             name = "New characters:",
             tags = newCharacters,
             selectedTags = selectedNewTags,
             onTagClick = onTagClick,
         )
 
-        NewTagsTable(
+        NewTagsGrid(
             name = "New copyrights:",
             tags = newCopyrights,
             selectedTags = selectedNewTags,
             onTagClick = onTagClick,
         )
 
-        NewTagsTable(
+        NewTagsGrid(
             name = "New artists:",
             tags = newArtists,
             selectedTags = selectedNewTags,
             onTagClick = onTagClick,
         )
 
-        NewTagsTable(
+        NewTagsGrid(
             name = "New meta:",
             tags = newMeta,
             selectedTags = selectedNewTags,
@@ -197,7 +197,7 @@ fun AddByURLWindow(
 
         Text("Tags:", color = colorText, fontSize = normalText)
         TagGridWithCategories(
-            tags = Properties.imagesData().tags,
+            tags = Properties.mediaData().tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -230,7 +230,7 @@ fun AddByURLWindow(
                 enabled = booruPost != null,
                 onClick = {
                     booruPost?.let { post ->
-                        val data = Properties.imagesData()
+                        val data = Properties.mediaData()
 
                         data.addNewTags(newTags, selectedNewTags, settings.booruTagsCategoryName)
                         data.addNewTags(newCharacters, selectedNewTags, settings.characterTagsCategoryName)
@@ -238,12 +238,12 @@ fun AddByURLWindow(
                         data.addNewTags(newArtists, selectedNewTags, settings.artistTagsCategoryName)
                         data.addNewTags(newMeta, selectedNewTags, settings.metaTagsCategoryName)
 
-                        val imageInfo = data.addImage(post.image, name.text)
-                        imageInfo.tags.addAll(selectedTags + selectedNewTags)
-                        imageInfo.name = name.text
-                        imageInfo.description = description.text
-                        post.source?.let { imageInfo.source = it }
-                        post.rating?.let { imageInfo.rating = it }
+                        val mediaInfo = data.addMedia(post.image, name.text)
+                        mediaInfo.tags.addAll(selectedTags + selectedNewTags)
+                        mediaInfo.name = name.text
+                        mediaInfo.description = description.text
+                        post.source?.let { mediaInfo.source = it }
+                        post.rating?.let { mediaInfo.rating = it }
 
                         onDone()
                     }
@@ -254,7 +254,7 @@ fun AddByURLWindow(
 }
 
 @Composable
-private fun NewTagsTable(
+private fun NewTagsGrid(
     name: String,
     tags: List<String>,
     selectedTags: List<String>,

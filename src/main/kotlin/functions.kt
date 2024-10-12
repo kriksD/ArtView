@@ -3,7 +3,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.*
-import info.ImageInfo
+import info.MediaInfo
 import org.jcodec.api.FrameGrab
 import org.jcodec.scale.AWTUtil
 import org.jetbrains.skia.*
@@ -133,7 +133,7 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
     } ?: return null
 }
 
-fun ImageInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
+fun MediaInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 
 fun ImageBitmap.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 

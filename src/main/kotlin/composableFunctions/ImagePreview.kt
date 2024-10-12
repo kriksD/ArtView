@@ -1,6 +1,6 @@
 package composableFunctions
 
-import info.ImageInfo
+import info.MediaInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -41,7 +41,7 @@ import videoFormats
 
 @Composable
 fun ImagePreview(
-    openedImage: ImageInfo?,
+    openedMedia: MediaInfo?,
     onClose: () -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
@@ -50,7 +50,7 @@ fun ImagePreview(
     modifier: Modifier = Modifier,
 ) {
     Crossfade(
-        openedImage,
+        openedMedia,
         animationSpec = tween(normalAnimationDuration),
         modifier = modifier,
     ) { imgData ->
@@ -80,7 +80,7 @@ fun ImagePreview(
                     var imageScale by remember { mutableStateOf(1F) }
                     var imageOffset by remember { mutableStateOf(IntOffset(0, 0)) }
                     ScalableImage(
-                        imageInfo = imgData,
+                        mediaInfo = imgData,
                         scale = imageScale,
                         onScaleChange = { imageScale = it },
                         offset = imageOffset,
@@ -90,7 +90,7 @@ fun ImagePreview(
                             .weight(1F),
                     )
 
-                    if (videoFormats.any { openedImage?.path?.endsWith(it) == true }) {
+                    if (videoFormats.any { openedMedia?.path?.endsWith(it) == true }) {
                         ButtonText(
                             "Open this video in a media player",
                             onClick = { openVideoFile(imgData.path) },
@@ -146,7 +146,7 @@ fun ImagePreview(
                                     .clickable {
                                         favorite = !favorite
                                         imgData.favorite = favorite
-                                        Properties.imagesData().images.find { it.path == imgData.path }?.favorite =
+                                        Properties.mediaData().mediaList.find { it.path == imgData.path }?.favorite =
                                             imgData.favorite
                                         Properties.saveData()
                                     }

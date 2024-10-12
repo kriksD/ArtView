@@ -74,7 +74,7 @@ fun TagGridWithCategories(
                             .onPointerEvent(PointerEventType.Move) {
                                 if (!isDraggingTag) {
                                     draggingTag?.let { tag ->
-                                        Properties.imagesData().moveTag(tag, category.name)
+                                        Properties.mediaData().moveTag(tag, category.name)
                                         Properties.saveData()
                                         draggingTag = null
                                     }
@@ -95,7 +95,7 @@ fun TagGridWithCategories(
                             onTagClick = onTagClick,
                             onNew = { tag ->
                                 if (tag.isNotEmpty()) {
-                                    Properties.imagesData().addTag(tag, category.name)
+                                    Properties.mediaData().addTag(tag, category.name)
                                     Properties.saveData()
                                     onNew(tag)
                                 }
@@ -147,7 +147,7 @@ fun TagGridWithCategories(
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = { tag ->
                         if (tag.isNotEmpty()) {
-                            Properties.imagesData().addTag(tag)
+                            Properties.mediaData().addTag(tag)
                             Properties.saveData()
                             onNew(tag)
                         }

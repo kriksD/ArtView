@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class BackupInfo(
     override val id: Int,
     val date: Long,
-    val imageCount: Int,
+    val mediaCount: Int,
     val spaceUsed: Long,
 ): HasID {
     val folderPath = "data/backup/$id"

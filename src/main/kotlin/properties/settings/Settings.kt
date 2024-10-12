@@ -23,7 +23,7 @@ class Settings(
     artistTagsCategoryName: String = "Artist",
     metaTagsCategoryName: String = "Meta",
     backupLimit: Int = 5,
-    imageLoadingThreads: Int = 1,
+    loadingThreads: Int = 1,
 ) {
     var language by mutableStateOf(language)
     var background by mutableStateOf(background)
@@ -42,5 +42,5 @@ class Settings(
     var metaTagsCategoryName by mutableStateOf(metaTagsCategoryName)
 
     var backupLimit by mutableStateOf(backupLimit)
-    var imageLoadingThreads by mutableStateOf(imageLoadingThreads)
+    var loadingThreads by mutableStateOf(loadingThreads)
 }

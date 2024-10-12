@@ -1,15 +1,15 @@
 package loader
 
-import info.ImageInfo
+import info.MediaInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import properties.Properties
 import settings
 
-class ImageLoader {
-    private val loadRequests = MutableList(settings.imageLoadingThreads) { mutableListOf<ImageInfo>() }
-    private val unloadRequests = MutableList(settings.imageLoadingThreads) { mutableListOf<ImageInfo>() }
+class MediaLoader {
+    private val loadRequests = MutableList(settings.loadingThreads) { mutableListOf<MediaInfo>() }
+    private val unloadRequests = MutableList(settings.loadingThreads) { mutableListOf<MediaInfo>() }
 
     val isLoading get() = loadRequests.flatten().isNotEmpty() || unloadRequests.flatten().isNotEmpty()
     val requestAmount get() = loadRequests.sumOf { it.size } + unloadRequests.sumOf { it.size }
@@ -19,7 +19,7 @@ class ImageLoader {
     private val scope = CoroutineScope(Dispatchers.Default)
     private var isRunning = true
 
-    fun loadNext(image: ImageInfo) {
+    fun loadNext(image: MediaInfo) {
         scope.launch {
             mutex.withLock {
                 val threadIndex = leastBusyThread()
@@ -33,7 +33,7 @@ class ImageLoader {
         }
     }
 
-    fun unloadNext(image: ImageInfo) {
+    fun unloadNext(image: MediaInfo) {
         scope.launch {
             mutex.withLock {
                 val threadIndex = leastBusyThread()
@@ -51,7 +51,7 @@ class ImageLoader {
         var minSize = -1
         var minSizeIndex = -1
 
-        repeat(settings.imageLoadingThreads) { threadIndex ->
+        repeat(settings.loadingThreads) { threadIndex ->
             val size = loadRequests[threadIndex].size + unloadRequests[threadIndex].size
 
             if (minSize == -1 || size < minSize) {
@@ -81,13 +81,13 @@ class ImageLoader {
     }
 
     private fun resetRequests() {
-        Properties.imagesData().images.filter { it.isLoaded }.forEach { it.unload() }
+        Properties.mediaData().mediaList.filter { it.isLoaded }.forEach { it.unload() }
         loadRequests.forEach { it.clear() }
         unloadRequests.forEach { it.clear() }
     }
 
     suspend fun load() = coroutineScope {
-        repeat(settings.imageLoadingThreads) { threadIndex ->
+        repeat(settings.loadingThreads) { threadIndex ->
             launch(Dispatchers.Default) {
                 while(isRunning) {
                     if (unloadRequests[threadIndex].isNotEmpty()) {

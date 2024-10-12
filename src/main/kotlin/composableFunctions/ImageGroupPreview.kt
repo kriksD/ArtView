@@ -1,7 +1,7 @@
 package composableFunctions
 
-import loader.ImageLoader
-import ImageStorage
+import loader.MediaLoader
+import MediaStorage
 import TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,8 +36,8 @@ import transparencySecond
 @Composable
 fun ImageGroupPreview(
     tagStorage: TagStorage,
-    imageStorage: ImageStorage,
-    imageLoader: ImageLoader,
+    imageStorage: MediaStorage,
+    mediaLoader: MediaLoader,
     onClose: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -60,7 +60,7 @@ fun ImageGroupPreview(
                     .padding(horizontal = biggerPadding, vertical = padding)
             )
 
-            Text(imageStorage.openedImageGroup?.name ?: "<ERROR>", color = colorText, fontSize = bigText, modifier = Modifier.weight(1F))
+            Text(imageStorage.openedMediaGroup?.name ?: "<ERROR>", color = colorText, fontSize = bigText, modifier = Modifier.weight(1F))
 
             var toDelete by remember { mutableStateOf(false) }
             Icon(
@@ -122,12 +122,12 @@ fun ImageGroupPreview(
                     .clickable(onClick = onEdit)
             )
         }
-        Text(imageStorage.openedImageGroup?.description ?: "<ERROR>", color = colorText, fontSize = normalText)
+        Text(imageStorage.openedMediaGroup?.description ?: "<ERROR>", color = colorText, fontSize = normalText)
 
         var expanded by remember { mutableStateOf(false) }
         Column {
             TagGridWithCategories(
-                tags = Properties.imagesData().tags,
+                tags = Properties.mediaData().tags,
                 selectedTags = tagStorage.selectedTags,
                 antiSelectedTags = tagStorage.selectedAntiTags,
                 onTagClick = {
@@ -143,9 +143,9 @@ fun ImageGroupPreview(
             )
 
             ImageGrid(
-                images = imageStorage.filteredImages,
-                imageLoader = imageLoader,
-                checkedList = imageStorage.selectedImages,
+                mediaList = imageStorage.filteredMedia,
+                mediaLoader = mediaLoader,
+                checkedList = imageStorage.selectedMedia,
                 onCheckedClick = { imgInfo, isSelected ->
                     if (isSelected) {
                         imageStorage.select(imgInfo)
@@ -154,10 +154,10 @@ fun ImageGroupPreview(
                     }
                 },
                 onOpen = {
-                    if (imageStorage.selectedImages.isEmpty()) {
+                    if (imageStorage.selectedMedia.isEmpty()) {
                         imageStorage.open(it)
                     } else {
-                        if (!imageStorage.selectedImages.contains(it)) {
+                        if (!imageStorage.selectedMedia.contains(it)) {
                             imageStorage.select(it)
                         } else {
                             imageStorage.deselect(it)

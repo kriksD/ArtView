@@ -21,7 +21,7 @@ import composableFunctions.views.ButtonText
 import composableFunctions.window.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import loader.ImageLoader
+import loader.MediaLoader
 import properties.Properties
 import java.io.File
 import java.net.URI
@@ -41,8 +41,8 @@ fun main() = application {
         Properties.backup.load()
     }
 
-    val imageStorage by remember { mutableStateOf(ImageStorage()) }
-    val imageLoader by remember { mutableStateOf(ImageLoader()) }
+    val mediaStorage by remember { mutableStateOf(MediaStorage()) }
+    val mediaLoader by remember { mutableStateOf(MediaLoader()) }
 
     val tagStorage by remember { mutableStateOf(TagStorage()) }
 
@@ -56,11 +56,11 @@ fun main() = application {
         File("data/images").mkdirs()
 
         tagStorage.reset()
-        imageStorage.filter(Filter().tags(tagStorage))
+        mediaStorage.filter(Filter().tags(tagStorage))
     }
 
-    LaunchedEffect(imageLoader) {
-        imageLoader.load()
+    LaunchedEffect(mediaLoader) {
+        mediaLoader.load()
     }
 
     val windowState = rememberWindowState(
@@ -93,8 +93,8 @@ fun main() = application {
                             is DragData.FilesList -> {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
-                                    Properties.imagesData().addImage(URI(path).path)
-                                    imageStorage.update()
+                                    Properties.mediaData().addMedia(URI(path).path)
+                                    mediaStorage.update()
                                 }
                             }
                         }
@@ -112,42 +112,42 @@ fun main() = application {
                         }
 
                         MenuItem.Images -> {
-                            imageStorage.setFilter(Filter().tags(tagStorage))
-                            imageStorage.withGroups = false
-                            imageStorage.update()
+                            mediaStorage.setFilter(Filter().tags(tagStorage))
+                            mediaStorage.withGroups = false
+                            mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                imageLoader.reset()
+                                mediaLoader.reset()
                             }
                         }
 
                         MenuItem.Favorites -> {
-                            imageStorage.setFilter(
+                            mediaStorage.setFilter(
                                 Filter().tags(tagStorage).favorite()
                             )
-                            imageStorage.withGroups = false
-                            imageStorage.update()
+                            mediaStorage.withGroups = false
+                            mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                imageLoader.reset()
+                                mediaLoader.reset()
                             }
                         }
 
                         MenuItem.Groups -> {
-                            imageStorage.setFilter(Filter().tags(tagStorage))
-                            imageStorage.withGroups = true
-                            imageStorage.update()
+                            mediaStorage.setFilter(Filter().tags(tagStorage))
+                            mediaStorage.withGroups = true
+                            mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                imageLoader.reset()
+                                mediaLoader.reset()
                             }
                         }
 
                         MenuItem.Settings -> {
-                            imageStorage.reset()
+                            mediaStorage.reset()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                imageLoader.reset()
+                                mediaLoader.reset()
                             }
                         }
                     }
@@ -164,22 +164,22 @@ fun main() = application {
                     when (item) {
                         MenuItem.Images -> {
                             ImageGridScreen(
-                                imageLoader = imageLoader,
-                                imageStorage = imageStorage,
+                                mediaLoader = mediaLoader,
+                                mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                             )
                         }
                         MenuItem.Favorites -> {
                             ImageGridScreen(
-                                imageLoader = imageLoader,
-                                imageStorage = imageStorage,
+                                mediaLoader = mediaLoader,
+                                mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                             )
                         }
                         MenuItem.Groups -> {
                             GroupGridScreen(
-                                imageLoader = imageLoader,
-                                imageStorage = imageStorage,
+                                mediaLoader = mediaLoader,
+                                mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                                 onGroupEdit = { isEditingGroup = true }
                             )
@@ -191,15 +191,15 @@ fun main() = application {
 
                 var isEditing by remember { mutableStateOf(false) }
                 ImagePreview(
-                    openedImage = imageStorage.openedImage,
+                    openedMedia = mediaStorage.openedMedia,
                     onClose = {
-                        imageStorage.close()
+                        mediaStorage.close()
                         isEditing = false
                     },
-                    onNext = { imageStorage.next() },
-                    onPrevious = { imageStorage.previous() },
+                    onNext = { mediaStorage.next() },
+                    onPrevious = { mediaStorage.previous() },
                     onDelete = {
-                        imageStorage.delete(listOfNotNull(imageStorage.openedImage))
+                        mediaStorage.delete(listOfNotNull(mediaStorage.openedMedia))
                         isEditing = false
                     },
                     onEdit = { isEditing = true },
@@ -211,15 +211,15 @@ fun main() = application {
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
-                    imageStorage.openedImage?.let { imgInfo ->
+                    mediaStorage.openedMedia?.let { mInfo ->
                         EditImageWindow(
-                            imageInfo = imgInfo,
+                            mediaInfo = mInfo,
                             onCancel = { isEditing = false },
-                            onDone = { newImageInfo ->
-                                val index = Properties.imagesData().images.indexOf(Properties.imagesData().images.find { it.path == newImageInfo.path })
-                                Properties.imagesData().images[index] = newImageInfo
+                            onDone = { newMediaInfo ->
+                                val index = Properties.mediaData().mediaList.indexOf(Properties.mediaData().mediaList.find { it.path == newMediaInfo.path })
+                                Properties.mediaData().mediaList[index] = newMediaInfo
                                 Properties.saveData()
-                                imageStorage.update(true)
+                                mediaStorage.update(true)
                                 isEditing = false
                             },
                             modifier = Modifier
@@ -236,15 +236,15 @@ fun main() = application {
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
-                    imageStorage.openedImageGroup?.let { imgGroup ->
+                    mediaStorage.openedMediaGroup?.let { mGroup ->
                         EditImageGroupWindow(
-                            imageGroup = imgGroup,
+                            mediaGroup = mGroup,
                             onCancel = { isEditingGroup = false },
-                            onDone = { newImageGroup ->
-                                imageStorage.openedImageGroup?.name = newImageGroup.name
-                                imageStorage.openedImageGroup?.description = newImageGroup.description
-                                imageStorage.openedImageGroup?.tags?.clear()
-                                imageStorage.openedImageGroup?.tags?.addAll(newImageGroup.tags)
+                            onDone = { newMediaGroup ->
+                                mediaStorage.openedMediaGroup?.name = newMediaGroup.name
+                                mediaStorage.openedMediaGroup?.description = newMediaGroup.description
+                                mediaStorage.openedMediaGroup?.tags?.clear()
+                                mediaStorage.openedMediaGroup?.tags?.addAll(newMediaGroup.tags)
                                 Properties.saveData()
 
                                 isEditingGroup = false
@@ -260,9 +260,9 @@ fun main() = application {
 
                 var toDelete by remember { mutableStateOf(false) }
                 var isEditingTags by remember { mutableStateOf(false) }
-                var isAddingImagesToGroup by remember { mutableStateOf(false) }
+                var isAddingMediaToGroup by remember { mutableStateOf(false) }
                 AppearDisappearAnimation(
-                    imageStorage.selectedImages.isNotEmpty() || imageStorage.selectedGroups.isNotEmpty(),
+                    mediaStorage.selectedMedia.isNotEmpty() || mediaStorage.selectedGroups.isNotEmpty(),
                     normalAnimationDuration,
                     Modifier
                         .padding(biggerPadding)
@@ -274,49 +274,49 @@ fun main() = application {
                         ButtonText(
                             "Select all",
                             onClick = {
-                                if (imageStorage.selectedImages.isNotEmpty()) {
-                                    imageStorage.selectAll()
+                                if (mediaStorage.selectedMedia.isNotEmpty()) {
+                                    mediaStorage.selectAll()
 
-                                } else if (imageStorage.selectedGroups.isNotEmpty()) {
-                                    imageStorage.selectAllGroups()
+                                } else if (mediaStorage.selectedGroups.isNotEmpty()) {
+                                    mediaStorage.selectAllGroups()
                                 }
                             },
                         )
                         ButtonText(
                             "Deselect all",
                             onClick = {
-                                imageStorage.deselectAll()
-                                imageStorage.deselectAllGroups()
+                                mediaStorage.deselectAll()
+                                mediaStorage.deselectAllGroups()
                             },
                         )
                         ButtonText(
-                            "Delete selected images/groups",
+                            "Delete selected media/groups",
                             onClick = { toDelete = true },
                         )
                         ButtonText(
-                            "Save selected images in new folder",
-                            onClick = { imageStorage.saveImageFilesTo() },
+                            "Save selected media to a new folder",
+                            onClick = { mediaStorage.saveMediaFilesTo() },
                         )
                         ButtonText(
                             "Manage tags for all",
                             onClick = { isEditingTags = true },
                         )
-                        if (imageStorage.selectedImages.isNotEmpty()) {
+                        if (mediaStorage.selectedMedia.isNotEmpty()) {
                             ButtonText(
                                 "Create group",
-                                onClick = { imageStorage.createNewGroup() },
+                                onClick = { mediaStorage.createNewGroup() },
                             )
                             ButtonText(
                                 "Add to group",
                                 onClick = {
-                                    Properties.imagesData().imageGroups.forEach { ig ->
-                                        ig.imagePaths.firstOrNull()?.let { path ->
-                                            Properties.imagesData().images.find { it.path == path }?.let {
-                                                imageLoader.loadNext(it)
+                                    Properties.mediaData().mediaGroups.forEach { mg ->
+                                        mg.paths.firstOrNull()?.let { path ->
+                                            Properties.mediaData().mediaList.find { it.path == path }?.let {
+                                                mediaLoader.loadNext(it)
                                             }
                                         }
                                     }
-                                    isAddingImagesToGroup = true
+                                    isAddingMediaToGroup = true
                                 },
                             )
                         }
@@ -337,7 +337,7 @@ fun main() = application {
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            "You are going to delete these images/groups forever. Are you sure?",
+                            "You are going to delete these media/groups forever. Are you sure?",
                             color = colorText,
                             fontSize = normalText,
                         )
@@ -353,11 +353,11 @@ fun main() = application {
 
                             Button(
                                 onClick = {
-                                    if (imageStorage.selectedImages.isNotEmpty()) {
-                                        imageStorage.delete(imageStorage.selectedImages)
+                                    if (mediaStorage.selectedMedia.isNotEmpty()) {
+                                        mediaStorage.delete(mediaStorage.selectedMedia)
 
-                                    } else if (imageStorage.selectedGroups.isNotEmpty()) {
-                                        imageStorage.deleteGroups(imageStorage.selectedGroups)
+                                    } else if (mediaStorage.selectedGroups.isNotEmpty()) {
+                                        mediaStorage.deleteGroups(mediaStorage.selectedGroups)
                                     }
 
                                     toDelete = false
@@ -400,21 +400,21 @@ fun main() = application {
                                 newTags.add(it)
                         },
                         onDone = {
-                            if (imageStorage.selectedImages.isNotEmpty()) {
-                                imageStorage.selectedImages.forEach { ii ->
+                            if (mediaStorage.selectedMedia.isNotEmpty()) {
+                                mediaStorage.selectedMedia.forEach { ii ->
                                     ii.tags.addAll(newTags.filter { !ii.tags.contains(it) })
                                     ii.tags.removeAll(removeTags)
                                 }
 
-                            } else if (imageStorage.selectedGroups.isNotEmpty()) {
-                                imageStorage.selectedGroups.forEach { ig ->
+                            } else if (mediaStorage.selectedGroups.isNotEmpty()) {
+                                mediaStorage.selectedGroups.forEach { ig ->
                                     ig.tags.addAll(newTags.filter { !ig.tags.contains(it) })
                                     ig.tags.removeAll(removeTags)
                                 }
                             }
 
                             Properties.saveData()
-                            imageStorage.update()
+                            mediaStorage.update()
                             newTags.clear()
                             removeTags.clear()
 
@@ -435,21 +435,21 @@ fun main() = application {
                 }
 
                 AppearDisappearAnimation(
-                    isAddingImagesToGroup,
+                    isAddingMediaToGroup,
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
                     ImageGroupListWindow(
-                        onDone = { imageGroup ->
-                            imageGroup.imagePaths.addAll(imageStorage.selectedImages.map { it.path }.filter { !imageGroup.imagePaths.contains(it) })
+                        onDone = { mediaGroup ->
+                            mediaGroup.paths.addAll(mediaStorage.selectedMedia.map { it.path }.filter { !mediaGroup.paths.contains(it) })
 
                             Properties.saveData()
-                            imageStorage.update()
+                            mediaStorage.update()
 
-                            isAddingImagesToGroup = false
+                            isAddingMediaToGroup = false
                         },
                         onCancel = {
-                            isAddingImagesToGroup = false
+                            isAddingMediaToGroup = false
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.65F)
@@ -490,7 +490,7 @@ fun main() = application {
                         url = addImageURL ?: "",
                         onDone = {
                             Properties.saveData()
-                            imageStorage.update()
+                            mediaStorage.update()
 
                             addImageURL = null
                         },
@@ -507,8 +507,8 @@ fun main() = application {
 
                 if (settings.showDebug) {
                     Debug(
-                        imageStorage = imageStorage,
-                        imageLoader = imageLoader,
+                        mediaStorage = mediaStorage,
+                        mediaLoader = mediaLoader,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(biggerPadding),
@@ -521,8 +521,8 @@ fun main() = application {
 
 @Composable
 private fun Debug(
-    imageStorage: ImageStorage,
-    imageLoader: ImageLoader,
+    mediaStorage: MediaStorage,
+    mediaLoader: MediaLoader,
     modifier: Modifier = Modifier,
 ) {
     var showDebug by remember { mutableStateOf(false) }
@@ -531,52 +531,52 @@ private fun Debug(
             modifier = modifier.background(colorBackground.copy(transparencySecond)),
         ) {
             Text(
-                "The size of text: ${Properties.imagesData().countSize()} bytes (${Properties.imagesData().countSize() / 1024} KB)",
+                "The size of text: ${Properties.mediaData().countSize()} bytes (${Properties.mediaData().countSize() / 1024} KB)",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "The size of images: ${Properties.imagesData().countImageSize() / 1024} KB (${Properties.imagesData().countImageSize() / 1024 / 1024} MB)",
+                "(deprecated) The size of images: ${Properties.mediaData().countImageSize() / 1024} KB (${Properties.mediaData().countImageSize() / 1024 / 1024} MB)",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Loaded images: ${Properties.imagesData().images.size}/${Properties.imagesData().images.count { it.isLoaded }}",
+                "Loaded media: ${Properties.mediaData().mediaList.size}/${Properties.mediaData().mediaList.count { it.isLoaded }}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Filtered images: ${Properties.imagesData().images.size}/${imageStorage.filteredImages.size}",
+                "Filtered media: ${Properties.mediaData().mediaList.size}/${mediaStorage.filteredMedia.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Selected images: ${imageStorage.filteredImages.size}/${imageStorage.selectedImages.size}",
+                "Selected media: ${mediaStorage.filteredMedia.size}/${mediaStorage.selectedMedia.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Filtered groups: ${Properties.imagesData().imageGroups.size}/${imageStorage.filteredGroups.size}",
+                "Filtered groups: ${Properties.mediaData().mediaGroups.size}/${mediaStorage.filteredGroups.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Selected groups: ${imageStorage.filteredGroups.size}/${imageStorage.selectedGroups.size}",
+                "Selected groups: ${mediaStorage.filteredGroups.size}/${mediaStorage.selectedGroups.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Is loading: ${imageLoader.isLoading}",
+                "Is loading: ${mediaLoader.isLoading}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Loading requests: ${imageLoader.requestAmount}",
+                "Loading requests: ${mediaLoader.requestAmount}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Threads used: ${imageLoader.threadCount}",
+                "Threads used: ${mediaLoader.threadCount}",
                 color = colorText,
                 fontSize = normalText,
             )

@@ -1,7 +1,7 @@
 package properties.data
 
-import info.ImageGroup
-import info.ImageInfo
+import info.MediaGroup
+import info.MediaInfo
 import TagCategory
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.graphics.ImageBitmap
@@ -22,14 +22,14 @@ import java.io.File
 class Data(
     val meta: DataMeta = DataMeta(),
     tags: Collection<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
-    images: Collection<ImageInfo> = mutableListOf(),
-    imageGroups: Collection<ImageGroup> = mutableListOf(),
+    mediaList: Collection<MediaInfo> = mutableListOf(),
+    mediaGroups: Collection<MediaGroup> = mutableListOf(),
 ) {
     val tags = tags.toMutableStateList()
-    val images = images.toMutableStateList()
-    val imageGroups = imageGroups.toMutableStateList()
+    val mediaList = mediaList.toMutableStateList()
+    val mediaGroups = mediaGroups.toMutableStateList()
 
-    fun addImage(file: File): ImageInfo? {
+    fun addMedia(file: File): MediaInfo? {
         if (!file.exists()) return null
         val image = getImageBitmap(file) ?: getFirstFrame(file) ?: return null
 
@@ -39,43 +39,43 @@ class Data(
 
         file.copyTo(newFile)
 
-        return ImageInfo(
-            images.uniqueId(),
+        return MediaInfo(
+            mediaList.uniqueId(),
             newFile.path,
             image.width,
             image.height,
             newFile.name,
         ).also {
-            images.add(0, it)
+            mediaList.add(0, it)
         }
     }
 
-    fun addImage(path: String): ImageInfo? = addImage(File(path))
+    fun addMedia(path: String): MediaInfo? = addMedia(File(path))
 
-    fun addImage(image: ImageBitmap, name: String = "new_image"): ImageInfo {
-        val newFile = File("data/images/${uniqueName(name.ifBlank { "new_image" }.toFileName(), "png", File("data/images"))}.png")
+    fun addMedia(image: ImageBitmap, name: String = "image_file"): MediaInfo {
+        val newFile = File("data/images/${uniqueName(name.ifBlank { "image_file" }.toFileName(), "png", File("data/images"))}.png")
         image.savePngTo(newFile)
 
-        return ImageInfo(
-            images.uniqueId(),
+        return MediaInfo(
+            mediaList.uniqueId(),
             newFile.path,
             image.width,
             image.height,
             newFile.name,
         ).also {
-            images.add(0, it)
+            mediaList.add(0, it)
         }
     }
 
-    fun delete(imagesForDeletion: List<ImageInfo>) {
-        images.removeAll(imagesForDeletion)
-        imageGroups.forEach { ig -> ig.imagePaths.removeAll(imagesForDeletion.map { it.path }) }
-        imagesForDeletion.forEach { it.delete() }
+    fun delete(mediaToDelete: List<MediaInfo>) {
+        mediaList.removeAll(mediaToDelete)
+        mediaGroups.forEach { ig -> ig.paths.removeAll(mediaToDelete.map { it.path }) }
+        mediaToDelete.forEach { it.delete() }
         Properties.saveData()
     }
 
-    fun deleteGroups(imagesForDeletion: List<ImageGroup>) {
-        imageGroups.removeAll(imagesForDeletion)
+    fun deleteGroups(groupsToDelete: List<MediaGroup>) {
+        mediaGroups.removeAll(groupsToDelete)
         Properties.saveData()
     }
 
@@ -147,10 +147,11 @@ class Data(
         }
     }
 
+    @Deprecated("Returns wrong result, don't use it")
     fun countSize(): Long {
         var sizeOfImageInfoInBytes = 0L
 
-        images.forEach { image ->
+        mediaList.forEach { image ->
             sizeOfImageInfoInBytes += image.name.encodeToByteArray().size
             sizeOfImageInfoInBytes += image.path.encodeToByteArray().size
             sizeOfImageInfoInBytes += image.description.encodeToByteArray().size
@@ -166,7 +167,7 @@ class Data(
         return sizeOfImageInfoInBytes
     }
 
-    fun countImageSize(): Long = images
+    fun countImageSize(): Long = mediaList
         .filter { it.isLoaded }
         .sumOf { it.scaledDownImage!!.toPixelMap().buffer.size * 16L }
 
@@ -183,14 +184,14 @@ class Data(
     fun copy(
         meta: DataMeta = this.meta,
         tags: Collection<TagCategory> = this.tags,
-        images: Collection<ImageInfo> = this.images,
-        imageGroups: Collection<ImageGroup> = this.imageGroups,
+        mediaList: Collection<MediaInfo> = this.mediaList,
+        mediaGroups: Collection<MediaGroup> = this.mediaGroups,
     ): Data {
         return Data(
             meta,
             tags.toMutableList(),
-            images.toMutableList(),
-            imageGroups.toMutableList(),
+            mediaList.toMutableList(),
+            mediaGroups.toMutableList(),
         )
     }
 }

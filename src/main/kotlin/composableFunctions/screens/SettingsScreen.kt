@@ -117,12 +117,12 @@ private fun Options(
                 fontSize = normalText,
             )
 
-            val previousValue by remember { mutableStateOf(settings.imageLoadingThreads) }
+            val previousValue by remember { mutableStateOf(settings.loadingThreads) }
             Menu(
-                selectedItem = settings.imageLoadingThreads,
+                selectedItem = settings.loadingThreads,
                 items = listOf(1, 2, 3, 4, 5, 6),
                 onSelect = {
-                    settings.imageLoadingThreads = it as Int
+                    settings.loadingThreads = it as Int
                     Properties.saveSettings()
                 },
                 itemContent = { item, type ->
@@ -139,7 +139,7 @@ private fun Options(
             )
 
             AppearDisappearAnimation(
-                visible = previousValue != settings.imageLoadingThreads,
+                visible = previousValue != settings.loadingThreads,
                 duration = normalAnimationDuration,
             ) {
                 Text(
@@ -159,7 +159,7 @@ private fun TagsCategories(
     var reload by remember { mutableStateOf(false) }
 
     if (!reload) {
-        val tags = Properties.imagesData().tags
+        val tags = Properties.mediaData().tags
 
         Column(modifier = modifier) {
             Text("Tag Categories:", color = colorText, fontSize = bigText)
@@ -170,17 +170,17 @@ private fun TagsCategories(
                     category.tags.size,
                     removable = category.name != "Other",
                     onRemove = {
-                        Properties.imagesData().removeCategory(category.name)
+                        Properties.mediaData().removeCategory(category.name)
                         Properties.saveData()
                         //reload = true
                     },
                     onUp = {
-                        Properties.imagesData().moveCategoryUp(category.name)
+                        Properties.mediaData().moveCategoryUp(category.name)
                         Properties.saveData()
                         //reload = true
                     },
                     onDown = {
-                        Properties.imagesData().moveCategoryDown(category.name)
+                        Properties.mediaData().moveCategoryDown(category.name)
                         Properties.saveData()
                         //reload = true
                     },
@@ -197,7 +197,7 @@ private fun TagsCategories(
                     newCategoryName = it
                 },
                 onCreate = {
-                    Properties.imagesData().createCategory(newCategoryName)
+                    Properties.mediaData().createCategory(newCategoryName)
                     Properties.saveData()
                 },
                 modifier = Modifier.fillMaxWidth(0.5F),
@@ -353,7 +353,7 @@ private fun TagSelectionByDefault(
         Text("Tag selection by default:", color = colorText, fontSize = bigText)
 
         TagGridWithCategories(
-            Properties.imagesData().tags,
+            Properties.mediaData().tags,
             settings.selectedTagsByDefault,
             settings.antiSelectedTagsByDefault,
             expanded = expanded,
@@ -684,7 +684,7 @@ private fun BackupInfoCard(
         Row {
             Text("id: ${info.id} | ", color = colorText, fontSize = normalText)
             Text("${info.date.toTimeString()} | ", color = colorText, fontSize = normalText)
-            Text("${info.imageCount} images | ", color = colorText, fontSize = normalText)
+            Text("${info.mediaCount} media files | ", color = colorText, fontSize = normalText)
             Text("${(info.spaceUsed / 1024.0 / 1024.0).roundPlaces(2)} MB", color = colorText, fontSize = normalText)
         }
 

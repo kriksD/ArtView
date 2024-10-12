@@ -1,6 +1,6 @@
 package composableFunctions.screens
 
-import ImageStorage
+import MediaStorage
 import TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -10,13 +10,13 @@ import androidx.compose.ui.Modifier
 import colorBackgroundLighter
 import composableFunctions.ImageGrid
 import composableFunctions.TagGridWithCategories
-import loader.ImageLoader
+import loader.MediaLoader
 import properties.Properties
 
 @Composable
 fun ImageGridScreen(
-    imageLoader: ImageLoader,
-    imageStorage: ImageStorage,
+    mediaLoader: MediaLoader,
+    mediaStorage: MediaStorage,
     tagStorage: TagStorage,
     modifier: Modifier = Modifier,
 ) {
@@ -25,14 +25,14 @@ fun ImageGridScreen(
         modifier = modifier
     ) {
         TagGridWithCategories(
-            tags = Properties.imagesData().tags,
+            tags = Properties.mediaData().tags,
             selectedTags = tagStorage.selectedTags,
             antiSelectedTags = tagStorage.selectedAntiTags,
             onTagClick = {
                 tagStorage.changeSelectStatus(it)
-                imageStorage.updateFilterTags(tagStorage)
-                imageStorage.update()
-                imageLoader.reset()
+                mediaStorage.updateFilterTags(tagStorage)
+                mediaStorage.update()
+                mediaLoader.reset()
             },
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -42,24 +42,24 @@ fun ImageGridScreen(
         )
 
         ImageGrid(
-            images = imageStorage.filteredImages,
-            imageLoader = imageLoader,
-            checkedList = imageStorage.selectedImages,
+            mediaList = mediaStorage.filteredMedia,
+            mediaLoader = mediaLoader,
+            checkedList = mediaStorage.selectedMedia,
             onCheckedClick = { imgInfo, isSelected ->
                 if (isSelected) {
-                    imageStorage.select(imgInfo)
+                    mediaStorage.select(imgInfo)
                 } else {
-                    imageStorage.deselect(imgInfo)
+                    mediaStorage.deselect(imgInfo)
                 }
             },
             onOpen = {
-                if (imageStorage.selectedImages.isEmpty()) {
-                    imageStorage.open(it)
+                if (mediaStorage.selectedMedia.isEmpty()) {
+                    mediaStorage.open(it)
                 } else {
-                    if (!imageStorage.selectedImages.contains(it)) {
-                        imageStorage.select(it)
+                    if (!mediaStorage.selectedMedia.contains(it)) {
+                        mediaStorage.select(it)
                     } else {
-                        imageStorage.deselect(it)
+                        mediaStorage.deselect(it)
                     }
                 }
             },

@@ -1,7 +1,7 @@
 package properties.data
 
-import info.ImageGroup
-import info.ImageInfo
+import info.MediaGroup
+import info.MediaInfo
 import TagCategory
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
@@ -19,39 +19,39 @@ class DataSerializer : KSerializer<Data> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Data") {
         element<DataMeta>("meta")
         element<MutableList<TagCategory>>("tags")
-        element<MutableList<ImageInfo>>("images")
-        element<MutableList<ImageGroup>>("imageGroups")
+        element<MutableList<MediaInfo>>("images")
+        element<MutableList<MediaGroup>>("imageGroups")
     }
 
     override fun deserialize(decoder: Decoder): Data = decoder.decodeStructure(descriptor) {
         var meta: DataMeta? = null
         var tags: List<TagCategory>? = null
-        var images: List<ImageInfo>? = null
-        var imageGroups: List<ImageGroup>? = null
+        var mediaList: List<MediaInfo>? = null
+        var mediaGroups: List<MediaGroup>? = null
 
         while (true) {
             when (val index = decodeElementIndex(descriptor)) {
                 -1 -> break
                 0 -> meta = decodeSerializableElement(descriptor, 0, DataMeta.serializer())
                 1 -> tags = decodeSerializableElement(descriptor, 1, ListSerializer(TagCategory.serializer()))
-                2 -> images = decodeSerializableElement(descriptor, 2, ListSerializer(ImageInfo.serializer()))
-                3 -> imageGroups = decodeSerializableElement(descriptor, 3, ListSerializer(ImageGroup.serializer()))
+                2 -> mediaList = decodeSerializableElement(descriptor, 2, ListSerializer(MediaInfo.serializer()))
+                3 -> mediaGroups = decodeSerializableElement(descriptor, 3, ListSerializer(MediaGroup.serializer()))
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
 
-        images = checkMissingIDsInImageInfo(images ?: listOf())
-        imageGroups = checkMissingIDsInImageGroup(imageGroups ?: listOf())
+        mediaList = checkMissingIDsInImageInfo(mediaList ?: listOf())
+        mediaGroups = checkMissingIDsInImageGroup(mediaGroups ?: listOf())
 
         return@decodeStructure Data(
             meta = meta ?: DataMeta(),
             tags = tags ?: listOf(),
-            images = images,
-            imageGroups = imageGroups,
+            mediaList = mediaList,
+            mediaGroups = mediaGroups,
         )
     }
 
-    private fun checkMissingIDsInImageInfo(list: List<ImageInfo>): List<ImageInfo> {
+    private fun checkMissingIDsInImageInfo(list: List<MediaInfo>): List<MediaInfo> {
         if (list.none { it.id == -1 }) return list
 
         val newList = list.toMutableList()
@@ -64,7 +64,7 @@ class DataSerializer : KSerializer<Data> {
         return newList
     }
 
-    private fun checkMissingIDsInImageGroup(list: List<ImageGroup>): List<ImageGroup> {
+    private fun checkMissingIDsInImageGroup(list: List<MediaGroup>): List<MediaGroup> {
         if (list.none { it.id == -1 }) return list
 
         val newList = list.toMutableList()
@@ -80,7 +80,7 @@ class DataSerializer : KSerializer<Data> {
     override fun serialize(encoder: Encoder, value: Data) = encoder.encodeStructure(descriptor) {
         encodeSerializableElement(descriptor, 0, DataMeta.serializer(), value.meta)
         encodeSerializableElement(descriptor, 1, ListSerializer(TagCategory.serializer()), value.tags)
-        encodeSerializableElement(descriptor, 2, ListSerializer(ImageInfo.serializer()), value.images)
-        encodeSerializableElement(descriptor, 3, ListSerializer(ImageGroup.serializer()), value.imageGroups)
+        encodeSerializableElement(descriptor, 2, ListSerializer(MediaInfo.serializer()), value.mediaList)
+        encodeSerializableElement(descriptor, 3, ListSerializer(MediaGroup.serializer()), value.mediaGroups)
     }
 }

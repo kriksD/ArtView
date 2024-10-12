@@ -25,7 +25,7 @@ object Properties {
     fun saveStyle() { styleContainer.save() }
 
     private val dataContainer: DataContainer = DataContainer()
-    fun imagesData(): Data = dataContainer.data
+    fun mediaData(): Data = dataContainer.data
     fun loadData() { dataContainer.load() }
     fun saveData() { dataContainer.save() }
 

@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 
-class ImageInfoSerializer : KSerializer<ImageInfo> {
+class MediaInfoSerializer : KSerializer<MediaInfo> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ImageInfo") {
         element<Int>("id")
         element<String>("path")
@@ -28,7 +28,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun deserialize(decoder: Decoder): ImageInfo = decoder.decodeStructure(descriptor) {
+    override fun deserialize(decoder: Decoder): MediaInfo = decoder.decodeStructure(descriptor) {
         var id: Int? = null
         var path: String? = null
         var width: Int? = null
@@ -67,7 +67,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
                     && tags != null
         )
 
-        return@decodeStructure ImageInfo(
+        return@decodeStructure MediaInfo(
             id = id ?: -1,
             path = path,
             width = width,
@@ -82,7 +82,7 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun serialize(encoder: Encoder, value: ImageInfo) = encoder.encodeStructure(descriptor) {
+    override fun serialize(encoder: Encoder, value: MediaInfo) = encoder.encodeStructure(descriptor) {
         encodeIntElement(descriptor, 0, value.id)
         encodeStringElement(descriptor, 1, value.path)
         encodeIntElement(descriptor, 2, value.width)

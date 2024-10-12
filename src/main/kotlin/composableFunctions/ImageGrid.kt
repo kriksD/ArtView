@@ -1,7 +1,7 @@
 package composableFunctions
 
-import info.ImageInfo
-import loader.ImageLoader
+import info.MediaInfo
+import loader.MediaLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -47,25 +47,25 @@ import videoFormats
 
 @Composable
 fun ImageGrid(
-    images: List<ImageInfo>,
-    imageLoader: ImageLoader,
-    checkedList: List<ImageInfo> = listOf(),
-    onCheckedClick: (ImageInfo, Boolean) -> Unit = { _, _ -> },
-    onOpen: (ImageInfo) -> Unit = {},
+    mediaList: List<MediaInfo>,
+    mediaLoader: MediaLoader,
+    checkedList: List<MediaInfo> = listOf(),
+    onCheckedClick: (MediaInfo, Boolean) -> Unit = { _, _ -> },
+    onOpen: (MediaInfo) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var imagesPerRow by remember { mutableStateOf(4) }
-    val splitImages = images.chunked(imagesPerRow).toMutableStateList()
+    var mediaPerRow by remember { mutableStateOf(4) }
+    val splitMedia = mediaList.chunked(mediaPerRow).toMutableStateList()
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(scrollState.layoutInfo.visibleItemsInfo) {
-        splitImages.forEachIndexed { index, row ->
+        splitMedia.forEachIndexed { index, row ->
             val isVisible = scrollState.layoutInfo.visibleItemsInfo.find { it.index == index } != null
 
             if (isVisible) {
-                row.forEach { imageLoader.loadNext(it) }
+                row.forEach { mediaLoader.loadNext(it) }
             } else {
-                row.forEach { imageLoader.unloadNext(it) }
+                row.forEach { mediaLoader.unloadNext(it) }
             }
         }
     }
@@ -78,34 +78,34 @@ fun ImageGrid(
             modifier = Modifier
                 .weight(1F)
                 .onSizeChanged {
-                    val previousImagesPerRow = imagesPerRow
-                    imagesPerRow = it.width / style.image_width
+                    val previousMediaPerRow = mediaPerRow
+                    mediaPerRow = it.width / style.image_width
 
-                    if (imagesPerRow != previousImagesPerRow) {
-                        splitImages.clear()
-                        splitImages.addAll(images.chunked(imagesPerRow))
+                    if (mediaPerRow != previousMediaPerRow) {
+                        splitMedia.clear()
+                        splitMedia.addAll(mediaList.chunked(mediaPerRow))
                     }
                 },
         ) {
-            items(splitImages) { row ->
+            items(splitMedia) { row ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    row.forEach { imgInfo ->
+                    row.forEach { mediaInfo ->
                         ImageGridItem(
-                            imageInfo = imgInfo,
-                            checked = checkedList.contains(imgInfo),
-                            onCheckedChange = { onCheckedClick(imgInfo, it) },
-                            onOpen = { onOpen(imgInfo) },
+                            mediaInfo = mediaInfo,
+                            checked = checkedList.contains(mediaInfo),
+                            onCheckedChange = { onCheckedClick(mediaInfo, it) },
+                            onOpen = { onOpen(mediaInfo) },
                             modifier = Modifier
-                                .weight(imgInfo.calculateWeight())
+                                .weight(mediaInfo.calculateWeight())
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners)),
                         )
                     }
 
-                    repeat(imagesPerRow - row.size) {
+                    repeat(mediaPerRow - row.size) {
                         Spacer(
                             modifier = Modifier
                                 .weight(1F)
@@ -134,14 +134,14 @@ fun ImageGrid(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun ImageGridItem(
-    imageInfo: ImageInfo,
+    mediaInfo: MediaInfo,
     checked: Boolean = false,
     onCheckedChange: (Boolean) -> Unit = {},
     onOpen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showInfo by remember { mutableStateOf(false) }
-    var favorite by remember { mutableStateOf(imageInfo.favorite) }
+    var favorite by remember { mutableStateOf(mediaInfo.favorite) }
 
     Box(
         modifier = modifier
@@ -156,7 +156,7 @@ private fun ImageGridItem(
             }
     ) {
         LoadingImage(
-            imageInfo = imageInfo,
+            mediaInfo = mediaInfo,
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(smallCorners))
@@ -164,10 +164,10 @@ private fun ImageGridItem(
 
         val iconMediaType by remember {
             mutableStateOf<String?>(
-                if (gifFormats.any { imageInfo.path.endsWith(it) }) {
+                if (gifFormats.any { mediaInfo.path.endsWith(it) }) {
                     "gif_box.svg"
 
-                } else if (videoFormats.any { imageInfo.path.endsWith(it) }) {
+                } else if (videoFormats.any { mediaInfo.path.endsWith(it) }) {
                     "smart_display.svg"
 
                 } else {
@@ -199,7 +199,7 @@ private fun ImageGridItem(
         ) {
             Column {
                 Text(
-                    imageInfo.name,
+                    mediaInfo.name,
                     color = colorText,
                     fontSize = normalText,
                     maxLines = 3,
@@ -217,7 +217,7 @@ private fun ImageGridItem(
                         .padding(padding),
                 ) {
                     Text(
-                        imageInfo.description,
+                        mediaInfo.description,
                         color = colorText,
                         fontSize = normalText,
                         maxLines = 2,
@@ -237,7 +237,7 @@ private fun ImageGridItem(
                                 .size(iconSize)
                                 .clickable {
                                     favorite = !favorite
-                                    imageInfo.favorite = favorite
+                                    mediaInfo.favorite = favorite
                                     Properties.saveData()
                                 }
                         )

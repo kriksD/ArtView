@@ -1,7 +1,6 @@
 package properties.data.backup
 
 import androidx.compose.runtime.mutableStateListOf
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import properties.Properties
@@ -51,7 +50,7 @@ class BackupManager {
         val info = BackupInfo(
             id = backups.uniqueId(),
             date = System.currentTimeMillis(),
-            imageCount = Properties.imagesData().images.size,
+            mediaCount = Properties.mediaData().mediaList.size,
             spaceUsed = backupFolder.walkTopDown().filter { it.isFile }.sumOf { it.length() },
         )
 

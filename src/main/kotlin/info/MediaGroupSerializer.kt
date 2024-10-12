@@ -12,7 +12,7 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 
-class ImageGroupSerializer : KSerializer<ImageGroup> {
+class MediaGroupSerializer : KSerializer<MediaGroup> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ImageGroup") {
         element<Int>("id")
         element<List<String>>("imagePaths")
@@ -22,9 +22,9 @@ class ImageGroupSerializer : KSerializer<ImageGroup> {
         element<List<String>>("tags")
     }
 
-    override fun deserialize(decoder: Decoder): ImageGroup = decoder.decodeStructure(descriptor) {
+    override fun deserialize(decoder: Decoder): MediaGroup = decoder.decodeStructure(descriptor) {
         var id: Int? = null
-        var imagePaths: List<String>? = null
+        var paths: List<String>? = null
         var name: String? = null
         var description: String? = null
         var favorite: Boolean? = null
@@ -34,7 +34,7 @@ class ImageGroupSerializer : KSerializer<ImageGroup> {
             when (val index = decodeElementIndex(descriptor)) {
                 -1 -> break
                 0 -> id = decodeIntElement(descriptor, index)
-                1 -> imagePaths = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
+                1 -> paths = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
                 2 -> name = decodeStringElement(descriptor, index)
                 3 -> description = decodeStringElement(descriptor, index)
                 4 -> favorite = decodeBooleanElement(descriptor, index)
@@ -44,16 +44,16 @@ class ImageGroupSerializer : KSerializer<ImageGroup> {
         }
 
         require(
-            imagePaths != null
+            paths != null
                     && name != null
                     && description != null
                     && favorite != null
                     && tags != null
         )
 
-        return@decodeStructure ImageGroup(
+        return@decodeStructure MediaGroup(
             id = id ?: -1,
-            imagePaths = imagePaths.toMutableList(),
+            paths = paths.toMutableList(),
             name = name,
             description = description,
             favorite = favorite,
@@ -61,9 +61,9 @@ class ImageGroupSerializer : KSerializer<ImageGroup> {
         )
     }
 
-    override fun serialize(encoder: Encoder, value: ImageGroup) = encoder.encodeStructure(descriptor) {
+    override fun serialize(encoder: Encoder, value: MediaGroup) = encoder.encodeStructure(descriptor) {
         encodeIntElement(descriptor, 0, value.id)
-        encodeSerializableElement(descriptor, 1, ListSerializer(String.serializer()), value.imagePaths)
+        encodeSerializableElement(descriptor, 1, ListSerializer(String.serializer()), value.paths)
         encodeStringElement(descriptor, 2, value.name)
         encodeStringElement(descriptor, 3, value.description)
         encodeBooleanElement(descriptor, 4, value.favorite)
