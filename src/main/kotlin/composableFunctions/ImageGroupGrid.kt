@@ -1,7 +1,7 @@
 package composableFunctions
 
-import info.MediaGroup
-import loader.MediaLoader
+import info.group.MediaGroup
+import loader.ThumbnailLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -27,7 +27,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import bigText
 import border
-import calculateWeight
 import colorBackground
 import colorBackgroundSecond
 import colorBackgroundSecondLighter
@@ -48,7 +47,7 @@ import transparencyLight
 @Composable
 fun ImageGroupGrid(
     mediaGroups: List<MediaGroup>,
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     checkedList: List<MediaGroup> = listOf(),
     onCheckedClick: (MediaGroup, Boolean) -> Unit = { _, _ -> },
     onOpen: (MediaGroup) -> Unit = {},
@@ -64,13 +63,13 @@ fun ImageGroupGrid(
 
             if (isVisible) {
                 row.forEach { imgGroup ->
-                    imgGroup.getImageInfo(0)?.let { mediaLoader.loadNext(it) }
-                    imgGroup.getImageInfo(1)?.let { mediaLoader.loadNext(it) }
+                    imgGroup.getMediaInfo(0)?.let { thumbnailLoader.loadNext(it) }
+                    imgGroup.getMediaInfo(1)?.let { thumbnailLoader.loadNext(it) }
                 }
             } else {
                 row.forEach { imgGroup ->
-                    imgGroup.getImageInfo(0)?.let { mediaLoader.unloadNext(it) }
-                    imgGroup.getImageInfo(1)?.let { mediaLoader.unloadNext(it) }
+                    imgGroup.getMediaInfo(0)?.let { thumbnailLoader.unloadNext(it) }
+                    imgGroup.getMediaInfo(1)?.let { thumbnailLoader.unloadNext(it) }
                 }
             }
         }
@@ -105,7 +104,7 @@ fun ImageGroupGrid(
                             onCheckedChange = { onCheckedClick(mediaGroup, it) },
                             onOpen = { onOpen(mediaGroup) },
                             modifier = Modifier
-                                .weight(mediaGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
+                                .weight(mediaGroup.getMediaInfo(0)?.thumbnailWeight() ?: 1F)
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners)),
                         )
@@ -149,7 +148,7 @@ private fun ImageGroupGridItem(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .aspectRatio(mediaGroup.getImageInfo(0)?.calculateWeight() ?: 1F)
+            .aspectRatio(mediaGroup.getMediaInfo(0)?.thumbnailWeight() ?: 1F)
             .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {
@@ -162,7 +161,7 @@ private fun ImageGroupGridItem(
         Box(
             modifier = Modifier.fillMaxSize(),
         ) {
-            mediaGroup.getImageInfo(1)?.let {
+            mediaGroup.getMediaInfo(1)?.let {
                 LoadingImage(
                     it,
                     mediaGroup.name,
@@ -173,7 +172,7 @@ private fun ImageGroupGridItem(
                 )
             }
 
-            mediaGroup.getImageInfo(0)?.let {
+            mediaGroup.getMediaInfo(0)?.let {
                 LoadingImage(
                     it,
                     mediaGroup.name,

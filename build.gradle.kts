@@ -41,11 +41,13 @@ dependencies {
 
     //implementation("network.chaintech:compose-multiplatform-media-player:1.0.21")
     implementation("org.jcodec:jcodec:0.2.5")
-    implementation("org.jcodec:jcodec-javase:0.2.2")
+    implementation("org.jcodec:jcodec-javase:0.2.5")
 
-    implementation("io.ktor:ktor-client-core:3.0.0-beta-2-eap-884")
-    implementation("io.ktor:ktor-client-cio:3.0.0-beta-2-eap-884")
-    implementation("io.ktor:ktor-client-okhttp:3.0.0-beta-2-eap-884")
+    implementation("org.jaudiotagger:jaudiotagger:2.0.1")
+
+    implementation("io.ktor:ktor-client-core:3.0.0")
+    implementation("io.ktor:ktor-client-cio:3.0.0")
+    implementation("io.ktor:ktor-client-okhttp:3.0.0")
 }
 
 tasks.withType<KotlinCompile>() {

@@ -1,8 +1,9 @@
-package info
+package info.group
 
-import HasID
+import utilities.HasID
+import info.media.MediaInfo
 import kotlinx.serialization.Serializable
-import properties.Properties
+import mediaData
 import java.io.File
 
 @Serializable(with = MediaGroupSerializer::class)
@@ -15,13 +16,13 @@ data class MediaGroup(
     val tags: MutableList<String> = mutableListOf(),
 ) : HasID {
 
-    fun getImageInfo(index: Int): MediaInfo? {
+    fun getMediaInfo(index: Int): MediaInfo? {
         if (paths.isEmpty()) return null
-        return Properties.mediaData().mediaList.find { it.path == paths.getOrNull(index) }
+        return mediaData.mediaList.find { it.path == paths.getOrNull(index) }
     }
 
     fun getImageInfoList(): List<MediaInfo> {
-        return paths.mapNotNull { path -> Properties.mediaData().mediaList.find { it.path == path } }
+        return paths.mapNotNull { path -> mediaData.mediaList.find { it.path == path } }
     }
 
     fun saveImageFilesTo(folder: File) {

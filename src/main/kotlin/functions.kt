@@ -3,16 +3,24 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.*
-import info.MediaInfo
+import info.media.ImageInfo
+import okhttp3.internal.format
+import org.jaudiotagger.audio.AudioFileIO
 import org.jcodec.api.FrameGrab
+import org.jcodec.common.DemuxerTrack
+import org.jcodec.common.VideoCodecMeta
+import org.jcodec.common.io.NIOUtils
 import org.jcodec.scale.AWTUtil
 import org.jetbrains.skia.*
 import org.jetbrains.skiko.toImage
 import properties.*
 import properties.Properties
+import properties.data.MediaData
+import properties.data.TagData
 import properties.settings.Settings
 import java.awt.Desktop
 import java.awt.Dimension
+import java.awt.Image.SCALE_SMOOTH
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
@@ -29,6 +37,8 @@ import javax.imageio.ImageReader
 val lang: Language get() = Properties.language()
 val settings: Settings get() = Properties.settings()
 val style: Style get() = Properties.style()
+val mediaData: MediaData get() = Properties.mediaData()
+val tagData: TagData get() = Properties.tagData()
 
 
 /* -= image functions =- */
@@ -38,6 +48,8 @@ fun getImageBitmap(imageFile: File): ImageBitmap? {
     return if (imageFile.exists())
         try {
             Image.makeFromEncoded(imageFile.readBytes()).toComposeImageBitmap()
+        } catch (e: OutOfMemoryError) {
+            null
         } catch (e: Exception) {
             null
         }
@@ -48,20 +60,6 @@ fun getImageBitmap(imageFile: File): ImageBitmap? {
 fun getImageBitmap(imagePath: String): ImageBitmap? = getImageBitmap(File(imagePath))
 
 fun getImageBitmap(imageBytes: ByteArray): ImageBitmap = Image.makeFromEncoded(imageBytes).toComposeImageBitmap()
-
-fun getFirstFrame(file: File): ImageBitmap? {
-    try {
-        val picture = FrameGrab.getFrameFromFile(file, 0)
-        val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
-        return bufferedImage.toComposeImageBitmap()
-
-    } catch (e: Exception) {
-        e.printStackTrace()
-        return null
-    }
-}
-
-fun getFirstFrame(path: String): ImageBitmap? = getFirstFrame(File(path))
 
 fun ImageBitmap.savePngTo(file: File) {
     val data = this.toAwtImage().toImage().encodeToData(EncodedImageFormat.PNG, 100)
@@ -81,33 +79,36 @@ fun ImageBitmap.encodeToWebP(): ByteArray? {
     return this.toAwtImage().toImage().encodeToData(EncodedImageFormat.WEBP, 95)?.bytes
 }
 
-fun ImageBitmap.scaleAndCropImage(width: Int, height: Int): ImageBitmap {
-    val bufferedImage = this.toAwtImage()
-
-    val outputImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-
-    val scaleX = width.toDouble() / bufferedImage.width.toDouble()
-    val scaleY = height.toDouble() / bufferedImage.height.toDouble()
-    val scale = kotlin.math.max(scaleX, scaleY)
-
-    val scaledWidth = (bufferedImage.width * scale).toInt()
-    val scaledHeight = (bufferedImage.height * scale).toInt()
-
-    val scaledImage = BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB)
-    val g2d = scaledImage.createGraphics()
-    g2d.drawImage(bufferedImage, 0, 0, scaledWidth, scaledHeight, null)
+fun ImageBitmap.scale(width: Int, height: Int): ImageBitmap {
+    val image = this.toAwtImage().getScaledInstance(width, height, SCALE_SMOOTH)
+    val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+    val g2d = bufferedImage.createGraphics()
+    g2d.drawImage(image, 0, 0, null)
     g2d.dispose()
+    return bufferedImage.toComposeImageBitmap()
+}
 
-    val x = (scaledWidth - width) / 2
-    val y = (scaledHeight - height) / 2
+fun ImageBitmap.scaleToMaxValues(maxWidth: Int, maxHeight: Int): ImageBitmap {
+    val scaledDownSize = calculateScaledDownSize(width, height, maxWidth, maxHeight)
+    val newWidth = scaledDownSize.first
+    val newHeight = scaledDownSize.second
+    return this.scale(newWidth, newHeight)
+}
 
-    val croppedImage = scaledImage.getSubimage(x, y, width, height)
+private fun calculateScaledDownSize(
+    originalWidth: Int,
+    originalHeight: Int,
+    maxWidth: Int,
+    maxHeight: Int
+): Pair<Int, Int> {
+    val widthRatio = originalWidth.toDouble() / maxWidth.toDouble()
+    val heightRatio = originalHeight.toDouble() / maxHeight.toDouble()
+    val scaleRatio = maxOf(widthRatio, heightRatio)
 
-    val g2dOut = outputImage.createGraphics()
-    g2dOut.drawImage(croppedImage, 0, 0, null)
-    g2dOut.dispose()
+    val scaledWidth = (originalWidth.toDouble() / scaleRatio).toInt()
+    val scaledHeight = (originalHeight.toDouble() / scaleRatio).toInt()
 
-    return outputImage.toComposeImageBitmap()
+    return Pair(scaledWidth, scaledHeight)
 }
 
 fun File.loadAllImages(): Map<String, ImageBitmap> {
@@ -133,7 +134,11 @@ fun copyAndGetImage(file: File, to: File): Pair<String, ImageBitmap>? {
     } ?: return null
 }
 
-fun MediaInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
+@Deprecated(
+    "ImageInfo is not the most reliable way to calculate weight anymore. Use ImageBitmap.calculateWeight() instead.",
+    ReplaceWith("thumbnail?.calculateWeight()"),
+)
+fun ImageInfo.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 
 fun ImageBitmap.calculateWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
 
@@ -159,9 +164,9 @@ fun getImageDimensions(path: String): Dimension? = getImageDimensions(File(path)
 
 fun getVideoDimensions(file: File): Dimension? {
     try {
-        val picture = FrameGrab.getFrameFromFile(file, 0)
-        val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
-        return Dimension(bufferedImage.width, bufferedImage.height)
+        val grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file))
+        val videoCodecMeta: VideoCodecMeta = grab.videoTrack.meta.videoCodecMeta ?: return null
+        return Dimension(videoCodecMeta.size.width, videoCodecMeta.size.height)
 
     } catch (e: Exception) {
         e.printStackTrace()
@@ -171,13 +176,50 @@ fun getVideoDimensions(file: File): Dimension? {
 
 fun getVideoDimensions(path: String): Dimension? = getVideoDimensions(File(path))
 
-fun openVideoFile(videoFilePath: String) {
-    val videoFile = File(videoFilePath)
+fun isVideoFileSupported(file: File): Boolean {
+    try {
+        val grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file))
+        return grab.videoTrack.meta.codec != null
+    } catch (e: Exception) {
+        return false
+    }
+}
 
+fun isVideoFileSupported(path: String): Boolean = isVideoFileSupported(File(path))
+
+fun getFirstFrame(file: File): ImageBitmap? {
+    try {
+        val picture = FrameGrab.getFrameFromFile(file, 0)
+        val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
+        return bufferedImage.toComposeImageBitmap()
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getFirstFrame(path: String): ImageBitmap? = getFirstFrame(File(path))
+
+fun getVideoDuration(file: File): Long? {
+    try {
+        val grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file))
+        val videoTrack: DemuxerTrack = grab.videoTrack
+        return (videoTrack.meta.totalDuration * 1000).toLong()
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getVideoDuration(path: String): Long? = getVideoDuration(File(path))
+
+fun openVideoFile(file: File) {
     if (Desktop.isDesktopSupported()) {
         val desktop = Desktop.getDesktop()
-        if (videoFile.exists()) {
-            desktop.open(videoFile) // Opens the file with the default media player
+        if (file.exists()) {
+            desktop.open(file) // Opens the file with the default media player
         } else {
             println("The file does not exist.")
         }
@@ -185,6 +227,55 @@ fun openVideoFile(videoFilePath: String) {
         println("Desktop operations are not supported on this system.")
     }
 }
+
+fun openVideoFile(path: String) = openVideoFile(File(path))
+
+fun isAudioFileSupported(file: File): Boolean {
+    try {
+        AudioFileIO.read(file)
+    } catch (e: Exception) {
+        return false
+    }
+    return true
+}
+
+fun isAudioFileSupported(path: String): Boolean = isAudioFileSupported(File(path))
+
+fun getAudioDuration(file: File): Long? {
+    try {
+        val audioFile = AudioFileIO.read(file)
+        return audioFile.audioHeader.trackLength * 1000L
+
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
+fun getAudioDuration(path: String): Long? = getAudioDuration(File(path))
+
+fun getAudioCover(file: File): ImageBitmap? {
+    val audioFile = AudioFileIO.read(file)
+    if (audioFile.tag.artworkList.isEmpty()) return null
+    return audioFile.tag.firstArtwork?.image?.toComposeImageBitmap()
+}
+
+fun getAudioCover(path: String): ImageBitmap? = getAudioCover(File(path))
+
+fun openAudioFile(file: File) {
+    if (Desktop.isDesktopSupported()) {
+        val desktop = Desktop.getDesktop()
+        if (file.exists()) {
+            desktop.open(file) // Opens the file with the default media player
+        } else {
+            println("The file does not exist.")
+        }
+    } else {
+        println("Desktop operations are not supported on this system.")
+    }
+}
+
+fun openAudioFile(path: String) = openAudioFile(File(path))
 
 
 /* -= additional functions =- */
@@ -286,6 +377,18 @@ fun String.toFileName(): String = this
 fun String.capitalizeEachWord(): String = this
     .split(" ")
     .joinToString(" ") { it.replaceFirstChar { char -> char.titlecase() } }
+
+fun Long.formatTime(): String {
+    val seconds = this / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+
+    return if (hours == 0L) {
+        "${format("%02d", minutes % 60)}:${format("%02d", seconds % 60 % 60)}"
+    }else {
+        "$hours:${format("%02d", minutes % 60)}:${format("%02d", seconds % 60 % 60)}"
+    }
+}
 
 fun openWebpage(uri: URI?): Boolean {
     val desktop = if (Desktop.isDesktopSupported()) Desktop.getDesktop() else null

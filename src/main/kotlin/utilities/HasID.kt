@@ -1,3 +1,5 @@
+package utilities
+
 interface HasID {
     val id: Int
 }

@@ -1,6 +1,6 @@
 package composableFunctions.window
 
-import info.MediaGroup
+import info.group.MediaGroup
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,9 +15,9 @@ import colorText
 import composableFunctions.views.ButtonText
 import composableFunctions.views.LoadingImage
 import corners
+import mediaData
 import normalText
 import padding
-import properties.Properties
 import smallCorners
 
 @Composable
@@ -34,7 +34,7 @@ fun ImageGroupListWindow(
         Column(
             modifier = Modifier.weight(1F).verticalScroll(rememberScrollState()),
         ) {
-            Properties.mediaData().mediaGroups.forEach { imageGroup ->
+            mediaData.mediaGroups.forEach { imageGroup ->
                 ImageGroupListItem(
                     mediaGroup = imageGroup,
                     modifier = Modifier
@@ -79,7 +79,7 @@ private fun ImageGroupListItem(
         Box(
             modifier = Modifier.fillMaxWidth(0.2F).aspectRatio(1F),
         ) {
-            mediaGroup.getImageInfo(0)?.let {
+            mediaGroup.getMediaInfo(0)?.let {
                 LoadingImage(
                     it,
                     mediaGroup.name,

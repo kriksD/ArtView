@@ -1,8 +1,8 @@
 package composableFunctions.screens
 
-import Filter
-import MediaStorage
-import TagStorage
+import mediaStorage.Filter
+import mediaStorage.MediaStorage
+import tag.TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,12 +12,12 @@ import colorBackgroundLighter
 import composableFunctions.ImageGroupGrid
 import composableFunctions.ImageGroupPreview
 import composableFunctions.TagGridWithCategories
-import loader.MediaLoader
-import properties.Properties
+import loader.ThumbnailLoader
+import tagData
 
 @Composable
 fun GroupGridScreen(
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     mediaStorage: MediaStorage,
     tagStorage: TagStorage,
     onGroupEdit: () -> Unit,
@@ -29,14 +29,14 @@ fun GroupGridScreen(
             modifier = modifier,
         ) {
             TagGridWithCategories(
-                tags = Properties.mediaData().tags,
+                tags = tagData.tags,
                 selectedTags = tagStorage.selectedTags,
                 antiSelectedTags = tagStorage.selectedAntiTags,
                 onTagClick = {
                     tagStorage.changeSelectStatus(it)
                     mediaStorage.updateFilterTags(tagStorage)
                     mediaStorage.update()
-                    mediaLoader.reset()
+                    thumbnailLoader.reset()
                 },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
@@ -46,7 +46,7 @@ fun GroupGridScreen(
             )
             ImageGroupGrid(
                 mediaGroups = mediaStorage.filteredGroups,
-                mediaLoader = mediaLoader,
+                thumbnailLoader = thumbnailLoader,
                 checkedList = mediaStorage.selectedGroups,
                 onCheckedClick = { imgGroup, isSelected ->
                     if (isSelected) {
@@ -76,9 +76,9 @@ fun GroupGridScreen(
         ImageGroupPreview(
             tagStorage = tagStorage,
             imageStorage = mediaStorage,
-            mediaLoader = mediaLoader,
+            thumbnailLoader = thumbnailLoader,
             onClose = {
-                mediaStorage.openedMediaGroup?.getImageInfoList()?.forEach { mediaLoader.unloadNext(it) }
+                mediaStorage.openedMediaGroup?.getImageInfoList()?.forEach { thumbnailLoader.unloadNext(it) }
                 mediaStorage.closeGroup()
             },
             onEdit = { onGroupEdit() },

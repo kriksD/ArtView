@@ -18,10 +18,11 @@ import booruClient.BooruPost
 import composableFunctions.views.ButtonText
 import composableFunctions.views.LoadingImage
 import emptyImageBitmap
+import mediaData
 import normalText
 import padding
-import properties.Properties
 import settings
+import tagData
 
 @Composable
 fun AddByURLWindow(
@@ -58,7 +59,7 @@ fun AddByURLWindow(
                 post.rating?.let {
                     if (
                         !selectedTags.contains("NSFW")
-                        && Properties.mediaData().containsTag("NSFW")
+                        && tagData.containsTag("NSFW")
                         && it.lowercase() != "g"
                         && it.lowercase() != "general"
                     ) {
@@ -67,37 +68,37 @@ fun AddByURLWindow(
                 }
 
                 if (post.tags.isNotEmpty()) {
-                    val new = post.tags.filter { tag -> !Properties.mediaData().containsTag(tag) }
+                    val new = post.tags.filter { tag -> !tagData.containsTag(tag) }
                     newTags.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.character.isNotEmpty()) {
-                    val new = post.character.filter { tag -> !Properties.mediaData().containsTag(tag) }
+                    val new = post.character.filter { tag -> !tagData.containsTag(tag) }
                     newCharacters.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.copyright.isNotEmpty()) {
-                    val new = post.copyright.filter { tag -> !Properties.mediaData().containsTag(tag) }
+                    val new = post.copyright.filter { tag -> !tagData.containsTag(tag) }
                     newCopyrights.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.artist.isNotEmpty()) {
-                    val new = post.artist.filter { tag -> !Properties.mediaData().containsTag(tag) }
+                    val new = post.artist.filter { tag -> !tagData.containsTag(tag) }
                     newArtists.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 if (post.meta.isNotEmpty()) {
-                    val new = post.meta.filter { tag -> !Properties.mediaData().containsTag(tag) }
+                    val new = post.meta.filter { tag -> !tagData.containsTag(tag) }
                     newMeta.addAll(new)
                     selectedNewTags.addAll(new)
                 }
 
                 val tagsCombined = post.tags + post.character + post.copyright + post.artist + post.meta
-                val existingTags = tagsCombined.filter { tag -> Properties.mediaData().containsTag(tag) }
+                val existingTags = tagsCombined.filter { tag -> tagData.containsTag(tag) }
                 selectedTags.addAll(existingTags)
             }
         }
@@ -197,7 +198,7 @@ fun AddByURLWindow(
 
         Text("Tags:", color = colorText, fontSize = normalText)
         TagGridWithCategories(
-            tags = Properties.mediaData().tags,
+            tags = tagData.tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -230,15 +231,16 @@ fun AddByURLWindow(
                 enabled = booruPost != null,
                 onClick = {
                     booruPost?.let { post ->
-                        val data = Properties.mediaData()
+                        val mediaData = mediaData
+                        val tagData = tagData
 
-                        data.addNewTags(newTags, selectedNewTags, settings.booruTagsCategoryName)
-                        data.addNewTags(newCharacters, selectedNewTags, settings.characterTagsCategoryName)
-                        data.addNewTags(newCopyrights, selectedNewTags, settings.copyrightTagsCategoryName)
-                        data.addNewTags(newArtists, selectedNewTags, settings.artistTagsCategoryName)
-                        data.addNewTags(newMeta, selectedNewTags, settings.metaTagsCategoryName)
+                        tagData.addNewTags(newTags, selectedNewTags, settings.booruTagsCategoryName)
+                        tagData.addNewTags(newCharacters, selectedNewTags, settings.characterTagsCategoryName)
+                        tagData.addNewTags(newCopyrights, selectedNewTags, settings.copyrightTagsCategoryName)
+                        tagData.addNewTags(newArtists, selectedNewTags, settings.artistTagsCategoryName)
+                        tagData.addNewTags(newMeta, selectedNewTags, settings.metaTagsCategoryName)
 
-                        val mediaInfo = data.addMedia(post.image, name.text)
+                        val mediaInfo = mediaData.addImageMedia(post.image, name.text)
                         mediaInfo.tags.addAll(selectedTags + selectedNewTags)
                         mediaInfo.name = name.text
                         mediaInfo.description = description.text

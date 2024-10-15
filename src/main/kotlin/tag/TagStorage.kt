@@ -1,5 +1,8 @@
+package tag
+
 import androidx.compose.runtime.*
-import properties.Properties
+import settings
+import tagData
 
 class TagStorage {
     val selectedTags = mutableStateListOf<String>()
@@ -10,16 +13,16 @@ class TagStorage {
     fun filter(filterString: String = "", categoryName: String? = null) {
         if (filterString.isEmpty()) {
             filteredTags.clear()
-            Properties.mediaData().tags.forEach { filteredTags[it.name] = it.tags }
+            tagData.tags.forEach { filteredTags[it.name] = it.tags }
             return
         }
 
         if (categoryName != null) {
-            val category = Properties.mediaData().findTagCategory(categoryName) ?: return
+            val category = tagData.findTagCategory(categoryName) ?: return
             filteredTags[categoryName] = category.tags.filter { it.contains(filterString) }
 
         } else {
-            val allTags = Properties.mediaData().tags
+            val allTags = tagData.tags
             allTags.forEach { category ->
                 filteredTags[category.name] = category.tags.filter { it.contains(filterString) }
             }
@@ -51,6 +54,6 @@ class TagStorage {
         selectedAntiTags.clear()
         selectedAntiTags.addAll(settings.antiSelectedTagsByDefault)
         filteredTags.clear()
-        Properties.mediaData().tags.forEach { filteredTags[it.name] = it.tags }
+        tagData.tags.forEach { filteredTags[it.name] = it.tags }
     }
 }

@@ -1,6 +1,5 @@
 package composableFunctions
 
-import info.MediaInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -26,18 +25,22 @@ import colorBackgroundLighter
 import colorBackgroundSecondLighter
 import colorText
 import composableFunctions.views.ButtonText
-import composableFunctions.views.ScalableImage
+import composableFunctions.views.ScalableMedia
 import corners
 import iconSize
+import info.media.AudioInfo
+import info.media.MediaInfo
+import info.media.VideoInfo
+import mediaData
 import normalAnimationDuration
 import normalText
+import openAudioFile
 import openVideoFile
 import padding
 import properties.Properties
 import shortAnimationDuration
 import transparency
 import transparencySecond
-import videoFormats
 
 @Composable
 fun ImagePreview(
@@ -79,7 +82,7 @@ fun ImagePreview(
 
                     var imageScale by remember { mutableStateOf(1F) }
                     var imageOffset by remember { mutableStateOf(IntOffset(0, 0)) }
-                    ScalableImage(
+                    ScalableMedia(
                         mediaInfo = imgData,
                         scale = imageScale,
                         onScaleChange = { imageScale = it },
@@ -90,10 +93,16 @@ fun ImagePreview(
                             .weight(1F),
                     )
 
-                    if (videoFormats.any { openedMedia?.path?.endsWith(it) == true }) {
+                    if (openedMedia is VideoInfo) {
                         ButtonText(
                             "Open this video in a media player",
                             onClick = { openVideoFile(imgData.path) },
+                            modifier = Modifier,
+                        )
+                    } else if (openedMedia is AudioInfo) {
+                        ButtonText(
+                            "Open this audio in a media player",
+                            onClick = { openAudioFile(imgData.path) },
                             modifier = Modifier,
                         )
                     }
@@ -146,7 +155,7 @@ fun ImagePreview(
                                     .clickable {
                                         favorite = !favorite
                                         imgData.favorite = favorite
-                                        Properties.mediaData().mediaList.find { it.path == imgData.path }?.favorite =
+                                        mediaData.mediaList.find { it.path == imgData.path }?.favorite =
                                             imgData.favorite
                                         Properties.saveData()
                                     }

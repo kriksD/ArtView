@@ -34,3 +34,4 @@ var longAnimationDuration: Int = style.longAnimationDuration
 
 val gifFormats = listOf("gif")
 val videoFormats = listOf("mp4", "mov")
+val audioFormats = listOf("mp3", "wav")

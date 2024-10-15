@@ -1,5 +1,8 @@
-import info.MediaGroup
-import info.MediaInfo
+package mediaStorage
+
+import info.group.MediaGroup
+import info.media.MediaInfo
+import tag.TagStorage
 
 class Filter {
     private var filterTags: List<String>? = null

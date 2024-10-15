@@ -1,8 +1,8 @@
 package composableFunctions
 
-import loader.MediaLoader
-import MediaStorage
-import TagStorage
+import loader.ThumbnailLoader
+import mediaStorage.MediaStorage
+import tag.TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,14 +30,14 @@ import corners
 import iconSize
 import normalText
 import padding
-import properties.Properties
+import tagData
 import transparencySecond
 
 @Composable
 fun ImageGroupPreview(
     tagStorage: TagStorage,
     imageStorage: MediaStorage,
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     onClose: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -127,7 +127,7 @@ fun ImageGroupPreview(
         var expanded by remember { mutableStateOf(false) }
         Column {
             TagGridWithCategories(
-                tags = Properties.mediaData().tags,
+                tags = tagData.tags,
                 selectedTags = tagStorage.selectedTags,
                 antiSelectedTags = tagStorage.selectedAntiTags,
                 onTagClick = {
@@ -144,7 +144,7 @@ fun ImageGroupPreview(
 
             ImageGrid(
                 mediaList = imageStorage.filteredMedia,
-                mediaLoader = mediaLoader,
+                thumbnailLoader = thumbnailLoader,
                 checkedList = imageStorage.selectedMedia,
                 onCheckedClick = { imgInfo, isSelected ->
                     if (isSelected) {

@@ -1,6 +1,6 @@
 package composableFunctions
 
-import TagCategory
+import tag.TagCategory
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -37,6 +37,7 @@ import properties.Properties
 import properties.settings.TagControlsPosition
 import settings
 import smallCorners
+import tagData
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -74,7 +75,7 @@ fun TagGridWithCategories(
                             .onPointerEvent(PointerEventType.Move) {
                                 if (!isDraggingTag) {
                                     draggingTag?.let { tag ->
-                                        Properties.mediaData().moveTag(tag, category.name)
+                                        tagData.moveTag(tag, category.name)
                                         Properties.saveData()
                                         draggingTag = null
                                     }
@@ -95,7 +96,7 @@ fun TagGridWithCategories(
                             onTagClick = onTagClick,
                             onNew = { tag ->
                                 if (tag.isNotEmpty()) {
-                                    Properties.mediaData().addTag(tag, category.name)
+                                    tagData.addTag(tag, category.name)
                                     Properties.saveData()
                                     onNew(tag)
                                 }
@@ -147,7 +148,7 @@ fun TagGridWithCategories(
                     onTagClick = { tag -> onTagClick(tag) },
                     onNew = { tag ->
                         if (tag.isNotEmpty()) {
-                            Properties.mediaData().addTag(tag)
+                            tagData.addTag(tag)
                             Properties.saveData()
                             onNew(tag)
                         }
@@ -336,7 +337,7 @@ private fun TagControls(
         TagFieldWithButton(
             buttonIcon = Icons.Default.Search,
             fieldIcon = Icons.Default.Close,
-            contentDescription = "Filter tags",
+            contentDescription = "mediaStorage.Filter tags",
             fieldValue = filterText,
             onValueChange = { onFilterChange(it) },
             onOpen = { onFilterChange(TextFieldValue()) },

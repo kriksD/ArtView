@@ -1,6 +1,5 @@
 package composableFunctions.views
 
-import info.MediaInfo
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -19,6 +18,7 @@ import calculateWeight
 import colorBackground
 import emptyImageBitmap
 import iconSize
+import info.media.MediaInfo
 import normalAnimationDuration
 import smallCorners
 
@@ -30,7 +30,7 @@ fun LoadingImage(
 ) {
     Box(modifier = modifier) {
         Crossfade(
-            mediaInfo.isLoaded,
+            mediaInfo.isThumbnailLoaded,
             animationSpec = tween(normalAnimationDuration),
             modifier = Modifier.fillMaxSize(),
         ) {
@@ -38,7 +38,7 @@ fun LoadingImage(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .aspectRatio(mediaInfo.calculateWeight())
+                        .aspectRatio(mediaInfo.thumbnailWeight())
                         .clip(RoundedCornerShape(smallCorners))
                         .background(colorBackground)
                 )
@@ -48,11 +48,11 @@ fun LoadingImage(
                 )
             } else {
                 Image(
-                    mediaInfo.scaledDownImage ?: ImageBitmap(mediaInfo.width, mediaInfo.height),
+                    mediaInfo.thumbnail ?: emptyImageBitmap,
                     description,
                     modifier = Modifier
                         .fillMaxSize()
-                        .aspectRatio(mediaInfo.calculateWeight())
+                        .aspectRatio(mediaInfo.thumbnailWeight())
                         .clip(RoundedCornerShape(smallCorners))
                         .background(colorBackground),
                 )

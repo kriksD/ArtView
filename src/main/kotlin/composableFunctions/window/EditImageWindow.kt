@@ -1,7 +1,6 @@
 package composableFunctions.window
 
-import info.MediaGroup
-import info.MediaInfo
+import info.group.MediaGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +16,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import colorText
 import composableFunctions.views.ButtonText
 import composableFunctions.TagGridWithCategories
+import info.media.MediaInfo
 import normalText
 import padding
-import properties.Properties
 import settings
+import tagData
 import toState
 
 @Composable
@@ -72,7 +72,7 @@ fun EditImageWindow(
         }
 
         TagGridWithCategories(
-            tags = Properties.mediaData().tags,
+            tags = tagData.tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -104,14 +104,9 @@ fun EditImageWindow(
                 "Save",
                 onClick = {
                     onDone(
-                        MediaInfo(
-                            id = mediaInfo.id,
-                            path = mediaInfo.path,
-                            width = mediaInfo.width,
-                            height = mediaInfo.height,
+                        mediaInfo.copy(
                             name = name.text,
                             description = description.text,
-                            favorite = mediaInfo.favorite,
                             tags = selectedTags,
                         )
                     )
@@ -171,7 +166,7 @@ fun EditImageGroupWindow(
         }
 
         TagGridWithCategories(
-            tags = Properties.mediaData().tags,
+            tags = tagData.tags,
             selectedTags = selectedTags,
             antiSelectedTags = emptyList(),
             expandable = false,
@@ -232,7 +227,7 @@ fun EditImageTagsWindow(
         modifier = modifier,
     ) {
         TagGridWithCategories(
-            tags = Properties.mediaData().tags,
+            tags = tagData.tags,
             selectedTags = newTags,
             antiSelectedTags = removeTags,
             expandable = false,

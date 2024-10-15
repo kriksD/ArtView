@@ -1,7 +1,7 @@
 package composableFunctions.screens
 
-import MediaStorage
-import TagStorage
+import mediaStorage.MediaStorage
+import tag.TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,12 +10,12 @@ import androidx.compose.ui.Modifier
 import colorBackgroundLighter
 import composableFunctions.ImageGrid
 import composableFunctions.TagGridWithCategories
-import loader.MediaLoader
-import properties.Properties
+import loader.ThumbnailLoader
+import tagData
 
 @Composable
 fun ImageGridScreen(
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     mediaStorage: MediaStorage,
     tagStorage: TagStorage,
     modifier: Modifier = Modifier,
@@ -25,14 +25,14 @@ fun ImageGridScreen(
         modifier = modifier
     ) {
         TagGridWithCategories(
-            tags = Properties.mediaData().tags,
+            tags = tagData.tags,
             selectedTags = tagStorage.selectedTags,
             antiSelectedTags = tagStorage.selectedAntiTags,
             onTagClick = {
                 tagStorage.changeSelectStatus(it)
                 mediaStorage.updateFilterTags(tagStorage)
                 mediaStorage.update()
-                mediaLoader.reset()
+                thumbnailLoader.reset()
             },
             expanded = expanded,
             onExpandedChange = { expanded = it },
@@ -43,7 +43,7 @@ fun ImageGridScreen(
 
         ImageGrid(
             mediaList = mediaStorage.filteredMedia,
-            mediaLoader = mediaLoader,
+            thumbnailLoader = thumbnailLoader,
             checkedList = mediaStorage.selectedMedia,
             onCheckedClick = { imgInfo, isSelected ->
                 if (isSelected) {

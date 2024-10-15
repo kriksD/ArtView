@@ -3,13 +3,12 @@ package properties.data.backup
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import properties.Properties
+import mediaData
+import properties.DataFolder
 import settings
-import uniqueId
-import java.io.File
+import utilities.uniqueId
 
 class BackupManager {
-    private val folder = File("data/backup")
     private val json = Json {
         prettyPrint = true
         ignoreUnknownKeys = true
@@ -18,39 +17,32 @@ class BackupManager {
     val backups = mutableStateListOf<BackupInfo>()
 
     fun load() {
-        val infoFile = File(folder, "info.txt")
-        if (!infoFile.exists()) return
+        if (!DataFolder.backupInfoFile.exists()) return
 
         backups.clear()
 
-        val infoList = json.decodeFromString<List<BackupInfo>>(infoFile.readText())
+        val infoList = json.decodeFromString<List<BackupInfo>>(DataFolder.backupInfoFile.readText())
         backups.addAll(infoList)
     }
 
     fun save() {
-        folder.mkdirs()
-        val infoFile = File(folder, "info.txt")
-        infoFile.writeText(json.encodeToString(backups.toList()))
+        DataFolder.backupFolder.mkdirs()
+        DataFolder.backupInfoFile.writeText(json.encodeToString(backups.toList()))
     }
 
     fun createBackup() {
         val id = backups.uniqueId()
 
-        val imagesFolder = File("data/images")
-        val imagesDataFile = File("data/images_data.json")
-        val settingsFile = File("data/settings.json")
-
-        val backupFolder = File(folder, id.toString())
+        val backupFolder = DataFolder.backupFolder.resolve(id.toString())
         backupFolder.mkdirs()
 
-        imagesFolder.copyRecursively(File(backupFolder, "images"))
-        imagesDataFile.copyTo(File(backupFolder, "images_data.json"))
-        settingsFile.copyTo(File(backupFolder, "settings.json"))
+        DataFolder.mediaFolder.copyRecursively(backupFolder.resolve("media"))
+        DataFolder.settingsFile.copyTo(backupFolder.resolve("settings.json"))
 
         val info = BackupInfo(
             id = backups.uniqueId(),
             date = System.currentTimeMillis(),
-            mediaCount = Properties.mediaData().mediaList.size,
+            mediaCount = mediaData.mediaList.size,
             spaceUsed = backupFolder.walkTopDown().filter { it.isFile }.sumOf { it.length() },
         )
 
@@ -64,7 +56,7 @@ class BackupManager {
     }
 
     fun removeBackup(info: BackupInfo) {
-        val backupFolder = File(folder, info.id.toString())
+        val backupFolder = DataFolder.backupFolder.resolve(info.id.toString())
         backupFolder.deleteRecursively()
         backups.remove(info)
         save()

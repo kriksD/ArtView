@@ -1,4 +1,4 @@
-package info
+package info.group
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException

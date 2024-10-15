@@ -44,6 +44,7 @@ import roundPlaces
 import runCommand
 import settings
 import smallCorners
+import tagData
 import tinyIconSize
 import toTimeString
 import java.io.File
@@ -159,7 +160,7 @@ private fun TagsCategories(
     var reload by remember { mutableStateOf(false) }
 
     if (!reload) {
-        val tags = Properties.mediaData().tags
+        val tags = tagData.tags
 
         Column(modifier = modifier) {
             Text("Tag Categories:", color = colorText, fontSize = bigText)
@@ -170,17 +171,17 @@ private fun TagsCategories(
                     category.tags.size,
                     removable = category.name != "Other",
                     onRemove = {
-                        Properties.mediaData().removeCategory(category.name)
+                        tagData.removeCategory(category.name)
                         Properties.saveData()
                         //reload = true
                     },
                     onUp = {
-                        Properties.mediaData().moveCategoryUp(category.name)
+                        tagData.moveCategoryUp(category.name)
                         Properties.saveData()
                         //reload = true
                     },
                     onDown = {
-                        Properties.mediaData().moveCategoryDown(category.name)
+                        tagData.moveCategoryDown(category.name)
                         Properties.saveData()
                         //reload = true
                     },
@@ -197,7 +198,7 @@ private fun TagsCategories(
                     newCategoryName = it
                 },
                 onCreate = {
-                    Properties.mediaData().createCategory(newCategoryName)
+                    tagData.createCategory(newCategoryName)
                     Properties.saveData()
                 },
                 modifier = Modifier.fillMaxWidth(0.5F),
@@ -353,7 +354,7 @@ private fun TagSelectionByDefault(
         Text("Tag selection by default:", color = colorText, fontSize = bigText)
 
         TagGridWithCategories(
-            Properties.mediaData().tags,
+            tagData.tags,
             settings.selectedTagsByDefault,
             settings.antiSelectedTagsByDefault,
             expanded = expanded,
@@ -413,7 +414,7 @@ private fun TagControlsPositionOptions(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Filter button:",
+                "mediaStorage.Filter button:",
                 color = colorText,
                 fontSize = normalText,
                 modifier = Modifier

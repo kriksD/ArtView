@@ -7,7 +7,7 @@ import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.util.*
+import io.ktor.utils.io.*
 import java.util.*
 
 class ImageLoaderClient {

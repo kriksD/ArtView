@@ -1,9 +1,7 @@
 package properties
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
 
 class StyleContainer {
     lateinit var style: Style
@@ -13,12 +11,11 @@ class StyleContainer {
         encodeDefaults = true
         ignoreUnknownKeys = true
     }
-    private val file = File("data/style.json")
 
     fun load() {
         style = try {
-            if (file.exists()) {
-                json.decodeFromString(file.readText())
+            if (DataFolder.styleFile.exists()) {
+                json.decodeFromString(DataFolder.styleFile.readText())
             } else {
                 Style()
             }
@@ -28,6 +25,6 @@ class StyleContainer {
     }
 
     fun save() {
-        file.writeText(json.encodeToString(style))
+        DataFolder.styleFile.writeText(json.encodeToString(style))
     }
 }

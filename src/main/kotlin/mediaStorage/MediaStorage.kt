@@ -1,7 +1,14 @@
+package mediaStorage
+
 import androidx.compose.runtime.*
-import info.MediaGroup
-import info.MediaInfo
+import info.group.MediaGroup
+import info.media.MediaInfo
+import mediaData
+import properties.DataFolder
 import properties.Properties
+import settings
+import tag.TagStorage
+import utilities.uniqueId
 import java.io.File
 
 class MediaStorage {
@@ -27,14 +34,14 @@ class MediaStorage {
     fun filter(filter: Filter) {
         filteredMedia.clear()
         selectedMedia.clear()
-        filteredMedia.addAll(filter.filter(Properties.mediaData().mediaList))
+        filteredMedia.addAll(filter.filter(mediaData.mediaList))
         lastFilter = filter
     }
 
     fun filterGroups(filter: Filter) {
         filteredGroups.clear()
         selectedGroups.clear()
-        filteredGroups.addAll(filter.filterGroups(Properties.mediaData().mediaGroups))
+        filteredGroups.addAll(filter.filterGroups(mediaData.mediaGroups))
         lastFilter = filter
     }
 
@@ -88,16 +95,16 @@ class MediaStorage {
     }
 
     fun delete(mediaList: List<MediaInfo>) {
-        Properties.mediaData().delete(mediaList)
+        mediaData.delete(mediaList)
         update()
     }
 
     fun deleteGroups(groups: List<MediaGroup>) {
-        Properties.mediaData().deleteGroups(groups)
+        mediaData.deleteGroups(groups)
         update()
     }
 
-    fun saveMediaFilesTo(folder: File = File("data/images_filtered")) {
+    fun saveMediaFilesTo(folder: File = DataFolder.filteredFolder) {
         folder.mkdirs()
         folder.listFiles()?.forEach { it.delete() }
 
@@ -117,11 +124,11 @@ class MediaStorage {
         }
 
         val newGroup = MediaGroup(
-            id = Properties.mediaData().mediaGroups.uniqueId(),
+            id = mediaData.mediaGroups.uniqueId(),
             paths = selectedMedia.map { it.path }.toMutableList(),
             tags = tags,
         )
-        Properties.mediaData().mediaGroups.add(newGroup)
+        mediaData.mediaGroups.add(newGroup)
         Properties.saveData()
         update()
     }

@@ -1,7 +1,6 @@
 package composableFunctions
 
-import info.MediaInfo
-import loader.MediaLoader
+import loader.ThumbnailLoader
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -22,18 +21,21 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import bigIconSize
+import biggerPadding
 import border
-import calculateWeight
 import colorBackground
 import colorBackgroundSecond
 import colorBackgroundSecondLighter
 import colorText
 import colorTextSecond
 import composableFunctions.views.LoadingImage
-import gifFormats
+import formatTime
 import iconSize
+import info.media.*
 import normalAnimationDuration
 import normalText
 import padding
@@ -41,14 +43,14 @@ import properties.Properties
 import scrollbarThickness
 import shortAnimationDuration
 import smallCorners
+import smallText
 import style
 import transparencyLight
-import videoFormats
 
 @Composable
 fun ImageGrid(
     mediaList: List<MediaInfo>,
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     checkedList: List<MediaInfo> = listOf(),
     onCheckedClick: (MediaInfo, Boolean) -> Unit = { _, _ -> },
     onOpen: (MediaInfo) -> Unit = {},
@@ -63,9 +65,9 @@ fun ImageGrid(
             val isVisible = scrollState.layoutInfo.visibleItemsInfo.find { it.index == index } != null
 
             if (isVisible) {
-                row.forEach { mediaLoader.loadNext(it) }
+                row.forEach { thumbnailLoader.loadNext(it) }
             } else {
-                row.forEach { mediaLoader.unloadNext(it) }
+                row.forEach { thumbnailLoader.unloadNext(it) }
             }
         }
     }
@@ -99,7 +101,7 @@ fun ImageGrid(
                             onCheckedChange = { onCheckedClick(mediaInfo, it) },
                             onOpen = { onOpen(mediaInfo) },
                             modifier = Modifier
-                                .weight(mediaInfo.calculateWeight())
+                                .weight(mediaInfo.thumbnailWeight())
                                 .padding(padding)
                                 .clip(RoundedCornerShape(smallCorners)),
                         )
@@ -140,8 +142,8 @@ private fun ImageGridItem(
     onOpen: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var showInfo by remember { mutableStateOf(false) }
-    var favorite by remember { mutableStateOf(mediaInfo.favorite) }
+    var showInfo by remember(mediaInfo) { mutableStateOf(false) }
+    var favorite by remember(mediaInfo) { mutableStateOf(mediaInfo.favorite) }
 
     Box(
         modifier = modifier
@@ -162,34 +164,80 @@ private fun ImageGridItem(
                 .clip(RoundedCornerShape(smallCorners))
         )
 
-        val iconMediaType by remember {
-            mutableStateOf<String?>(
-                if (gifFormats.any { mediaInfo.path.endsWith(it) }) {
-                    "gif_box.svg"
+        if (mediaInfo is AudioInfo && mediaInfo.thumbnailWidth == null && mediaInfo.thumbnailHeight == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .aspectRatio(1F)
+                    .background(colorBackground),
+            )
 
-                } else if (videoFormats.any { mediaInfo.path.endsWith(it) }) {
-                    "smart_display.svg"
-
-                } else {
-                    null
-                }
+            Icon(
+                painter = painterResource("volume_up.svg"),
+                contentDescription = null,
+                tint = colorText,
+                modifier = Modifier
+                    .background(colorBackground)
+                    .padding(biggerPadding)
+                    .size(bigIconSize)
+                    .align(Alignment.Center),
             )
         }
 
-        iconMediaType?.let {
-            AppearDisappearAnimation(
-                !showInfo,
-                normalAnimationDuration,
-            ) {
-                Icon(
-                    painter = painterResource(it),
-                    contentDescription = null,
-                    tint = colorText,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .padding(2.dp)
-                        .background(colorBackground.copy(alpha = transparencyLight), RoundedCornerShape(smallCorners)),
+        AppearDisappearAnimation(
+            !showInfo,
+            normalAnimationDuration,
+        ) {
+            val iconMediaType by remember(mediaInfo) {
+                mutableStateOf(
+                    when (mediaInfo.type) {
+                        MediaType.GIF -> "gif_box.svg"
+                        MediaType.Video -> "smart_display.svg"
+                        MediaType.Audio -> "music_note.svg"
+                        else -> null
+                    }
                 )
+            }
+
+            val duration by remember(mediaInfo) {
+                mutableStateOf(
+                    when (mediaInfo.type) {
+                        MediaType.GIF -> null
+                        MediaType.Video -> (mediaInfo as VideoInfo).duration
+                        MediaType.Audio -> (mediaInfo as AudioInfo).duration
+                        else -> null
+                    }
+                )
+            }
+
+            Column {
+                iconMediaType?.let {
+                    Icon(
+                        painter = painterResource(it),
+                        contentDescription = null,
+                        tint = colorText,
+                        modifier = Modifier
+                            .size(iconSize)
+                            .padding(2.dp)
+                            .background(
+                                colorBackground.copy(alpha = transparencyLight),
+                                RoundedCornerShape(smallCorners)
+                            ),
+                    )
+                }
+
+                duration?.let {
+                    Text(
+                        it.formatTime(),
+                        color = colorText,
+                        fontSize = smallText,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(start = 2.dp)
+                            .background(colorBackground.copy(alpha = transparencyLight), RoundedCornerShape(smallCorners))
+                            .padding(2.dp),
+                    )
+                }
             }
         }
 

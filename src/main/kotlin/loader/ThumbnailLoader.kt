@@ -1,13 +1,13 @@
 package loader
 
-import info.MediaInfo
+import info.media.MediaInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import properties.Properties
+import mediaData
 import settings
 
-class MediaLoader {
+class ThumbnailLoader {
     private val loadRequests = MutableList(settings.loadingThreads) { mutableListOf<MediaInfo>() }
     private val unloadRequests = MutableList(settings.loadingThreads) { mutableListOf<MediaInfo>() }
 
@@ -19,30 +19,30 @@ class MediaLoader {
     private val scope = CoroutineScope(Dispatchers.Default)
     private var isRunning = true
 
-    fun loadNext(image: MediaInfo) {
+    fun loadNext(info: MediaInfo) {
         scope.launch {
             mutex.withLock {
                 val threadIndex = leastBusyThread()
 
-                if (loadRequests[threadIndex].contains(image)) return@withLock
-                if (unloadRequests[threadIndex].contains(image)) unloadRequests[threadIndex].remove(image)
-                if (image.isLoaded) return@withLock
+                if (loadRequests[threadIndex].contains(info)) return@withLock
+                if (unloadRequests[threadIndex].contains(info)) unloadRequests[threadIndex].remove(info)
+                if (info.isThumbnailLoaded) return@withLock
 
-                loadRequests[threadIndex].add(image)
+                loadRequests[threadIndex].add(info)
             }
         }
     }
 
-    fun unloadNext(image: MediaInfo) {
+    fun unloadNext(info: MediaInfo) {
         scope.launch {
             mutex.withLock {
                 val threadIndex = leastBusyThread()
 
-                if (unloadRequests[threadIndex].contains(image)) return@withLock
-                if (loadRequests[threadIndex].contains(image)) loadRequests[threadIndex].remove(image)
-                if (!image.isLoaded) return@withLock
+                if (unloadRequests[threadIndex].contains(info)) return@withLock
+                if (loadRequests[threadIndex].contains(info)) loadRequests[threadIndex].remove(info)
+                if (!info.isThumbnailLoaded) return@withLock
 
-                unloadRequests[threadIndex].add(image)
+                unloadRequests[threadIndex].add(info)
             }
         }
     }
@@ -81,7 +81,7 @@ class MediaLoader {
     }
 
     private fun resetRequests() {
-        Properties.mediaData().mediaList.filter { it.isLoaded }.forEach { it.unload() }
+        mediaData.mediaList.filter { it.isThumbnailLoaded }.forEach { it.unloadThumbnail() }
         loadRequests.forEach { it.clear() }
         unloadRequests.forEach { it.clear() }
     }
@@ -94,13 +94,13 @@ class MediaLoader {
                         val image = mutex.withLock {
                             unloadRequests[threadIndex].removeFirstOrNull()
                         }
-                        image?.unload()
+                        image?.unloadThumbnail()
 
                     } else if (loadRequests[threadIndex].isNotEmpty()) {
                         val image = mutex.withLock {
                             loadRequests[threadIndex].removeFirstOrNull()
                         }
-                        image?.load()
+                        image?.loadThumbnail()
 
                     } else {
                         delay(20)

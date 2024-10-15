@@ -1,8 +1,9 @@
 package properties.data
 
-import info.MediaGroup
-import info.MediaInfo
-import TagCategory
+import info.group.MediaGroup
+import info.media.ImageInfo
+import info.media.MediaInfo
+import info.media.serializers.MediaInfoSerializer
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
@@ -13,29 +14,27 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import uniqueId
+import properties.Properties
+import utilities.uniqueId
 
-class DataSerializer : KSerializer<Data> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Data") {
-        element<DataMeta>("meta")
-        element<MutableList<TagCategory>>("tags")
-        element<MutableList<MediaInfo>>("images")
+class MediaDataSerializer : KSerializer<MediaData> {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MediaData") {
+        element<String>("data_version")
+        element<MutableList<ImageInfo>>("media")
         element<MutableList<MediaGroup>>("imageGroups")
     }
 
-    override fun deserialize(decoder: Decoder): Data = decoder.decodeStructure(descriptor) {
-        var meta: DataMeta? = null
-        var tags: List<TagCategory>? = null
+    override fun deserialize(decoder: Decoder): MediaData = decoder.decodeStructure(descriptor) {
+        var dataVersion: String? = null
         var mediaList: List<MediaInfo>? = null
         var mediaGroups: List<MediaGroup>? = null
 
         while (true) {
             when (val index = decodeElementIndex(descriptor)) {
                 -1 -> break
-                0 -> meta = decodeSerializableElement(descriptor, 0, DataMeta.serializer())
-                1 -> tags = decodeSerializableElement(descriptor, 1, ListSerializer(TagCategory.serializer()))
-                2 -> mediaList = decodeSerializableElement(descriptor, 2, ListSerializer(MediaInfo.serializer()))
-                3 -> mediaGroups = decodeSerializableElement(descriptor, 3, ListSerializer(MediaGroup.serializer()))
+                0 -> dataVersion = decodeStringElement(descriptor, 0)
+                1 -> mediaList = decodeSerializableElement(descriptor, 2, ListSerializer(MediaInfoSerializer))
+                2 -> mediaGroups = decodeSerializableElement(descriptor, 3, ListSerializer(MediaGroup.serializer()))
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -43,9 +42,8 @@ class DataSerializer : KSerializer<Data> {
         mediaList = checkMissingIDsInImageInfo(mediaList ?: listOf())
         mediaGroups = checkMissingIDsInImageGroup(mediaGroups ?: listOf())
 
-        return@decodeStructure Data(
-            meta = meta ?: DataMeta(),
-            tags = tags ?: listOf(),
+        return@decodeStructure MediaData(
+            dataVersion = dataVersion ?: Properties.DATA_VERSION,
             mediaList = mediaList,
             mediaGroups = mediaGroups,
         )
@@ -77,10 +75,9 @@ class DataSerializer : KSerializer<Data> {
         return newList
     }
 
-    override fun serialize(encoder: Encoder, value: Data) = encoder.encodeStructure(descriptor) {
-        encodeSerializableElement(descriptor, 0, DataMeta.serializer(), value.meta)
-        encodeSerializableElement(descriptor, 1, ListSerializer(TagCategory.serializer()), value.tags)
-        encodeSerializableElement(descriptor, 2, ListSerializer(MediaInfo.serializer()), value.mediaList)
-        encodeSerializableElement(descriptor, 3, ListSerializer(MediaGroup.serializer()), value.mediaGroups)
+    override fun serialize(encoder: Encoder, value: MediaData) = encoder.encodeStructure(descriptor) {
+        encodeStringElement(descriptor, 0, value.dataVersion)
+        encodeSerializableElement(descriptor, 1, ListSerializer(MediaInfoSerializer), value.mediaList)
+        encodeSerializableElement(descriptor, 2, ListSerializer(MediaGroup.serializer()), value.mediaGroups)
     }
 }

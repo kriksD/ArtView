@@ -8,12 +8,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import composableFunctions.*
+import composableFunctions.AppearDisappearAnimation
+import composableFunctions.ImagePreview
+import composableFunctions.LeftSideMenu
+import composableFunctions.MenuItem
 import composableFunctions.screens.GroupGridScreen
 import composableFunctions.screens.ImageGridScreen
 import composableFunctions.screens.SettingsScreen
@@ -21,10 +23,14 @@ import composableFunctions.views.ButtonText
 import composableFunctions.window.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import loader.MediaLoader
+import loader.ThumbnailLoader
+import mediaStorage.Filter
+import mediaStorage.MediaStorage
 import properties.Properties
-import java.io.File
+import tag.TagStorage
 import java.net.URI
+import java.util.logging.LogManager
+
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() = application {
@@ -42,25 +48,25 @@ fun main() = application {
     }
 
     val mediaStorage by remember { mutableStateOf(MediaStorage()) }
-    val mediaLoader by remember { mutableStateOf(MediaLoader()) }
+    val thumbnailLoader by remember { mutableStateOf(ThumbnailLoader()) }
 
     val tagStorage by remember { mutableStateOf(TagStorage()) }
 
     var isEditingGroup by remember { mutableStateOf(false) }
-    var isAddingImage by remember { mutableStateOf(false) }
+    var isAddingMedia by remember { mutableStateOf(false) }
 
     var isFirstTime by remember { mutableStateOf(true) }
     if (isFirstTime) {
         isFirstTime = false
 
-        File("data/images").mkdirs()
+        LogManager.getLogManager().reset()
 
         tagStorage.reset()
         mediaStorage.filter(Filter().tags(tagStorage))
     }
 
-    LaunchedEffect(mediaLoader) {
-        mediaLoader.load()
+    LaunchedEffect(thumbnailLoader) {
+        thumbnailLoader.load()
     }
 
     val windowState = rememberWindowState(
@@ -74,7 +80,7 @@ fun main() = application {
         state = windowState,
         title = "Art View ${Properties.VERSION} 🎨🎀💝💖",
     ) {
-        var menuItem by remember { mutableStateOf(MenuItem.Images) }
+        var menuItem by remember { mutableStateOf(MenuItem.All) }
         var isDroppable by remember { mutableStateOf(false) }
 
         Row(
@@ -93,7 +99,7 @@ fun main() = application {
                             is DragData.FilesList -> {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
-                                    Properties.mediaData().addMedia(URI(path).path)
+                                    mediaData.addMedia(URI(path).path)
                                     mediaStorage.update()
                                 }
                             }
@@ -108,16 +114,16 @@ fun main() = application {
                     if (it != MenuItem.Add) menuItem = it
                     when (it) {
                         MenuItem.Add -> {
-                            isAddingImage = true
+                            isAddingMedia = true
                         }
 
-                        MenuItem.Images -> {
+                        MenuItem.All -> {
                             mediaStorage.setFilter(Filter().tags(tagStorage))
                             mediaStorage.withGroups = false
                             mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                mediaLoader.reset()
+                                thumbnailLoader.reset()
                             }
                         }
 
@@ -129,7 +135,7 @@ fun main() = application {
                             mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                mediaLoader.reset()
+                                thumbnailLoader.reset()
                             }
                         }
 
@@ -139,7 +145,7 @@ fun main() = application {
                             mediaStorage.update()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                mediaLoader.reset()
+                                thumbnailLoader.reset()
                             }
                         }
 
@@ -147,7 +153,7 @@ fun main() = application {
                             mediaStorage.reset()
                             coroutineScope.launch {
                                 delay(normalAnimationDuration.toLong() + 100L)
-                                mediaLoader.reset()
+                                thumbnailLoader.reset()
                             }
                         }
                     }
@@ -162,23 +168,23 @@ fun main() = application {
                     modifier = Modifier.fillMaxSize(),
                 ) { item ->
                     when (item) {
-                        MenuItem.Images -> {
+                        MenuItem.All -> {
                             ImageGridScreen(
-                                mediaLoader = mediaLoader,
+                                thumbnailLoader = thumbnailLoader,
                                 mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                             )
                         }
                         MenuItem.Favorites -> {
                             ImageGridScreen(
-                                mediaLoader = mediaLoader,
+                                thumbnailLoader = thumbnailLoader,
                                 mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                             )
                         }
                         MenuItem.Groups -> {
                             GroupGridScreen(
-                                mediaLoader = mediaLoader,
+                                thumbnailLoader = thumbnailLoader,
                                 mediaStorage = mediaStorage,
                                 tagStorage = tagStorage,
                                 onGroupEdit = { isEditingGroup = true }
@@ -216,8 +222,8 @@ fun main() = application {
                             mediaInfo = mInfo,
                             onCancel = { isEditing = false },
                             onDone = { newMediaInfo ->
-                                val index = Properties.mediaData().mediaList.indexOf(Properties.mediaData().mediaList.find { it.path == newMediaInfo.path })
-                                Properties.mediaData().mediaList[index] = newMediaInfo
+                                val index = mediaData.mediaList.indexOf(mediaData.mediaList.find { it.path == newMediaInfo.path })
+                                mediaData.mediaList[index] = newMediaInfo
                                 Properties.saveData()
                                 mediaStorage.update(true)
                                 isEditing = false
@@ -309,10 +315,10 @@ fun main() = application {
                             ButtonText(
                                 "Add to group",
                                 onClick = {
-                                    Properties.mediaData().mediaGroups.forEach { mg ->
+                                    mediaData.mediaGroups.forEach { mg ->
                                         mg.paths.firstOrNull()?.let { path ->
-                                            Properties.mediaData().mediaList.find { it.path == path }?.let {
-                                                mediaLoader.loadNext(it)
+                                            mediaData.mediaList.find { it.path == path }?.let {
+                                                thumbnailLoader.loadNext(it)
                                             }
                                         }
                                     }
@@ -461,17 +467,17 @@ fun main() = application {
 
                 var addImageURL by remember { mutableStateOf<String?>(null) }
                 AppearDisappearAnimation(
-                    isAddingImage,
+                    isAddingMedia,
                     normalAnimationDuration,
                     Modifier.align(Alignment.Center),
                 ) {
                     AddWindow(
                         onUrl = { url ->
                             addImageURL = url
-                            isAddingImage = false
+                            isAddingMedia = false
                         },
                         onCancel = {
-                            isAddingImage = false
+                            isAddingMedia = false
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.65F)
@@ -508,7 +514,7 @@ fun main() = application {
                 if (settings.showDebug) {
                     Debug(
                         mediaStorage = mediaStorage,
-                        mediaLoader = mediaLoader,
+                        thumbnailLoader = thumbnailLoader,
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(biggerPadding),
@@ -522,7 +528,7 @@ fun main() = application {
 @Composable
 private fun Debug(
     mediaStorage: MediaStorage,
-    mediaLoader: MediaLoader,
+    thumbnailLoader: ThumbnailLoader,
     modifier: Modifier = Modifier,
 ) {
     var showDebug by remember { mutableStateOf(false) }
@@ -531,22 +537,22 @@ private fun Debug(
             modifier = modifier.background(colorBackground.copy(transparencySecond)),
         ) {
             Text(
-                "The size of text: ${Properties.mediaData().countSize()} bytes (${Properties.mediaData().countSize() / 1024} KB)",
+                "(deprecated) The size of text: ${mediaData.countSize()} bytes (${mediaData.countSize() / 1024} KB)",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "(deprecated) The size of images: ${Properties.mediaData().countImageSize() / 1024} KB (${Properties.mediaData().countImageSize() / 1024 / 1024} MB)",
+                "The size of images: ${mediaData.countThumbnailSize() / 1024} KB (${mediaData.countThumbnailSize() / 1024 / 1024} MB)",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Loaded media: ${Properties.mediaData().mediaList.size}/${Properties.mediaData().mediaList.count { it.isLoaded }}",
+                "Loaded media: ${mediaData.mediaList.size}/${mediaData.mediaList.count { it.isThumbnailLoaded }}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Filtered media: ${Properties.mediaData().mediaList.size}/${mediaStorage.filteredMedia.size}",
+                "Filtered media: ${mediaData.mediaList.size}/${mediaStorage.filteredMedia.size}",
                 color = colorText,
                 fontSize = normalText,
             )
@@ -556,7 +562,7 @@ private fun Debug(
                 fontSize = normalText,
             )
             Text(
-                "Filtered groups: ${Properties.mediaData().mediaGroups.size}/${mediaStorage.filteredGroups.size}",
+                "Filtered groups: ${mediaData.mediaGroups.size}/${mediaStorage.filteredGroups.size}",
                 color = colorText,
                 fontSize = normalText,
             )
@@ -566,17 +572,17 @@ private fun Debug(
                 fontSize = normalText,
             )
             Text(
-                "Is loading: ${mediaLoader.isLoading}",
+                "Is loading: ${thumbnailLoader.isLoading}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Loading requests: ${mediaLoader.requestAmount}",
+                "Loading requests: ${thumbnailLoader.requestAmount}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Threads used: ${mediaLoader.threadCount}",
+                "Threads used: ${thumbnailLoader.threadCount}",
                 color = colorText,
                 fontSize = normalText,
             )

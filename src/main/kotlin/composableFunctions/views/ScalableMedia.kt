@@ -4,9 +4,12 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,12 +20,18 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import bigIconSize
+import biggerPadding
+import colorBackground
 import colorText
+import corners
 import emptyImageBitmap
+import getFirstFrame
 import iconSize
-import info.MediaInfo
+import info.media.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import normalAnimationDuration
@@ -39,7 +48,7 @@ import kotlin.math.sqrt
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun ScalableImage(
+fun ScalableMedia(
     mediaInfo: MediaInfo,
     scale: Float,
     onScaleChange: (Float) -> Unit,
@@ -69,35 +78,44 @@ fun ScalableImage(
             },
     ) {
         var loadedImage by remember { mutableStateOf<ImageBitmap?>(null) }
+        var gif by remember { mutableStateOf<AnimatedImage?>(null) }
+        var icon by remember { mutableStateOf<String?>(null) }
 
         LaunchedEffect(true) {
             launch(Dispatchers.Default) {
-                loadedImage = mediaInfo.image
+                when (mediaInfo) {
+                    is ImageInfo -> loadedImage = mediaInfo.image
+                    is GIFInfo -> gif = loadAnimatedImage(mediaInfo.path)
+                    is VideoInfo -> loadedImage = getFirstFrame(mediaInfo.path)
+                    is AudioInfo -> {
+                        if (mediaInfo.thumbnailWidth == null || mediaInfo.thumbnailHeight == null) {
+                            icon = "volume_up.svg"
+                        } else {
+                            loadedImage = mediaInfo.cover
+                        }
+                    }
+                }
             }
         }
 
         Crossfade(
-            loadedImage != null,
+            loadedImage != null || gif != null || icon != null,
             animationSpec = tween(normalAnimationDuration),
             modifier = Modifier.fillMaxSize(),
         ) {
             if (it) {
-                if (mediaInfo.path.endsWith(".gif")) {
-                    var gif by remember { mutableStateOf<AnimatedImage?>(null) }
-                    LaunchedEffect(Unit) { gif = loadAnimatedImage(mediaInfo.path) }
-                    gif?.let { g ->
-                        Image(
-                            bitmap = g.animate(),
-                            contentDescription = mediaInfo.name,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .scale(scale)
-                                .offset(offset.x.dp, offset.y.dp)
-                                .align(Alignment.Center),
-                        )
-                    }
+                if (gif != null) {
+                    Image(
+                        bitmap = gif?.animate() ?: emptyImageBitmap,
+                        contentDescription = mediaInfo.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .scale(scale)
+                            .offset(offset.x.dp, offset.y.dp)
+                            .align(Alignment.Center),
+                    )
 
-                } else {
+                } else if (loadedImage != null) {
                     Image(
                         bitmap = loadedImage ?: emptyImageBitmap,
                         contentDescription = mediaInfo.name,
@@ -107,6 +125,34 @@ fun ScalableImage(
                             .offset(offset.x.dp, offset.y.dp)
                             .align(Alignment.Center),
                     )
+                } else if (icon != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .scale(scale)
+                            .offset(offset.x.dp, offset.y.dp)
+                            .align(Alignment.Center),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight(0.8F)
+                                .align(Alignment.Center)
+                                .aspectRatio(1F)
+                                .background(colorBackground, RoundedCornerShape(corners))
+                                .align(Alignment.Center),
+                        ) {
+                            Icon(
+                                painter = painterResource(icon!!),
+                                contentDescription = null,
+                                tint = colorText,
+                                modifier = Modifier
+                                    .background(colorBackground)
+                                    .padding(biggerPadding)
+                                    .size(bigIconSize)
+                                    .align(Alignment.Center),
+                            )
+                        }
+                    }
                 }
 
             } else {
@@ -114,7 +160,7 @@ fun ScalableImage(
 
                 LoadingIcon(
                     tint = colorText,
-                    contentDescription = "loading an image",
+                    contentDescription = "loading the media",
                     modifier = Modifier.size(iconSize).align(Alignment.Center),
                 )
             }

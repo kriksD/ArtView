@@ -1,7 +1,8 @@
 package properties.data.backup
 
-import HasID
+import utilities.HasID
 import kotlinx.serialization.Serializable
+import properties.DataFolder
 
 @Serializable
 data class BackupInfo(
@@ -10,5 +11,5 @@ data class BackupInfo(
     val mediaCount: Int,
     val spaceUsed: Long,
 ): HasID {
-    val folderPath = "data/backup/$id"
+    val folderPath: String = DataFolder.backupFolder.resolve("$id").path
 }

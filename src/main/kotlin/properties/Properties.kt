@@ -1,14 +1,15 @@
 package properties
 
-import properties.data.Data
+import properties.data.MediaData
 import properties.data.DataContainer
+import properties.data.TagData
 import properties.data.backup.BackupManager
 import properties.settings.Settings
 import properties.settings.SettingsContainer
 
 object Properties {
-    const val VERSION = "0.5.0-alpha3"
-    const val DATA_VERSION = "3.4"
+    const val VERSION = "0.5.0-alpha4"
+    const val DATA_VERSION = "4.0"
 
     private val languageContainer: LanguageContainer = LanguageContainer()
     fun language(): Language = languageContainer.language
@@ -25,7 +26,8 @@ object Properties {
     fun saveStyle() { styleContainer.save() }
 
     private val dataContainer: DataContainer = DataContainer()
-    fun mediaData(): Data = dataContainer.data
+    fun mediaData(): MediaData = dataContainer.mediaData
+    fun tagData(): TagData = dataContainer.tagData
     fun loadData() { dataContainer.load() }
     fun saveData() { dataContainer.save() }
 
