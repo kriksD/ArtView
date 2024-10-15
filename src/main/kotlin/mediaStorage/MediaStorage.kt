@@ -125,7 +125,7 @@ class MediaStorage {
 
         val newGroup = MediaGroup(
             id = mediaData.mediaGroups.uniqueId(),
-            paths = selectedMedia.map { it.path }.toMutableList(),
+            mediaIDs = selectedMedia.map { it.id }.toMutableList(),
             tags = tags,
         )
         mediaData.mediaGroups.add(newGroup)

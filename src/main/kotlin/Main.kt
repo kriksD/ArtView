@@ -316,10 +316,8 @@ fun main() = application {
                                 "Add to group",
                                 onClick = {
                                     mediaData.mediaGroups.forEach { mg ->
-                                        mg.paths.firstOrNull()?.let { path ->
-                                            mediaData.mediaList.find { it.path == path }?.let {
-                                                thumbnailLoader.loadNext(it)
-                                            }
+                                        mg.getMediaInfo(0)?.let { mediaInfo ->
+                                            thumbnailLoader.loadNext(mediaInfo)
                                         }
                                     }
                                     isAddingMediaToGroup = true
@@ -447,7 +445,7 @@ fun main() = application {
                 ) {
                     ImageGroupListWindow(
                         onDone = { mediaGroup ->
-                            mediaGroup.paths.addAll(mediaStorage.selectedMedia.map { it.path }.filter { !mediaGroup.paths.contains(it) })
+                            mediaGroup.mediaIDs.addAll(mediaStorage.selectedMedia.map { it.id }.filter { !mediaGroup.mediaIDs.contains(it) })
 
                             Properties.saveData()
                             mediaStorage.update()

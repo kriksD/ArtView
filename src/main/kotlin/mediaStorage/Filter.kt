@@ -28,7 +28,7 @@ class Filter {
 
     fun filter(mediaList: Collection<MediaInfo>): Collection<MediaInfo> = mediaList
         .filter { mediaInfo ->
-            val byGroup = mediaGroup?.paths?.contains(mediaInfo.path) ?: true
+            val byGroup = mediaGroup?.mediaIDs?.contains(mediaInfo.id) ?: true
             val byAntiTags = filterAntiTags?.none { mediaInfo.tags.contains(it) } ?: true
             val byTags = filterTags?.all { mediaInfo.tags.contains(it) } ?: true
             val byFavorite = (!filterFavorite || mediaInfo.favorite)
@@ -38,7 +38,7 @@ class Filter {
 
     fun filterGroups(mediaGroups: Collection<MediaGroup>): Collection<MediaGroup> = mediaGroups
         .filter { mGroup ->
-            val byGroup = mGroup.paths.containsAll(mGroup.paths)
+            val byGroup = mGroup.mediaIDs.containsAll(mGroup.mediaIDs)
             val byAntiTags = filterAntiTags?.none { mGroup.tags.contains(it) } ?: true
             val byTags = filterTags?.all { mGroup.tags.contains(it) } ?: true
             val byFavorite = (!filterFavorite || mGroup.favorite)

@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.*
@@ -30,6 +29,7 @@ import border
 import colorBackground
 import colorBackgroundSecond
 import colorBackgroundSecondLighter
+import colorBorder
 import colorText
 import colorTextSecond
 import composableFunctions.views.LoadingImage
@@ -42,6 +42,7 @@ import padding
 import properties.Properties
 import scrollbarThickness
 import shortAnimationDuration
+import smallBorder
 import smallCorners
 import smallText
 import style
@@ -148,7 +149,7 @@ private fun ImageGridItem(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
+            .border(if (checked) border else smallBorder, if (checked) colorBackgroundSecondLighter else colorBorder, RoundedCornerShape(smallCorners))
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {
                 showInfo = true
@@ -218,7 +219,7 @@ private fun ImageGridItem(
                         tint = colorText,
                         modifier = Modifier
                             .size(iconSize)
-                            .padding(2.dp)
+                            .padding(padding)
                             .background(
                                 colorBackground.copy(alpha = transparencyLight),
                                 RoundedCornerShape(smallCorners)
@@ -233,7 +234,7 @@ private fun ImageGridItem(
                         fontSize = smallText,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .padding(start = 2.dp)
+                            .padding(start = padding)
                             .background(colorBackground.copy(alpha = transparencyLight), RoundedCornerShape(smallCorners))
                             .padding(2.dp),
                     )

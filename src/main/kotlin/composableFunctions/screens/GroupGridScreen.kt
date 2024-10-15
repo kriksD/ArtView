@@ -78,7 +78,7 @@ fun GroupGridScreen(
             imageStorage = mediaStorage,
             thumbnailLoader = thumbnailLoader,
             onClose = {
-                mediaStorage.openedMediaGroup?.getImageInfoList()?.forEach { thumbnailLoader.unloadNext(it) }
+                mediaStorage.openedMediaGroup?.getImageMediaList()?.forEach { thumbnailLoader.unloadNext(it) }
                 mediaStorage.closeGroup()
             },
             onEdit = { onGroupEdit() },

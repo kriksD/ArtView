@@ -200,7 +200,7 @@ fun EditImageGroupWindow(
                     onDone(
                         MediaGroup(
                             id = mediaGroup.id,
-                            paths = mediaGroup.paths,
+                            mediaIDs = mediaGroup.mediaIDs,
                             name = name.text,
                             description = description.text,
                             favorite = mediaGroup.favorite,

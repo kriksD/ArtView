@@ -126,7 +126,7 @@ class MediaData(
 
     fun delete(mediaToDelete: List<MediaInfo>) {
         mediaList.removeAll(mediaToDelete)
-        mediaGroups.forEach { ig -> ig.paths.removeAll(mediaToDelete.map { it.path }) }
+        mediaGroups.forEach { ig -> ig.mediaIDs.removeAll(mediaToDelete.map { it.id }) }
         mediaToDelete.forEach { it.delete() }
         Properties.saveData()
     }

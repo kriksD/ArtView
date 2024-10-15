@@ -9,7 +9,7 @@ import java.io.File
 @Serializable(with = MediaGroupSerializer::class)
 data class MediaGroup(
     override val id: Int,
-    val paths: MutableList<String> = mutableListOf(),
+    val mediaIDs: MutableList<Int> = mutableListOf(),
     var name: String = "",
     var description: String = "",
     var favorite: Boolean = false,
@@ -17,20 +17,22 @@ data class MediaGroup(
 ) : HasID {
 
     fun getMediaInfo(index: Int): MediaInfo? {
-        if (paths.isEmpty()) return null
-        return mediaData.mediaList.find { it.path == paths.getOrNull(index) }
+        if (mediaIDs.isEmpty()) return null
+        mediaIDs.getOrNull(index)?.let { return mediaData.findMedia(it) }
+        return null
     }
 
-    fun getImageInfoList(): List<MediaInfo> {
-        return paths.mapNotNull { path -> mediaData.mediaList.find { it.path == path } }
+    fun getImageMediaList(): List<MediaInfo> {
+        return mediaIDs.mapNotNull { mediaData.findMedia(it) }
     }
 
     fun saveImageFilesTo(folder: File) {
-        paths.forEach {
-            val newFile = File("${folder.path}${File.separator}${it.substringAfterLast("\\").substringAfterLast("/")}")
+        mediaIDs.forEach {
+            val mediaInfo = mediaData.findMedia(it) ?: return
+            val newFile = folder.resolve(mediaInfo.name)
             if (newFile.exists()) return
 
-            File(it).copyTo(newFile)
+            File(mediaInfo.path).copyTo(newFile)
         }
     }
 }
