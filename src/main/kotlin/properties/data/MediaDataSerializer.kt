@@ -21,7 +21,7 @@ class MediaDataSerializer : KSerializer<MediaData> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MediaData") {
         element<String>("data_version")
         element<MutableList<ImageInfo>>("media")
-        element<MutableList<MediaGroup>>("imageGroups")
+        element<MutableList<MediaGroup>>("media_groups")
     }
 
     override fun deserialize(decoder: Decoder): MediaData = decoder.decodeStructure(descriptor) {
