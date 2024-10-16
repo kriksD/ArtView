@@ -4,10 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
-import getFirstFrame
+import getVideoFrame
+import getVideoFrameCount
 import info.CacheManager
 import info.media.serializers.VideoInfoSerializer
 import kotlinx.serialization.Serializable
+import mediaData
 import scaleToMaxValues
 
 @Serializable(with = VideoInfoSerializer::class)
@@ -23,6 +25,10 @@ class VideoInfo(
     val width: Int,
     val height: Int,
     val duration: Long,
+    var thumbnailFrame: Int = 0,
+    var thumbnailID: Int? = null,
+    var thumbnailWidth: Int? = null,
+    var thumbnailHeight: Int? = null,
 ) : MediaInfo {
     override val type: MediaType = MediaType.Video
     override var thumbnail: ImageBitmap? by mutableStateOf(null)
@@ -37,7 +43,7 @@ class VideoInfo(
             return
         }
 
-        val newImage = getFirstFrame(path)
+        val newImage = cover ?: getVideoFrame(path, thumbnailFrame)
 
         thumbnail = try {
             newImage?.scaleToMaxValues(400, 400)?.also { cacheManager.cacheThumbnail(it, id) }
@@ -45,7 +51,15 @@ class VideoInfo(
         } catch (e: Exception) { newImage }
     }
 
-    override fun thumbnailWeight(): Float = (width.toDouble() / height.toDouble()).toFloat()
+    override fun thumbnailWeight(): Float {
+        if (thumbnailID != null && thumbnailWidth != null && thumbnailHeight != null) {
+            val tWidth = thumbnailWidth?.toDouble() ?: return (width.toDouble() / height.toDouble()).toFloat()
+            val tHeight = thumbnailHeight?.toDouble() ?: return (width.toDouble() / height.toDouble()).toFloat()
+            return (tWidth / tHeight).toFloat()
+        }
+
+        return (width.toDouble() / height.toDouble()).toFloat()
+    }
 
     override fun copy(
         id: Int,
@@ -69,6 +83,49 @@ class VideoInfo(
             width = width,
             height = height,
             duration = duration,
+            thumbnailID = thumbnailID,
+            thumbnailWidth = thumbnailWidth,
+            thumbnailHeight = thumbnailHeight,
         )
     }
+
+    fun setFrameAsThumbnail(frame: Int) {
+        if (frame < getVideoFrameCount(path)) {
+            thumbnailFrame = frame
+
+            CacheManager().deleteThumbnail(id)
+        }
+    }
+
+    fun setCover(mediaID: Int) {
+        val media = mediaData.findMedia(mediaID) ?: return
+        val image = if (media is ImageInfo) media.image else return
+
+        thumbnailID = mediaID
+        thumbnailWidth = image?.width
+        thumbnailHeight = image?.height
+
+        CacheManager().deleteThumbnail(id)
+    }
+
+    fun removeCover() {
+        thumbnailID = null
+        thumbnailWidth = null
+        thumbnailHeight = null
+
+        CacheManager().deleteThumbnail(id)
+    }
+
+    val cover: ImageBitmap?
+        get() {
+            return try {
+                val newImage = thumbnailID?.let { id ->
+                    val media = mediaData.findMedia(id)
+                    if (media is ImageInfo) media.image else null
+                } ?: getVideoFrame(path, thumbnailFrame)
+
+                newImage
+
+            } catch (e: Exception) { null }
+        }
 }

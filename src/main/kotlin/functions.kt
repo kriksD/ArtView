@@ -187,9 +187,13 @@ fun isVideoFileSupported(file: File): Boolean {
 
 fun isVideoFileSupported(path: String): Boolean = isVideoFileSupported(File(path))
 
-fun getFirstFrame(file: File): ImageBitmap? {
+fun getFirstFrame(file: File): ImageBitmap? = getVideoFrame(file, 0)
+
+fun getFirstFrame(path: String): ImageBitmap? = getFirstFrame(File(path))
+
+fun getVideoFrame(file: File, frame: Int): ImageBitmap? {
     try {
-        val picture = FrameGrab.getFrameFromFile(file, 0)
+        val picture = FrameGrab.getFrameFromFile(file, frame)
         val bufferedImage: BufferedImage = AWTUtil.toBufferedImage(picture)
         return bufferedImage.toComposeImageBitmap()
 
@@ -199,7 +203,19 @@ fun getFirstFrame(file: File): ImageBitmap? {
     }
 }
 
-fun getFirstFrame(path: String): ImageBitmap? = getFirstFrame(File(path))
+fun getVideoFrame(path: String, frame: Int): ImageBitmap? = getVideoFrame(File(path), frame)
+
+fun getVideoFrameCount(file: File): Int {
+    try {
+        val grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(file))
+        return grab.videoTrack.meta.totalFrames
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return 0
+    }
+}
+
+fun getVideoFrameCount(path: String): Int = getVideoFrameCount(File(path))
 
 fun getVideoDuration(file: File): Long? {
     try {

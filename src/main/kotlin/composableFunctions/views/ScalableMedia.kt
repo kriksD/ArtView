@@ -29,7 +29,7 @@ import colorBackground
 import colorText
 import corners
 import emptyImageBitmap
-import getFirstFrame
+import getVideoFrame
 import iconSize
 import info.media.*
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +86,7 @@ fun ScalableMedia(
                 when (mediaInfo) {
                     is ImageInfo -> loadedImage = mediaInfo.image
                     is GIFInfo -> gif = loadAnimatedImage(mediaInfo.path)
-                    is VideoInfo -> loadedImage = getFirstFrame(mediaInfo.path)
+                    is VideoInfo -> loadedImage = getVideoFrame(mediaInfo.path, mediaInfo.thumbnailFrame)
                     is AudioInfo -> {
                         if (mediaInfo.thumbnailWidth == null || mediaInfo.thumbnailHeight == null) {
                             icon = "volume_up.svg"

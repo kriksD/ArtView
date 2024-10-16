@@ -82,19 +82,28 @@ class AudioInfo(
         )
     }
 
-    fun setCover(id: Int) {
-        val media = mediaData.findMedia(id) ?: return
+    fun setCover(mediaID: Int) {
+        val media = mediaData.findMedia(mediaID) ?: return
         val image = if (media is ImageInfo) media.image else return
 
-        thumbnailID = id
+        thumbnailID = mediaID
         thumbnailWidth = image?.width
         thumbnailHeight = image?.height
+
+        CacheManager().deleteThumbnail(id)
     }
 
     fun removeCover() {
         thumbnailID = null
         thumbnailWidth = null
         thumbnailHeight = null
+
+        getAudioCover(path)?.let {
+            thumbnailWidth = it.width
+            thumbnailHeight = it.height
+        }
+
+        CacheManager().deleteThumbnail(id)
     }
 
     val cover: ImageBitmap?

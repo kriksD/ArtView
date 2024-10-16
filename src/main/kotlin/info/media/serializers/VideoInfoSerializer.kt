@@ -29,6 +29,10 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
         element<Int>("width")
         element<Int>("height")
         element<Long>("duration")
+        element<Int>("thumbnail_frame")
+        element<Int>("thumbnail_id")
+        element<Int>("thumbnail_width")
+        element<Int>("thumbnail_height")
     }
 
     @OptIn(ExperimentalSerializationApi::class)
@@ -44,6 +48,10 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
         var width: Int? = null
         var height: Int? = null
         var duration: Long? = null
+        var thumbnailFrame: Int? = null
+        var thumbnailId: Int? = null
+        var thumbnailWidth: Int? = null
+        var thumbnailHeight: Int? = null
 
         while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -60,6 +68,10 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
                 9 -> width = decodeIntElement(descriptor, index)
                 10 -> height = decodeIntElement(descriptor, index)
                 11 -> duration = decodeLongElement(descriptor, index)
+                12 -> thumbnailFrame = decodeIntElement(descriptor, index)
+                13 -> thumbnailId = decodeNullableSerializableElement(descriptor, index, Int.serializer())
+                14 -> thumbnailWidth = decodeNullableSerializableElement(descriptor, index, Int.serializer())
+                15 -> thumbnailHeight = decodeNullableSerializableElement(descriptor, index, Int.serializer())
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -81,6 +93,10 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
             width = width,
             height = height,
             duration = duration,
+            thumbnailFrame = thumbnailFrame ?: 0,
+            thumbnailID = thumbnailId,
+            thumbnailWidth = thumbnailWidth,
+            thumbnailHeight = thumbnailHeight,
         )
     }
 
@@ -98,5 +114,9 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
         encodeIntElement(descriptor, 9, value.width)
         encodeIntElement(descriptor, 10, value.height)
         encodeLongElement(descriptor, 11, value.duration)
+        encodeIntElement(descriptor, 12, value.thumbnailFrame)
+        encodeNullableSerializableElement(descriptor, 13, Int.serializer(), value.thumbnailID)
+        encodeNullableSerializableElement(descriptor, 14, Int.serializer(), value.thumbnailWidth)
+        encodeNullableSerializableElement(descriptor, 15, Int.serializer(), value.thumbnailHeight)
     }
 }

@@ -545,27 +545,27 @@ private fun Debug(
                 fontSize = normalText,
             )
             Text(
-                "Loaded media: ${mediaData.mediaList.size}/${mediaData.mediaList.count { it.isThumbnailLoaded }}",
+                "Loaded media: ${mediaData.mediaList.count { it.isThumbnailLoaded }}/${mediaData.mediaList.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Filtered media: ${mediaData.mediaList.size}/${mediaStorage.filteredMedia.size}",
+                "Filtered media: ${mediaStorage.filteredMedia.size}/${mediaData.mediaList.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Selected media: ${mediaStorage.filteredMedia.size}/${mediaStorage.selectedMedia.size}",
+                "Selected media: ${mediaStorage.selectedMedia.size}/${mediaStorage.filteredMedia.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Filtered groups: ${mediaData.mediaGroups.size}/${mediaStorage.filteredGroups.size}",
+                "Filtered groups: ${mediaStorage.filteredGroups.size}/${mediaData.mediaGroups.size}",
                 color = colorText,
                 fontSize = normalText,
             )
             Text(
-                "Selected groups: ${mediaStorage.filteredGroups.size}/${mediaStorage.selectedGroups.size}",
+                "Selected groups: ${mediaStorage.selectedGroups.size}/${mediaStorage.filteredGroups.size}",
                 color = colorText,
                 fontSize = normalText,
             )

@@ -14,8 +14,15 @@ class CacheManager {
     }
 
     fun loadThumbnail(id: Int): ImageBitmap? {
-        val file = File(DataFolder.thumbnailsCacheFolder, "$id.cache")
+        val file = DataFolder.thumbnailsCacheFolder.resolve("$id.cache")
         if (!file.exists()) return null
         return getImageBitmap(file)
+    }
+
+    fun deleteThumbnail(id: Int) {
+        val file = DataFolder.thumbnailsCacheFolder.resolve("$id.cache")
+        if (file.exists()) {
+            val result = file.delete()
+        }
     }
 }
