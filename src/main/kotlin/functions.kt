@@ -81,7 +81,7 @@ fun ImageBitmap.encodeToWebP(): ByteArray? {
 
 fun ImageBitmap.scale(width: Int, height: Int): ImageBitmap {
     val image = this.toAwtImage().getScaledInstance(width, height, SCALE_SMOOTH)
-    val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+    val bufferedImage = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
     val g2d = bufferedImage.createGraphics()
     g2d.drawImage(image, 0, 0, null)
     g2d.dispose()
