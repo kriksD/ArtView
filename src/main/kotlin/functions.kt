@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.*
 import info.media.ImageInfo
 import okhttp3.internal.format
 import org.jaudiotagger.audio.AudioFileIO
+import org.jaudiotagger.tag.FieldKey
 import org.jcodec.api.FrameGrab
 import org.jcodec.common.DemuxerTrack
 import org.jcodec.common.VideoCodecMeta
@@ -277,6 +278,20 @@ fun getAudioCover(file: File): ImageBitmap? {
 }
 
 fun getAudioCover(path: String): ImageBitmap? = getAudioCover(File(path))
+
+fun getAudioArtist(file: File): String? {
+    val audioFile = AudioFileIO.read(file)
+    return audioFile.tag.getFirst(FieldKey.ARTIST)
+}
+
+fun getAudioArtist(path: String): String? = getAudioArtist(File(path))
+
+fun getAudioTitle(file: File): String? {
+    val audioFile = AudioFileIO.read(file)
+    return audioFile.tag.getFirst(FieldKey.TITLE)
+}
+
+fun getAudioTitle(path: String): String? = getAudioTitle(File(path))
 
 fun openAudioFile(file: File) {
     if (Desktop.isDesktopSupported()) {

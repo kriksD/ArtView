@@ -1,7 +1,9 @@
 package info.media
 
+import getAudioArtist
 import getAudioCover
 import getAudioDuration
+import getAudioTitle
 import getImageBitmap
 import getImageDimensions
 import getVideoDimensions
@@ -24,7 +26,6 @@ class MediaInfoFactory {
             if (!file.exists()) return null
 
             val type = determineType(file) ?: return null
-            val name = createName(file, type, createCopy)
             val newFile = createFile(file, type, createCopy)
 
             when (type) {
@@ -33,7 +34,7 @@ class MediaInfoFactory {
                     return ImageInfo(
                         id = ids.uniqueId(),
                         path = newFile.path,
-                        name = name,
+                        name = newFile.name,
                         width = dimensions.width,
                         height = dimensions.height,
                     )
@@ -43,17 +44,27 @@ class MediaInfoFactory {
                     return GIFInfo(
                         id = ids.uniqueId(),
                         path = newFile.path,
-                        name = name,
+                        name = newFile.name,
                         width = dimensions.width,
                         height = dimensions.height,
                     )
                 }
                 MediaType.Audio -> {
                     val cover = getAudioCover(newFile)
+                    val artist = getAudioArtist(file)
+                    val title = getAudioTitle(file)
+
+                    val newName = when {
+                        artist != null && title != null -> "$artist - $title"
+                        artist != null -> artist
+                        title != null -> title
+                        else -> newFile.name
+                    }
+
                     return AudioInfo(
                         id = ids.uniqueId(),
                         path = newFile.path,
-                        name = name,
+                        name = newName,
                         duration = getAudioDuration(file) ?: return null,
                         thumbnailID = null,
                         thumbnailWidth = cover?.width,
@@ -65,7 +76,7 @@ class MediaInfoFactory {
                     return VideoInfo(
                         id = ids.uniqueId(),
                         path = newFile.path,
-                        name = name,
+                        name = newFile.name,
                         width = dimensions.width,
                         height = dimensions.height,
                         duration = getVideoDuration(file) ?: return null,
@@ -102,12 +113,14 @@ class MediaInfoFactory {
         }
 
         private fun createFile(file: File, type: MediaType, createCopy: Boolean): File {
+            val name = createName(file, type, createCopy)
+
             return if (createCopy) {
                 when (type) {
-                    MediaType.Image -> DataFolder.imageFolder.resolve("${file.nameWithoutExtension}.${file.extension}")
-                    MediaType.GIF -> DataFolder.gifFolder.resolve("${file.nameWithoutExtension}.${file.extension}")
-                    MediaType.Video -> DataFolder.videoFolder.resolve("${file.nameWithoutExtension}.${file.extension}")
-                    MediaType.Audio -> DataFolder.audioFolder.resolve("${file.nameWithoutExtension}.${file.extension}")
+                    MediaType.Image -> DataFolder.imageFolder.resolve("$name.${file.extension}")
+                    MediaType.GIF -> DataFolder.gifFolder.resolve("$name.${file.extension}")
+                    MediaType.Video -> DataFolder.videoFolder.resolve("$name.${file.extension}")
+                    MediaType.Audio -> DataFolder.audioFolder.resolve("$name.${file.extension}")
                 }
             } else {
                 file
