@@ -9,6 +9,7 @@ class SettingsContainer {
     private val json = Json {
         prettyPrint = true
         encodeDefaults = true
+        ignoreUnknownKeys = true
     }
 
     fun load() {

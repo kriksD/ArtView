@@ -11,6 +11,7 @@ import utilities.uniqueId
 class BackupManager {
     private val json = Json {
         prettyPrint = true
+        encodeDefaults = true
         ignoreUnknownKeys = true
     }
 

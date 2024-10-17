@@ -1,6 +1,7 @@
 package info.media.serializers
 
 import info.media.ImageInfo
+import info.media.MediaInfoFixer
 import info.media.MediaType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -61,22 +62,24 @@ class ImageInfoSerializer : KSerializer<ImageInfo> {
             }
         }
 
-        require(path != null)
-        require(width != null)
-        require(height != null)
-
-        return@decodeStructure ImageInfo(
+        val info = ImageInfo(
             id = id ?: -1,
-            path = path,
+            path = path ?: "",
             name = name ?: "",
             description = description ?: "",
             favorite = favorite ?: false,
             tags = tags?.toMutableList() ?: mutableListOf(),
             source = source,
             rating = rating,
-            width = width,
-            height = height,
+            width = width ?: -1,
+            height = height ?: -1,
         )
+
+        return@decodeStructure if (MediaInfoFixer.isMediaInfoBroken(info)) {
+            MediaInfoFixer.fixMediaInfo(info) as ImageInfo
+        } else {
+            info
+        }
     }
 
     @OptIn(ExperimentalSerializationApi::class)

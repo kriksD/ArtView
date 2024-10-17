@@ -23,8 +23,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import bigIconSize
-import biggerPadding
 import border
 import colorBackground
 import colorBackgroundSecond
@@ -165,26 +163,6 @@ private fun ImageGridItem(
                 .clip(RoundedCornerShape(smallCorners))
         )
 
-        if (mediaInfo is AudioInfo && mediaInfo.thumbnailWidth == null && mediaInfo.thumbnailHeight == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .aspectRatio(1F)
-                    .background(colorBackground),
-            )
-
-            Icon(
-                painter = painterResource("volume_up.svg"),
-                contentDescription = null,
-                tint = colorText,
-                modifier = Modifier
-                    .background(colorBackground)
-                    .padding(biggerPadding)
-                    .size(bigIconSize)
-                    .align(Alignment.Center),
-            )
-        }
-
         AppearDisappearAnimation(
             !showInfo,
             normalAnimationDuration,
@@ -266,7 +244,7 @@ private fun ImageGridItem(
                         .padding(padding),
                 ) {
                     Text(
-                        mediaInfo.description,
+                        if (mediaInfo.path.contains("[Error: File not found]")) mediaInfo.path else mediaInfo.description,
                         color = colorText,
                         fontSize = normalText,
                         maxLines = 2,

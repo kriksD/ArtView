@@ -4,12 +4,9 @@ import getAudioArtist
 import getAudioCover
 import getAudioDuration
 import getAudioTitle
-import getImageBitmap
 import getImageDimensions
 import getVideoDimensions
 import getVideoDuration
-import isAudioFileSupported
-import isVideoFileSupported
 import properties.DataFolder
 import uniqueName
 import utilities.HasID
@@ -25,7 +22,7 @@ class MediaInfoFactory {
         ): MediaInfo? {
             if (!file.exists()) return null
 
-            val type = determineType(file) ?: return null
+            val type = MediaType.determineType(file) ?: return null
             val newFile = createFile(file, type, createCopy)
 
             when (type) {
@@ -90,14 +87,6 @@ class MediaInfoFactory {
             ids: List<HasID> = listOf(),
             withoutCopy: Boolean = false,
         ): MediaInfo? = makeFromFile(File(path), ids, withoutCopy)
-
-        private fun determineType(file: File): MediaType? = when {
-            file.extension == "gif" -> MediaType.GIF
-            getImageBitmap(file) != null -> MediaType.Image
-            isVideoFileSupported(file) -> MediaType.Video
-            isAudioFileSupported(file) -> MediaType.Audio
-            else -> null
-        }
 
         private fun createName(file: File, type: MediaType, createCopy: Boolean): String {
             return if (createCopy) {

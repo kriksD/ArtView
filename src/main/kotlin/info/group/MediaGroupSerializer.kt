@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 
 class MediaGroupSerializer : KSerializer<MediaGroup> {
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ImageGroup") {
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("MediaGroup") {
         element<Int>("id")
         element<List<Int>>("media_ids")
         element<String>("name")
@@ -43,13 +43,9 @@ class MediaGroupSerializer : KSerializer<MediaGroup> {
             }
         }
 
-        require(
-            mediaIDs != null
-        )
-
         return@decodeStructure MediaGroup(
             id = id ?: -1,
-            mediaIDs = mediaIDs.toMutableList(),
+            mediaIDs = mediaIDs?.toMutableList() ?: mutableListOf(),
             name = name ?: "",
             description = description ?: "",
             favorite = favorite ?: false,

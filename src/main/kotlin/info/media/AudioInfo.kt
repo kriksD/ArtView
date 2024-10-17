@@ -82,6 +82,36 @@ class AudioInfo(
         )
     }
 
+    fun copy(
+        id: Int = this.id,
+        path: String = this.path,
+        name: String = this.name,
+        description: String = this.description,
+        favorite: Boolean = this.favorite,
+        tags: MutableList<String> = this.tags,
+        source: String? = this.source,
+        rating: String? = this.rating,
+        duration: Long = this.duration,
+        thumbnailID: Int? = this.thumbnailID,
+        thumbnailWidth: Int? = this.thumbnailWidth,
+        thumbnailHeight: Int? = this.thumbnailHeight,
+    ): AudioInfo {
+        return AudioInfo(
+            id = id,
+            path = path,
+            name = name,
+            description = description,
+            favorite = favorite,
+            tags = tags,
+            source = source,
+            rating = rating,
+            duration = duration,
+            thumbnailID = thumbnailID,
+            thumbnailWidth = thumbnailWidth,
+            thumbnailHeight = thumbnailHeight,
+        )
+    }
+
     fun setCover(mediaID: Int) {
         val media = mediaData.findMedia(mediaID) ?: return
         val image = if (media is ImageInfo) media.image else return

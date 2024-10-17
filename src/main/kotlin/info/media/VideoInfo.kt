@@ -89,6 +89,42 @@ class VideoInfo(
         )
     }
 
+    fun copy(
+        id: Int = this.id,
+        path: String = this.path,
+        name: String = this.name,
+        description: String = this.description,
+        favorite: Boolean = this.favorite,
+        tags: MutableList<String> = this.tags,
+        source: String? = this.source,
+        rating: String? = this.rating,
+        width: Int = this.width,
+        height: Int = this.height,
+        duration: Long = this.duration,
+        thumbnailFrame: Int = this.thumbnailFrame,
+        thumbnailID: Int? = this.thumbnailID,
+        thumbnailWidth: Int? = this.thumbnailWidth,
+        thumbnailHeight: Int? = this.thumbnailHeight,
+    ): VideoInfo {
+        return VideoInfo(
+            id = id,
+            path = path,
+            name = name,
+            description = description,
+            favorite = favorite,
+            tags = tags,
+            source = source,
+            rating = rating,
+            width = width,
+            height = height,
+            duration = duration,
+            thumbnailFrame = thumbnailFrame,
+            thumbnailID = thumbnailID,
+            thumbnailWidth = thumbnailWidth,
+            thumbnailHeight = thumbnailHeight,
+        )
+    }
+
     fun setFrameAsThumbnail(frame: Int) {
         if (frame < getVideoFrameCount(path)) {
             thumbnailFrame = frame

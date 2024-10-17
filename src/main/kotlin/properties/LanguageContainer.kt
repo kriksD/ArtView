@@ -1,6 +1,5 @@
 package properties
 
-import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import java.io.File
 
@@ -8,6 +7,7 @@ class LanguageContainer {
     lateinit var language: Language
     private val json = Json {
         prettyPrint = true
+        encodeDefaults = true
         ignoreUnknownKeys = true
     }
 

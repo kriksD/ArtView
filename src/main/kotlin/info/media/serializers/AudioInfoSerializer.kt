@@ -1,6 +1,7 @@
 package info.media.serializers
 
 import info.media.AudioInfo
+import info.media.MediaInfoFixer
 import info.media.MediaType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -67,23 +68,26 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
             }
         }
 
-        require(path != null)
-        require(duration != null)
-
-        return@decodeStructure AudioInfo(
+        val info = AudioInfo(
             id = id ?: -1,
-            path = path,
+            path = path ?: "",
             name = name ?: "",
             description = description ?: "",
             favorite = favorite ?: false,
             tags = tags?.toMutableList() ?: mutableListOf(),
             source = source,
             rating = rating,
-            duration = duration,
+            duration = duration ?: -1,
             thumbnailID = thumbnailID,
             thumbnailWidth = thumbnailWidth,
             thumbnailHeight = thumbnailHeight,
         )
+
+        return@decodeStructure if (MediaInfoFixer.isMediaInfoBroken(info)) {
+            MediaInfoFixer.fixMediaInfo(info) as AudioInfo
+        } else {
+            info
+        }
     }
 
     @OptIn(ExperimentalSerializationApi::class)

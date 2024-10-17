@@ -1,5 +1,6 @@
 package info.media.serializers
 
+import info.media.MediaInfoFixer
 import info.media.MediaType
 import info.media.VideoInfo
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -76,28 +77,29 @@ class VideoInfoSerializer : KSerializer<VideoInfo> {
             }
         }
 
-        require(path != null)
-        require(width != null)
-        require(height != null)
-        require(duration != null)
-
-        return@decodeStructure VideoInfo(
+        val info = VideoInfo(
             id = id ?: -1,
-            path = path,
+            path = path ?: "",
             name = name ?: "",
             description = description ?: "",
             favorite = favorite ?: false,
             tags = tags?.toMutableList() ?: mutableListOf(),
             source = source,
             rating = rating,
-            width = width,
-            height = height,
-            duration = duration,
+            width = width ?: -1,
+            height = height ?: -1,
+            duration = duration ?: -1,
             thumbnailFrame = thumbnailFrame ?: 0,
             thumbnailID = thumbnailId,
             thumbnailWidth = thumbnailWidth,
             thumbnailHeight = thumbnailHeight,
         )
+
+        return@decodeStructure if (MediaInfoFixer.isMediaInfoBroken(info)) {
+            MediaInfoFixer.fixMediaInfo(info) as VideoInfo
+        } else {
+            info
+        }
     }
 
     @OptIn(ExperimentalSerializationApi::class)

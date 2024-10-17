@@ -71,6 +71,32 @@ class ImageInfo(
         )
     }
 
+    fun copy(
+        id: Int = this.id,
+        path: String = this.path,
+        name: String = this.name,
+        description: String = this.description,
+        favorite: Boolean = this.favorite,
+        tags: MutableList<String> = this.tags,
+        source: String? = this.source,
+        rating: String? = this.rating,
+        width: Int = this.width,
+        height: Int = this.height,
+    ): ImageInfo {
+        return ImageInfo(
+            id = id,
+            path = path,
+            name = name,
+            description = description,
+            favorite = favorite,
+            tags = tags,
+            source = source,
+            rating = rating,
+            width = width,
+            height = height,
+        )
+    }
+
     val image: ImageBitmap?
         get() {
             val file = File(path)

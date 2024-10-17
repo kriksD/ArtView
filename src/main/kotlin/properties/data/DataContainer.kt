@@ -15,11 +15,12 @@ class DataContainer {
     private val json = Json {
         prettyPrint = true
         encodeDefaults = true
+        ignoreUnknownKeys = true
     }
 
     fun load() {
         loadFromJsonFile()
-        removeNonexistentMedia()
+        fixNonexistentMedia()
         checkForNewFiles()
         ensureDefaultTagsExist()
         save()
@@ -48,12 +49,12 @@ class DataContainer {
         }
     }
 
-    private fun removeNonexistentMedia() {
-        mediaData.mediaList.forEach {
+    private fun fixNonexistentMedia() {
+        /*mediaData.mediaList.forEach {
             if (!File(it.path).exists()) {
                 mediaData.delete(listOf(it))
             }
-        }
+        }*/
     }
 
     private fun checkForNewFiles() {
