@@ -307,6 +307,30 @@ fun main() = application {
                             "Manage tags for all",
                             onClick = { isEditingTags = true },
                         )
+                        if (mediaStorage.selectedMedia.any { !it.hidden }) {
+                            ButtonText(
+                                "Hide selected media",
+                                onClick = {
+                                    mediaStorage.selectedMedia.forEach {
+                                        it.hidden = true
+                                    }
+                                    Properties.saveData()
+                                    mediaStorage.update(true)
+                                },
+                            )
+                        }
+                        if (mediaStorage.selectedMedia.any { it.hidden }) {
+                            ButtonText(
+                                "Show selected media",
+                                onClick = {
+                                    mediaStorage.selectedMedia.forEach {
+                                        it.hidden = false
+                                    }
+                                    Properties.saveData()
+                                    mediaStorage.update(true)
+                                },
+                            )
+                        }
                         if (mediaStorage.selectedMedia.isNotEmpty()) {
                             ButtonText(
                                 "Create group",

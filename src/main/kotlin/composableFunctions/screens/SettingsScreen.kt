@@ -414,7 +414,7 @@ private fun TagControlsPositionOptions(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "mediaStorage.Filter button:",
+                "Filter button:",
                 color = colorText,
                 fontSize = normalText,
                 modifier = Modifier
