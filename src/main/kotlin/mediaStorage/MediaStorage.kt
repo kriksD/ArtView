@@ -22,6 +22,7 @@ class MediaStorage {
     private var openedGroup by mutableStateOf<MediaGroup?>(null)
 
     private var lastFilter: Filter = Filter()
+    val currentFilter get() = lastFilter
 
     fun setFilter(filter: Filter) {
         lastFilter = filter

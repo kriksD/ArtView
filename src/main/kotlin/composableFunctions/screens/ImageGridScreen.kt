@@ -4,13 +4,19 @@ import mediaStorage.MediaStorage
 import tag.TagStorage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import colorBackgroundLighter
 import composableFunctions.ImageGrid
 import composableFunctions.TagGridWithCategories
+import composableFunctions.TypeSelector
+import composableFunctions.views.CheckboxText
+import info.media.MediaType
 import loader.ThumbnailLoader
+import padding
 import tagData
 
 @Composable
@@ -40,6 +46,33 @@ fun ImageGridScreen(
                 .fillMaxWidth()
                 .background(colorBackgroundLighter),
         )
+
+        Row {
+            var selectedType by remember { mutableStateOf<MediaType?>(null) }
+            TypeSelector(
+                selected = selectedType,
+                onSelected = {
+                    selectedType = it
+                    mediaStorage.filter(mediaStorage.currentFilter.type(selectedType))
+                    thumbnailLoader.reset()
+                },
+                modifier = Modifier
+                    .weight(1F),
+            )
+
+            var showHidden by remember { mutableStateOf(false) }
+            CheckboxText(
+                text = "Show hidden",
+                value = showHidden,
+                onValueChange = {
+                    showHidden = it
+                    mediaStorage.filter(mediaStorage.currentFilter.nonHidden(!showHidden))
+                    thumbnailLoader.reset()
+                },
+                modifier = Modifier
+                    .padding(end = padding),
+            )
+        }
 
         ImageGrid(
             mediaList = mediaStorage.filteredMedia,

@@ -9,7 +9,7 @@ import properties.settings.SettingsContainer
 
 object Properties {
     const val VERSION = "0.5.0-alpha5"
-    const val DATA_VERSION = "6.0"
+    const val DATA_VERSION = "6.1"
 
     private val languageContainer: LanguageContainer = LanguageContainer()
     fun language(): Language = languageContainer.language

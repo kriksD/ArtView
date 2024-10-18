@@ -11,7 +11,7 @@ class Filter {
     private var mediaGroup: MediaGroup? = null
     private var filterFavorite: Boolean = false
     private var filterHidden: Boolean = false
-    private var filterNonHidden: Boolean = false
+    private var filterNonHidden: Boolean = true
     private var filterType: MediaType? = null
 
     fun tags(tagStorage: TagStorage): Filter {
@@ -25,18 +25,18 @@ class Filter {
         return this
     }
 
-    fun favorite(): Filter {
-        filterFavorite = true
+    fun favorite(favorite: Boolean = true): Filter {
+        filterFavorite = favorite
         return this
     }
 
-    fun hidden(): Filter {
-        filterHidden = true
+    fun hidden(hidden: Boolean = true): Filter {
+        filterHidden = hidden
         return this
     }
 
-    fun nonHidden(): Filter {
-        filterNonHidden = true
+    fun nonHidden(nonHidden: Boolean = true): Filter {
+        filterNonHidden = nonHidden
         return this
     }
 
