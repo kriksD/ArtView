@@ -2,6 +2,7 @@ package mediaStorage
 
 import info.group.MediaGroup
 import info.media.MediaInfo
+import info.media.MediaType
 import tag.TagStorage
 
 class Filter {
@@ -9,6 +10,9 @@ class Filter {
     private var filterAntiTags: List<String>? = null
     private var mediaGroup: MediaGroup? = null
     private var filterFavorite: Boolean = false
+    private var filterHidden: Boolean = false
+    private var filterNonHidden: Boolean = false
+    private var filterType: MediaType? = null
 
     fun tags(tagStorage: TagStorage): Filter {
         this.filterTags = tagStorage.selectedTags
@@ -26,14 +30,32 @@ class Filter {
         return this
     }
 
+    fun hidden(): Filter {
+        filterHidden = true
+        return this
+    }
+
+    fun nonHidden(): Filter {
+        filterNonHidden = true
+        return this
+    }
+
+    fun type(type: MediaType?): Filter {
+        filterType = type
+        return this
+    }
+
     fun filter(mediaList: Collection<MediaInfo>): Collection<MediaInfo> = mediaList
         .filter { mediaInfo ->
             val byGroup = mediaGroup?.mediaIDs?.contains(mediaInfo.id) ?: true
             val byAntiTags = filterAntiTags?.none { mediaInfo.tags.contains(it) } ?: true
             val byTags = filterTags?.all { mediaInfo.tags.contains(it) } ?: true
             val byFavorite = (!filterFavorite || mediaInfo.favorite)
+            val byHidden = (!filterHidden || mediaInfo.hidden)
+            val byNonHidden = (!filterNonHidden || !mediaInfo.hidden)
+            val byType = (filterType == null || mediaInfo.type == filterType)
 
-            byGroup && byAntiTags && byTags && byFavorite
+            byGroup && byAntiTags && byTags && byFavorite && byHidden && byNonHidden && byType
         }
 
     fun filterGroups(mediaGroups: Collection<MediaGroup>): Collection<MediaGroup> = mediaGroups

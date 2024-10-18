@@ -24,6 +24,7 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
         element<String>("name")
         element<String>("description")
         element<Boolean>("favorite")
+        element<Boolean>("hidden")
         element<List<String>>("tags")
         element<String?>("source")
         element<String?>("rating")
@@ -40,6 +41,7 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
         var name: String? = null
         var description: String? = null
         var favorite: Boolean? = null
+        var hidden: Boolean? = null
         var tags: List<String>? = null
         var source: String? = null
         var rating: String? = null
@@ -57,13 +59,14 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
                 3 -> name = decodeStringElement(descriptor, index)
                 4 -> description = decodeStringElement(descriptor, index)
                 5 -> favorite = decodeBooleanElement(descriptor, index)
-                6 -> tags = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
-                7 -> source = decodeNullableSerializableElement(descriptor, index, String.serializer())
-                8 -> rating = decodeNullableSerializableElement(descriptor, index, String.serializer())
-                9 -> duration = decodeLongElement(descriptor, index)
-                10 -> thumbnailID = decodeNullableSerializableElement(descriptor, index, Int.serializer())
-                11 -> thumbnailWidth = decodeNullableSerializableElement(descriptor, index, Int.serializer())
-                12 -> thumbnailHeight = decodeNullableSerializableElement(descriptor, index, Int.serializer())
+                6 -> hidden = decodeBooleanElement(descriptor, index)
+                7 -> tags = decodeSerializableElement(descriptor, index, ListSerializer(String.serializer()))
+                8 -> source = decodeNullableSerializableElement(descriptor, index, String.serializer())
+                9 -> rating = decodeNullableSerializableElement(descriptor, index, String.serializer())
+                10 -> duration = decodeLongElement(descriptor, index)
+                11 -> thumbnailID = decodeNullableSerializableElement(descriptor, index, Int.serializer())
+                12 -> thumbnailWidth = decodeNullableSerializableElement(descriptor, index, Int.serializer())
+                13 -> thumbnailHeight = decodeNullableSerializableElement(descriptor, index, Int.serializer())
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
@@ -74,6 +77,7 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
             name = name ?: "",
             description = description ?: "",
             favorite = favorite ?: false,
+            hidden = hidden ?: false,
             tags = tags?.toMutableList() ?: mutableListOf(),
             source = source,
             rating = rating,
@@ -98,12 +102,13 @@ class AudioInfoSerializer : KSerializer<AudioInfo> {
         encodeStringElement(descriptor, 3, value.name)
         encodeStringElement(descriptor, 4, value.description)
         encodeBooleanElement(descriptor, 5, value.favorite)
-        encodeSerializableElement(descriptor, 6, ListSerializer(String.serializer()), value.tags)
-        encodeNullableSerializableElement(descriptor, 7, String.serializer(), value.source)
-        encodeNullableSerializableElement(descriptor, 8, String.serializer(), value.rating)
-        encodeLongElement(descriptor, 9, value.duration)
-        encodeNullableSerializableElement(descriptor, 10, Int.serializer(), value.thumbnailID)
-        encodeNullableSerializableElement(descriptor, 11, Int.serializer(), value.thumbnailWidth)
-        encodeNullableSerializableElement(descriptor, 12, Int.serializer(), value.thumbnailHeight)
+        encodeBooleanElement(descriptor, 6, value.hidden)
+        encodeSerializableElement(descriptor, 7, ListSerializer(String.serializer()), value.tags)
+        encodeNullableSerializableElement(descriptor, 8, String.serializer(), value.source)
+        encodeNullableSerializableElement(descriptor, 9, String.serializer(), value.rating)
+        encodeLongElement(descriptor, 10, value.duration)
+        encodeNullableSerializableElement(descriptor, 11, Int.serializer(), value.thumbnailID)
+        encodeNullableSerializableElement(descriptor, 12, Int.serializer(), value.thumbnailWidth)
+        encodeNullableSerializableElement(descriptor, 13, Int.serializer(), value.thumbnailHeight)
     }
 }

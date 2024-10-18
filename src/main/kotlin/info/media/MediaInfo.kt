@@ -14,6 +14,7 @@ interface MediaInfo : HasID {
     var name: String
     var description: String
     var favorite: Boolean
+    var hidden: Boolean
     val tags: MutableList<String>
     var source: String?
     var rating: String?
@@ -56,6 +57,7 @@ interface MediaInfo : HasID {
         name: String = this.name,
         description: String = this.description,
         favorite: Boolean = this.favorite,
+        hidden: Boolean = this.hidden,
         tags: MutableList<String> = this.tags,
         source: String? = this.source,
         rating: String? = this.rating,
