@@ -7,14 +7,27 @@ import getAudioTitle
 import getImageDimensions
 import getVideoDimensions
 import getVideoDuration
+import info.media.serializers.MediaInfoSerializer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import properties.DataFolder
 import uniqueName
 import utilities.HasID
+import utilities.multipleUniqueIDs
 import utilities.uniqueId
 import java.io.File
+import java.io.FileInputStream
+import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 
 class MediaInfoFactory {
     companion object {
+        val json = Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+            encodeDefaults = true
+        }
+
         fun makeFromFile(
             file: File,
             ids: List<HasID> = listOf(),
@@ -119,6 +132,56 @@ class MediaInfoFactory {
                     file.copyTo(it)
                 }
             }
+        }
+
+        fun createFromZip(
+            file: File,
+            ids: List<HasID> = listOf(),
+        ): List<MediaInfo>? {
+            if (ZipFile(file).getEntry("media_data.json") == null) return null
+
+            var data: MutableList<MediaInfo>? = null
+            val newPaths: MutableList<Pair<File, File>> = mutableListOf()
+
+            ZipInputStream(FileInputStream(file)).use { zip ->
+                var entry = zip.nextEntry
+                while (entry != null) {
+                    when (entry.name) {
+                        "media_data.json" -> data = json.decodeFromString(ListSerializer(MediaInfoSerializer), zip.readBytes().decodeToString()).toMutableList()
+                        else -> {
+                            var potentialFile = DataFolder.mediaFolder.resolve(entry.name)
+
+                            if (potentialFile.exists()) {
+                                val newName = uniqueName(potentialFile.nameWithoutExtension, potentialFile.extension, potentialFile.parentFile)
+                                val newFile = potentialFile.parentFile.resolve("$newName.${potentialFile.extension}")
+                                newPaths.add(Pair(File(potentialFile.path), newFile))
+                                potentialFile = newFile
+                            }
+
+                            potentialFile.writeBytes(zip.readBytes())
+                        }
+                    }
+
+                    entry = zip.nextEntry
+                }
+            }
+
+            data?.let { d ->
+                newPaths.forEach { (old, new) ->
+                    val oldInfo = d.find { File(it.path).absolutePath == old.absolutePath } ?: return@forEach
+                    d.add(oldInfo.copy(path = new.path))
+                    d.remove(oldInfo)
+                }
+
+                val newIDs = ids.multipleUniqueIDs(d.size)
+                val newData: MutableList<MediaInfo> = mutableListOf()
+                d.forEachIndexed { index, it ->
+                    newData.add(it.copy(id = newIDs[index]))
+                }
+
+                return newData
+
+            } ?: return null
         }
     }
 }

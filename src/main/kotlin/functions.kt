@@ -498,3 +498,9 @@ fun File.getDirectorySize(): Long {
     }
     return size
 }
+
+fun getLastNPartsOfPath(path: String, n: Int): String {
+    val parts = path.split(File.separator)
+    val lastNParts = parts.takeLast(n)
+    return lastNParts.joinToString(File.separator)
+}

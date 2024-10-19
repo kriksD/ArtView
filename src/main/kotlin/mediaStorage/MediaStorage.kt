@@ -2,6 +2,7 @@ package mediaStorage
 
 import androidx.compose.runtime.*
 import formatFileNameDate
+import getLastNPartsOfPath
 import info.group.MediaGroup
 import info.media.MediaInfo
 import info.media.serializers.MediaInfoSerializer
@@ -128,10 +129,11 @@ class MediaStorage {
 
         ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
             selectedMedia.forEach {
+                val path = getLastNPartsOfPath(it.path, 2)
                 val file = File(it.path)
                 if (!file.exists()) return@forEach
 
-                zip.putNextEntry(ZipEntry(it.path))
+                zip.putNextEntry(ZipEntry(path))
                 zip.write(file.readBytes())
                 zip.closeEntry()
             }

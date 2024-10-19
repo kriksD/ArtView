@@ -23,13 +23,18 @@ class MediaData(
     val mediaList = mediaList.toMutableStateList()
     val mediaGroups = mediaGroups.toMutableStateList()
 
-    fun addMedia(file: File, createCopy: Boolean = true): MediaInfo? {
-        val mediaInfo = MediaInfoFactory.makeFromFile(file, mediaList, createCopy) ?: return null
-        mediaList.add(0, mediaInfo)
-        return mediaInfo
+    fun addMedia(file: File, createCopy: Boolean = true) {
+        if (file.extension == "zip") {
+            val mediaInfo = MediaInfoFactory.createFromZip(file, mediaList) ?: return
+            mediaList.addAll(0, mediaInfo)
+
+        } else {
+            val mediaInfo = MediaInfoFactory.makeFromFile(file, mediaList, createCopy) ?: return
+            mediaList.add(0, mediaInfo)
+        }
     }
 
-    fun addMedia(path: String, createCopy: Boolean = true): MediaInfo? = addMedia(File(path), createCopy)
+    fun addMedia(path: String, createCopy: Boolean = true) = addMedia(File(path), createCopy)
 
     fun addImageMedia(image: ImageBitmap, name: String = "image_file"): MediaInfo {
         val newName = uniqueName(name.ifBlank { "image_file" }.toFileName(), "png", DataFolder.imageFolder)
