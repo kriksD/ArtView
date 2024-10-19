@@ -11,5 +11,5 @@ data class BackupInfo(
     val mediaCount: Int,
     val spaceUsed: Long,
 ): HasID {
-    val folderPath: String = DataFolder.backupFolder.resolve("$id").path
+    val path: String = DataFolder.backupFolder.resolve("$id.zip").path
 }

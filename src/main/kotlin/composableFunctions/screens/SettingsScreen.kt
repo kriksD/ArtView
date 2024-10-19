@@ -1,12 +1,9 @@
 package composableFunctions.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -21,10 +18,12 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextOverflow
 import bigText
 import biggerPadding
 import colorBackground
 import colorBackgroundLighter
+import colorBorder
 import colorText
 import colorTextError
 import colorTextSecond
@@ -43,6 +42,7 @@ import properties.settings.TagControlsPosition
 import roundPlaces
 import runCommand
 import settings
+import smallBorder
 import smallCorners
 import tagData
 import tinyIconSize
@@ -556,7 +556,8 @@ private fun TextAndTextField(
                     color = colorBackground,
                     shape = RoundedCornerShape(smallCorners)
                 )
-                .padding(padding),
+                .padding(padding)
+                .border(smallBorder, colorBorder, RoundedCornerShape(smallCorners)),
         )
     }
 }
@@ -682,12 +683,14 @@ private fun BackupInfoCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Row {
-            Text("id: ${info.id} | ", color = colorText, fontSize = normalText)
-            Text("${info.date.toTimeString()} | ", color = colorText, fontSize = normalText)
-            Text("${info.mediaCount} media files | ", color = colorText, fontSize = normalText)
-            Text("${(info.spaceUsed / 1024.0 / 1024.0).roundPlaces(2)} MB", color = colorText, fontSize = normalText)
-        }
+        val text = "id: ${info.id} | ${info.date.toTimeString()} | ${info.mediaCount} media files | ${(info.spaceUsed / 1024.0 / 1024.0).roundPlaces(2)} MB"
+        Text(
+            text = text,
+            color = colorText,
+            fontSize = normalText,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1F),
+        )
 
         Row {
             Icon(
@@ -696,7 +699,7 @@ private fun BackupInfoCard(
                 tint = colorText,
                 modifier = Modifier
                     .size(iconSize)
-                    .clickable { "explorer \"${File(info.folderPath).absolutePath}\\\"".runCommand(File(".")) }
+                    .clickable { "explorer \"${File(info.path).absolutePath}\"".runCommand(File(".")) }
                     .padding(horizontal = biggerPadding, vertical = padding),
             )
 

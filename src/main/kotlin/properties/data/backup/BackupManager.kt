@@ -7,6 +7,9 @@ import mediaData
 import properties.DataFolder
 import settings
 import utilities.uniqueId
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class BackupManager {
     private val json = Json {
@@ -34,17 +37,32 @@ class BackupManager {
     fun createBackup() {
         val id = backups.uniqueId()
 
-        val backupFolder = DataFolder.backupFolder.resolve(id.toString())
-        backupFolder.mkdirs()
+        val backupZip = DataFolder.backupFolder.resolve("$id.zip")
+        DataFolder.backupFolder.mkdirs()
 
-        DataFolder.mediaFolder.copyRecursively(backupFolder.resolve("media"))
-        DataFolder.settingsFile.copyTo(backupFolder.resolve("settings.json"))
+        ZipOutputStream(FileOutputStream(backupZip)).use { zip ->
+            DataFolder.mediaFolder.walkTopDown()
+                .filter { it.isFile }
+                .forEach { file ->
+                    zip.putNextEntry(ZipEntry(file.relativeTo(DataFolder.folder).path))
+                    file.inputStream().use { input ->
+                        input.copyTo(zip)
+                    }
+                    zip.closeEntry()
+                }
+
+            zip.putNextEntry(ZipEntry(DataFolder.settingsFile.relativeTo(DataFolder.folder).path))
+            DataFolder.settingsFile.inputStream().use { input ->
+                input.copyTo(zip)
+            }
+            zip.closeEntry()
+        }
 
         val info = BackupInfo(
             id = backups.uniqueId(),
             date = System.currentTimeMillis(),
             mediaCount = mediaData.mediaList.size,
-            spaceUsed = backupFolder.walkTopDown().filter { it.isFile }.sumOf { it.length() },
+            spaceUsed = backupZip.length(),
         )
 
         backups.add(0, info)
