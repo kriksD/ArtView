@@ -149,7 +149,7 @@ private fun ImageGroupGridItem(
         modifier = modifier
             .fillMaxSize()
             .aspectRatio(mediaGroup.getMediaInfo(0)?.thumbnailWeight() ?: 1F)
-            .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent)
+            .border(border, if (checked) colorBackgroundSecondLighter else Color.Transparent, RoundedCornerShape(smallCorners))
             .clickable(onClick = onOpen)
             .onPointerEvent(PointerEventType.Enter) {
                 showInfo = true

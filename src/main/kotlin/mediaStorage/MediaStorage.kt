@@ -2,16 +2,15 @@ package mediaStorage
 
 import androidx.compose.runtime.*
 import formatFileNameDate
-import getLastNPartsOfPath
 import info.group.MediaGroup
 import info.media.MediaInfo
-import info.media.serializers.MediaInfoSerializer
 import io.ktor.util.date.*
-import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mediaData
 import properties.DataFolder
 import properties.Properties
+import properties.data.MediaData
 import settings
 import tag.TagStorage
 import uniqueName
@@ -128,18 +127,29 @@ class MediaStorage {
         val zipFile = folder.resolve("$fileName.zip")
 
         ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
-            selectedMedia.forEach {
-                val path = getLastNPartsOfPath(it.path, 2)
+            val mediaToSave = (selectedMedia.toList() +
+                        selectedGroups.flatMap { it.mediaIDs }.mapNotNull { mediaData.findMedia(it) })
+                .distinct()
+
+            mediaToSave.forEach {
                 val file = File(it.path)
                 if (!file.exists()) return@forEach
 
-                zip.putNextEntry(ZipEntry(path))
-                zip.write(file.readBytes())
+                zip.putNextEntry(ZipEntry(file.relativeTo(DataFolder.folder).path))
+                file.inputStream().use { input ->
+                    input.copyTo(zip)
+                }
                 zip.closeEntry()
             }
 
+            val selectedData = MediaData(
+                dataVersion = mediaData.dataVersion,
+                mediaList = mediaToSave,
+                mediaGroups = selectedGroups.toList(),
+            )
+
             zip.putNextEntry(ZipEntry("media_data.json"))
-            zip.write(json.encodeToString(ListSerializer(MediaInfoSerializer), selectedMedia.toList()).toByteArray())
+            zip.write(json.encodeToString(selectedData).toByteArray())
             zip.closeEntry()
         }
     }
