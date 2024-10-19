@@ -9,6 +9,7 @@ import kotlinx.serialization.Serializable
 import properties.DataFolder
 import properties.Properties
 import savePngTo
+import tagData
 import toFileName
 import utilities.uniqueId
 import uniqueName
@@ -25,8 +26,12 @@ class MediaData(
 
     fun addMedia(file: File, createCopy: Boolean = true) {
         if (file.extension == "zip") {
-            val mediaInfo = MediaInfoFactory.createFromZip(file, mediaList) ?: return
-            mediaList.addAll(0, mediaInfo)
+            val newData = MediaInfoFactory.makeFromZip(file, mediaList, mediaGroups) ?: return
+            mediaList.addAll(0, newData.mediaList)
+            mediaGroups.addAll(0, newData.mediaGroups)
+
+            val tags = (newData.mediaList.flatMap { it.tags } + newData.mediaGroups.flatMap { it.tags }).distinct()
+            tagData.addAllTags(tags, "New Unknown Tags")
 
         } else {
             val mediaInfo = MediaInfoFactory.makeFromFile(file, mediaList, createCopy) ?: return

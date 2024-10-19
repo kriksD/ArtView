@@ -129,7 +129,7 @@ class MediaStorage {
         ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
             val mediaToSave = (selectedMedia.toList() +
                         selectedGroups.flatMap { it.mediaIDs }.mapNotNull { mediaData.findMedia(it) })
-                .distinct()
+                .distinctBy { it.id }
 
             mediaToSave.forEach {
                 val file = File(it.path)
@@ -166,7 +166,7 @@ class MediaStorage {
             mediaIDs = selectedMedia.map { it.id }.toMutableList(),
             tags = tags,
         )
-        mediaData.mediaGroups.add(newGroup)
+        mediaData.mediaGroups.add(0, newGroup)
         Properties.saveData()
         update()
     }

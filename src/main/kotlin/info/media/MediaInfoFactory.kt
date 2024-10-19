@@ -7,10 +7,10 @@ import getAudioTitle
 import getImageDimensions
 import getVideoDimensions
 import getVideoDuration
-import info.media.serializers.MediaInfoSerializer
-import kotlinx.serialization.builtins.ListSerializer
+import info.group.MediaGroup
 import kotlinx.serialization.json.Json
 import properties.DataFolder
+import properties.data.MediaData
 import uniqueName
 import utilities.HasID
 import utilities.multipleUniqueIDs
@@ -134,22 +134,23 @@ class MediaInfoFactory {
             }
         }
 
-        fun createFromZip(
+        fun makeFromZip(
             file: File,
-            ids: List<HasID> = listOf(),
-        ): List<MediaInfo>? {
+            mediaIDs: List<HasID>,
+            groupIDs: List<HasID>,
+        ): MediaData? {
             if (ZipFile(file).getEntry("media_data.json") == null) return null
 
-            var data: MutableList<MediaInfo>? = null
+            var data: MediaData? = null
             val newPaths: MutableList<Pair<File, File>> = mutableListOf()
 
             ZipInputStream(FileInputStream(file)).use { zip ->
                 var entry = zip.nextEntry
                 while (entry != null) {
                     when (entry.name) {
-                        "media_data.json" -> data = json.decodeFromString(ListSerializer(MediaInfoSerializer), zip.readBytes().decodeToString()).toMutableList()
+                        "media_data.json" -> data = json.decodeFromString<MediaData>(zip.readBytes().decodeToString())
                         else -> {
-                            var potentialFile = DataFolder.mediaFolder.resolve(entry.name)
+                            var potentialFile = DataFolder.folder.resolve(entry.name)
 
                             if (potentialFile.exists()) {
                                 val newName = uniqueName(potentialFile.nameWithoutExtension, potentialFile.extension, potentialFile.parentFile)
@@ -167,21 +168,44 @@ class MediaInfoFactory {
             }
 
             data?.let { d ->
-                newPaths.forEach { (old, new) ->
-                    val oldInfo = d.find { File(it.path).absolutePath == old.absolutePath } ?: return@forEach
-                    d.add(oldInfo.copy(path = new.path))
-                    d.remove(oldInfo)
-                }
-
-                val newIDs = ids.multipleUniqueIDs(d.size)
-                val newData: MutableList<MediaInfo> = mutableListOf()
-                d.forEachIndexed { index, it ->
-                    newData.add(it.copy(id = newIDs[index]))
-                }
-
-                return newData
-
+                return prepareMediaData(d, newPaths, mediaIDs, groupIDs)
             } ?: return null
+        }
+
+        private fun prepareMediaData(
+            data: MediaData,
+            newPaths: MutableList<Pair<File, File>>,
+            mediaIDs: List<HasID> = listOf(),
+            groupIDs: List<HasID> = listOf(),
+        ): MediaData {
+            newPaths.forEach { (old, new) ->
+                val oldInfo = data.mediaList.find { File(it.path).absolutePath == old.absolutePath } ?: return@forEach
+                data.mediaList.add(oldInfo.copy(path = new.path))
+                data.mediaList.remove(oldInfo)
+            }
+
+            val newGroupIDs = groupIDs.multipleUniqueIDs(data.mediaGroups.size)
+            val newGroups: MutableList<MediaGroup> = mutableListOf()
+            data.mediaGroups.forEachIndexed { index, group ->
+                val newID = newGroupIDs[index]
+                newGroups.add(group.copy(id = newID))
+            }
+
+            val newMediaIDs = mediaIDs.multipleUniqueIDs(data.mediaList.size)
+            val newMedia: MutableList<MediaInfo> = mutableListOf()
+            data.mediaList.forEachIndexed { index, media ->
+                val newID = newMediaIDs[index]
+                newMedia.add(media.copy(id = newID))
+                newGroups.forEach { group ->
+                    group.mediaIDs.replaceAll { id -> if (id == media.id) newID else id }
+                }
+            }
+
+            return MediaData(
+                dataVersion = data.dataVersion,
+                mediaList = newMedia,
+                mediaGroups = newGroups,
+            )
         }
     }
 }
