@@ -31,7 +31,7 @@ import colorBorder
 import colorText
 import colorTextSecond
 import composableFunctions.views.LoadingImage
-import formatTime
+import formatDuration
 import iconSize
 import info.media.*
 import normalAnimationDuration
@@ -207,7 +207,7 @@ private fun ImageGridItem(
 
                 duration?.let {
                     Text(
-                        it.formatTime(),
+                        it.formatDuration(),
                         color = colorText,
                         fontSize = smallText,
                         textAlign = TextAlign.Center,

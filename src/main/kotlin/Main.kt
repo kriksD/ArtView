@@ -301,7 +301,7 @@ fun main() = application {
                         )
                         ButtonText(
                             "Save selected media to a new folder",
-                            onClick = { mediaStorage.saveMediaFilesTo() },
+                            onClick = { mediaStorage.saveSelectedMediaTo() /*.saveMediaFilesTo()*/ },
                         )
                         ButtonText(
                             "Manage tags for all",

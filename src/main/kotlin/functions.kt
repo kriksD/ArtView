@@ -409,7 +409,7 @@ fun String.capitalizeEachWord(): String = this
     .split(" ")
     .joinToString(" ") { it.replaceFirstChar { char -> char.titlecase() } }
 
-fun Long.formatTime(): String {
+fun Long.formatDuration(): String {
     val seconds = this / 1000
     val minutes = seconds / 60
     val hours = minutes / 60
@@ -419,6 +419,12 @@ fun Long.formatTime(): String {
     }else {
         "$hours:${format("%02d", minutes % 60)}:${format("%02d", seconds % 60 % 60)}"
     }
+}
+
+fun Long.formatFileNameDate(): String {
+    val date = Date(this)
+    val format = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss")
+    return format.format(date)
 }
 
 fun openWebpage(uri: URI?): Boolean {

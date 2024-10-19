@@ -1,17 +1,32 @@
 package mediaStorage
 
 import androidx.compose.runtime.*
+import formatFileNameDate
 import info.group.MediaGroup
 import info.media.MediaInfo
+import info.media.serializers.MediaInfoSerializer
+import io.ktor.util.date.*
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import mediaData
 import properties.DataFolder
 import properties.Properties
 import settings
 import tag.TagStorage
+import uniqueName
 import utilities.uniqueId
 import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class MediaStorage {
+    val json = Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        prettyPrint = true
+    }
+
     val filteredMedia = mutableStateListOf<MediaInfo>()
     val selectedMedia = mutableStateListOf<MediaInfo>()
     private var opened by mutableStateOf<MediaInfo?>(null)
@@ -105,15 +120,25 @@ class MediaStorage {
         update()
     }
 
-    fun saveMediaFilesTo(folder: File = DataFolder.filteredFolder) {
+    fun saveSelectedMediaTo(folder: File = DataFolder.filteredFolder) {
         folder.mkdirs()
-        folder.listFiles()?.forEach { it.delete() }
 
-        if (selectedMedia.isNotEmpty()) {
-            selectedMedia.forEach { it.saveFileTo(folder) }
+        val fileName = uniqueName("filtered_${getTimeMillis().formatFileNameDate()}", "zip", folder)
+        val zipFile = folder.resolve("$fileName.zip")
 
-        } else if (selectedGroups.isNotEmpty()) {
-            selectedGroups.forEach { it.saveImageFilesTo(folder) }
+        ZipOutputStream(FileOutputStream(zipFile)).use { zip ->
+            selectedMedia.forEach {
+                val file = File(it.path)
+                if (!file.exists()) return@forEach
+
+                zip.putNextEntry(ZipEntry(it.path))
+                zip.write(file.readBytes())
+                zip.closeEntry()
+            }
+
+            zip.putNextEntry(ZipEntry("media_data.json"))
+            zip.write(json.encodeToString(ListSerializer(MediaInfoSerializer), selectedMedia.toList()).toByteArray())
+            zip.closeEntry()
         }
     }
 
