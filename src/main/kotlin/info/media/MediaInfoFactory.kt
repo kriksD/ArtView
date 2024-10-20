@@ -159,7 +159,9 @@ class MediaInfoFactory {
                                 potentialFile = newFile
                             }
 
-                            potentialFile.writeBytes(zip.readBytes())
+                            zip.use { input ->
+                                input.copyTo(potentialFile.outputStream())
+                            }
                         }
                     }
 
