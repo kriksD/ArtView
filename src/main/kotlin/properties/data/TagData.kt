@@ -4,8 +4,10 @@ import tag.TagCategory
 import androidx.compose.runtime.toMutableStateList
 import containsAtLeastOne
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import properties.Properties
 import swap
+import java.io.File
 
 @Serializable(with = TagDataSerializer::class)
 class TagData(
@@ -47,6 +49,20 @@ class TagData(
         }
 
         addAllTags(tags.filter { selectedTags.contains(it) }, categoryName)
+    }
+
+    fun addTagsFromFile(file: File) {
+        if (!file.exists()) return
+
+        val loadedTags = Json.decodeFromString<TagData>(file.readText())
+
+        loadedTags.tags.forEach { category ->
+            createCategory(category.name)
+
+            category.tags.forEach { tag ->
+                addTag(tag, category.name)
+            }
+        }
     }
 
     fun moveTag(tag: String, category: String) {

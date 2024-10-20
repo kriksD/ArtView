@@ -28,6 +28,7 @@ import mediaStorage.Filter
 import mediaStorage.MediaStorage
 import properties.Properties
 import tag.TagStorage
+import java.io.File
 import java.net.URI
 import java.util.logging.LogManager
 
@@ -99,8 +100,14 @@ fun main() = application {
                             is DragData.FilesList -> {
                                 val paths = dragData.readFiles()
                                 paths.forEach { path ->
-                                    mediaData.addMedia(URI(path).path)
-                                    mediaStorage.update()
+                                    if (URI(path).path.endsWith(".json")) {
+                                        tagData.addTagsFromFile(File(URI(path).path))
+                                        tagStorage.reset()
+
+                                    } else {
+                                        mediaData.addMedia(URI(path).path)
+                                        mediaStorage.update()
+                                    }
                                 }
                             }
                         }
