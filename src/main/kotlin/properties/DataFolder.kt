@@ -21,7 +21,7 @@ object DataFolder {
     val styleFolder = folder.resolve("style")
     val styleFile = styleFolder.resolve("style.json")
 
-    val backupFolder = folder.resolve("backups")
+    val backupFolder = folder.resolve("backup")
     val backupInfoFile = backupFolder.resolve("info.json")
 
     val cacheFolder = folder.resolve("cache")

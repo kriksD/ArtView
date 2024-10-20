@@ -552,12 +552,12 @@ private fun TextAndTextField(
             maxLines = 1,
             modifier = Modifier
                 .padding(padding)
+                .border(smallBorder, colorBorder, RoundedCornerShape(smallCorners))
                 .background(
                     color = colorBackground,
                     shape = RoundedCornerShape(smallCorners)
                 )
-                .padding(padding)
-                .border(smallBorder, colorBorder, RoundedCornerShape(smallCorners)),
+                .padding(padding),
         )
     }
 }
