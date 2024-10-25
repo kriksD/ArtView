@@ -1,5 +1,6 @@
 package properties.data
 
+import androidx.compose.runtime.mutableStateListOf
 import tag.TagCategory
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -72,7 +73,7 @@ class DataContainer {
 
     private fun ensureDefaultTagsExist() {
         if (!tagData.containsTagCategory("Other")) {
-            tagData.tags.add(TagCategory("Other", mutableListOf("NSFW")))
+            tagData.tags.add(TagCategory("Other", mutableStateListOf("NSFW")))
         }
     }
 

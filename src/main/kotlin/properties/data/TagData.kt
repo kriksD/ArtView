@@ -1,5 +1,6 @@
 package properties.data
 
+import androidx.compose.runtime.mutableStateListOf
 import tag.TagCategory
 import androidx.compose.runtime.toMutableStateList
 import containsAtLeastOne
@@ -12,7 +13,7 @@ import java.io.File
 @Serializable(with = TagDataSerializer::class)
 class TagData(
     var dataVersion: String = Properties.DATA_VERSION,
-    tags: Collection<TagCategory> = mutableListOf(TagCategory("Other", mutableListOf("NSFW"))),
+    tags: Collection<TagCategory> = mutableListOf(TagCategory("Other", mutableStateListOf("NSFW"))),
 ) {
     val tags = tags.toMutableStateList()
 
