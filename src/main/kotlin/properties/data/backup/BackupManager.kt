@@ -75,8 +75,9 @@ class BackupManager {
     }
 
     fun removeBackup(info: BackupInfo) {
-        val backupFolder = DataFolder.backupFolder.resolve(info.id.toString())
-        backupFolder.deleteRecursively()
+        val backupFolder = DataFolder.backupFolder.resolve("${info.id}.zip")
+        val result = backupFolder.deleteRecursively()
+        if (!result) return
         backups.remove(info)
         save()
     }
