@@ -229,7 +229,7 @@ fun main() = application {
                             mediaInfo = mInfo,
                             onCancel = { isEditing = false },
                             onDone = { newMediaInfo ->
-                                val index = mediaData.mediaList.indexOf(mediaData.mediaList.find { it.path == newMediaInfo.path })
+                                val index = mediaData.mediaList.indexOf(mediaData.mediaList.find { it.id == newMediaInfo.id })
                                 mediaData.mediaList[index] = newMediaInfo
                                 Properties.saveData()
                                 mediaStorage.update(true)
@@ -254,11 +254,10 @@ fun main() = application {
                             mediaGroup = mGroup,
                             onCancel = { isEditingGroup = false },
                             onDone = { newMediaGroup ->
-                                mediaStorage.openedMediaGroup?.name = newMediaGroup.name
-                                mediaStorage.openedMediaGroup?.description = newMediaGroup.description
-                                mediaStorage.openedMediaGroup?.tags?.clear()
-                                mediaStorage.openedMediaGroup?.tags?.addAll(newMediaGroup.tags)
+                                val index = mediaData.mediaGroups.indexOf(mediaData.mediaGroups.find { it.id == newMediaGroup.id })
+                                mediaData.mediaGroups[index] = newMediaGroup
                                 Properties.saveData()
+                                mediaStorage.update(withoutClosing = true)
 
                                 isEditingGroup = false
                             },

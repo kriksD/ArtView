@@ -67,12 +67,17 @@ class MediaStorage {
         opened = if (!withoutClosing) {
             null
         } else {
-            filteredMedia.find { it.path == opened?.path }
+            filteredMedia.find { it.id == opened?.id }
         }
 
         selectedGroups.clear()
         if (withGroups) {
             filterGroups(lastFilter)
+            openedGroup = if (!withoutClosing) {
+                null
+            } else {
+                filteredGroups.find { it.id == openedGroup?.id }
+            }
         } else {
             filteredGroups.clear()
             openedGroup = null
